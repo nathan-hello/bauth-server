@@ -1,3 +1,5 @@
+
+
 /**
  * Use one of the built-in themes.
  *
@@ -220,10 +222,7 @@ export const THEME_TERMINAL: Theme = {
   font: {
     family: "Geist Mono, monospace",
   },
-  css: `
-    @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100;200;300;400;500;600;700;800;900&display=swap');
-  `,
-}
+  css: ` @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100;200;300;400;500;600;700;800;900&display=swap'); `, }
 
 /**
  * Built-in theme based on [SST](https://sst.dev).
@@ -300,20 +299,4 @@ export const THEME_VERCEL: Theme = {
   `,
 }
 
-// i really don't wanna use async local storage for this so get over it
-
-/**
- * @internal
- */
-export function setTheme(value: Theme) {
-  // @ts-ignore
-  globalThis.OPENAUTH_THEME = value
-}
-
-/**
- * @internal
- */
-export function getTheme() {
-  // @ts-ignore
-  return globalThis.OPENAUTH_THEME || THEME_OPENAUTH
-}
+export default THEME_VERCEL
