@@ -14,6 +14,7 @@ export default [
       route("signin", "routes/auth/signin.tsx"),
       route("signup", "routes/auth/signup.tsx"),
       route("signout", "routes/auth/signout.tsx"),
+      route("forgot", "routes/auth/forgot.tsx"),
     ]),
   ]),
 
