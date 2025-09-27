@@ -1,5 +1,4 @@
 import React from "react";
-import { Layout } from "./base.js";
 import { FormAlert } from "./form.js";
 
 // Types for the authentication components
@@ -29,13 +28,13 @@ const DEFAULT_COPY = {
   error_invalid_password: "Password is incorrect.",
   error_password_mismatch: "Passwords do not match.",
   error_validation_error: "Password does not meet requirements.",
-  
+
   // Page titles and descriptions
   register_title: "Welcome to the app",
   register_description: "Sign in with your email",
-  login_title: "Welcome to the app", 
+  login_title: "Welcome to the app",
   login_description: "Sign in with your email",
-  
+
   // Button and link text
   register: "Register",
   register_prompt: "Don't have an account?",
@@ -45,7 +44,7 @@ const DEFAULT_COPY = {
   code_resend: "Resend code",
   code_return: "Back to",
   logo: "A",
-  
+
   // Input placeholders
   input_email: "Email",
   input_password: "Password",
@@ -97,7 +96,7 @@ interface ForgotPasswordFormProps {
  * Login Form Component
  * Handles user authentication with email and password
  */
-export function LoginForm({
+export function PasswordLoginForm({
   error,
   formData,
   copy: customCopy,
@@ -118,53 +117,51 @@ export function LoginForm({
   };
 
   return (
-    <Layout>
-      <form data-component="form" method="post" onSubmit={handleSubmit}>
-        <FormAlert 
-          message={error?.type ? copy[`error_${error.type}` as keyof AuthCopy] : undefined} 
-        />
-        <input
-          data-component="input"
-          type="email"
-          name="email"
-          required
-          placeholder={copy.input_email}
-          autoFocus={!error}
-          defaultValue={formData?.email || ""}
-        />
-        <input
-          data-component="input"
-          autoFocus={error?.type === "invalid_password"}
-          required
-          type="password"
-          name="password"
-          placeholder={copy.input_password}
-          autoComplete="current-password"
-        />
-        <button data-component="button" type="submit">
-          {copy.button_continue}
-        </button>
-        <div data-component="form-footer">
-          <span>
-            {copy.register_prompt}{" "}
-            <button 
-              type="button" 
-              data-component="link" 
-              onClick={onRegisterClick}
-            >
-              {copy.register}
-            </button>
-          </span>
-          <button 
-            type="button" 
-            data-component="link" 
-            onClick={onForgotPasswordClick}
-          >
-            {copy.change_prompt}
+    <form data-component="form" method="post" onSubmit={handleSubmit}>
+      <FormAlert
+        message={
+          error?.type
+            ? copy[`error_${error.type}` as keyof AuthCopy]
+            : undefined
+        }
+      />
+      <input
+        data-component="input"
+        type="email"
+        name="email"
+        required
+        placeholder={copy.input_email}
+        autoFocus={!error}
+        defaultValue={formData?.email || ""}
+      />
+      <input
+        data-component="input"
+        autoFocus={error?.type === "invalid_password"}
+        required
+        type="password"
+        name="password"
+        placeholder={copy.input_password}
+        autoComplete="current-password"
+      />
+      <button data-component="button" type="submit">
+        {copy.button_continue}
+      </button>
+      <div data-component="form-footer">
+        <span>
+          {copy.register_prompt}{" "}
+          <button type="button" data-component="link" onClick={onRegisterClick}>
+            {copy.register}
           </button>
-        </div>
-      </form>
-    </Layout>
+        </span>
+        <button
+          type="button"
+          data-component="link"
+          onClick={onForgotPasswordClick}
+        >
+          {copy.change_prompt}
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -172,7 +169,7 @@ export function LoginForm({
  * Register Form Component
  * Handles user registration with email, password, and confirmation
  */
-export function RegisterForm({
+export function PasswordRegisterForm({
   error,
   formData,
   state,
@@ -194,91 +191,95 @@ export function RegisterForm({
     onSubmit?.(data);
   };
 
-  const emailError = ["invalid_email", "email_taken"].includes(error?.type || "");
-  const passwordError = ["invalid_password", "password_mismatch", "validation_error"].includes(error?.type || "");
+  const emailError = ["invalid_email", "email_taken"].includes(
+    error?.type || "",
+  );
+  const passwordError = [
+    "invalid_password",
+    "password_mismatch",
+    "validation_error",
+  ].includes(error?.type || "");
 
   return (
-    <Layout>
-      <form data-component="form" method="post" onSubmit={handleSubmit}>
-        <FormAlert
-          message={
-            error?.type
-              ? error.type === "validation_error"
-                ? (error.message ?? copy[`error_${error.type}` as keyof AuthCopy])
-                : copy[`error_${error.type}` as keyof AuthCopy]
-              : undefined
-          }
-        />
-        
-        {state?.type === "start" && (
-          <>
-            <input type="hidden" name="action" value="register" />
-            <input
-              data-component="input"
-              autoFocus={!error || emailError}
-              type="email"
-              name="email"
-              defaultValue={!emailError ? formData?.email || "" : ""}
-              required
-              placeholder={copy.input_email}
-            />
-            <input
-              data-component="input"
-              autoFocus={passwordError}
-              type="password"
-              name="password"
-              placeholder={copy.input_password}
-              required
-              defaultValue={!passwordError ? formData?.password || "" : ""}
-              autoComplete="new-password"
-            />
-            <input
-              data-component="input"
-              type="password"
-              name="repeat"
-              required
-              autoFocus={passwordError}
-              placeholder={copy.input_repeat}
-              autoComplete="new-password"
-            />
-            <button data-component="button" type="submit">
-              {copy.button_continue}
-            </button>
-            <div data-component="form-footer">
-              <span>
-                {copy.login_prompt}{" "}
-                <button 
-                  type="button" 
-                  data-component="link" 
-                  onClick={onLoginClick}
-                >
-                  {copy.login}
-                </button>
-              </span>
-            </div>
-          </>
-        )}
+    <form data-component="form" method="post" onSubmit={handleSubmit}>
+      <FormAlert
+        message={
+          error?.type
+            ? error.type === "validation_error"
+              ? (error.message ?? copy[`error_${error.type}` as keyof AuthCopy])
+              : copy[`error_${error.type}` as keyof AuthCopy]
+            : undefined
+        }
+      />
 
-        {state?.type === "code" && (
-          <>
-            <input type="hidden" name="action" value="verify" />
-            <input
-              data-component="input"
-              autoFocus
-              name="code"
-              minLength={6}
-              maxLength={6}
-              required
-              placeholder={copy.input_code}
-              autoComplete="one-time-code"
-            />
-            <button data-component="button" type="submit">
-              {copy.button_continue}
-            </button>
-          </>
-        )}
-      </form>
-    </Layout>
+      {state?.type === "start" && (
+        <>
+          <input type="hidden" name="action" value="register" />
+          <input
+            data-component="input"
+            autoFocus={!error || emailError}
+            type="email"
+            name="email"
+            defaultValue={!emailError ? formData?.email || "" : ""}
+            required
+            placeholder={copy.input_email}
+          />
+          <input
+            data-component="input"
+            autoFocus={passwordError}
+            type="password"
+            name="password"
+            placeholder={copy.input_password}
+            required
+            defaultValue={!passwordError ? formData?.password || "" : ""}
+            autoComplete="new-password"
+          />
+          <input
+            data-component="input"
+            type="password"
+            name="repeat"
+            required
+            autoFocus={passwordError}
+            placeholder={copy.input_repeat}
+            autoComplete="new-password"
+          />
+          <button data-component="button" type="submit">
+            {copy.button_continue}
+          </button>
+          <div data-component="form-footer">
+            <span>
+              {copy.login_prompt}{" "}
+              <button
+                type="button"
+                data-component="link"
+                onClick={onLoginClick}
+              >
+                {copy.login}
+              </button>
+            </span>
+          </div>
+        </>
+      )}
+
+      {state?.type === "code" && (
+        <>
+          <input type="hidden" name="action" value="verify" />
+          <input
+            data-component="input"
+            autoFocus
+            name="code"
+            minLength={6}
+            maxLength={6}
+            required
+            placeholder={copy.input_code}
+            autoComplete="one-time-code"
+          />
+          <button data-component="button" type="submit">
+            {copy.button_continue}
+          </button>
+        </>
+      )}
+    </form>
   );
 }
 
@@ -288,7 +289,6 @@ export function RegisterForm({
  */
 export function TwoFactorForm({
   error,
-  formData,
   copy: customCopy,
   onSubmit,
   onResendCode,
@@ -305,36 +305,34 @@ export function TwoFactorForm({
   };
 
   return (
-    <Layout>
-      <form data-component="form" method="post" onSubmit={handleSubmit}>
-        <FormAlert 
-          message={error?.type ? copy[`error_${error.type}` as keyof AuthCopy] : undefined} 
-        />
-        <input type="hidden" name="action" value="verify" />
-        <input
-          data-component="input"
-          autoFocus
-          name="code"
-          minLength={6}
-          maxLength={6}
-          required
-          placeholder={copy.input_code}
-          autoComplete="one-time-code"
-        />
-        <button data-component="button" type="submit">
-          {copy.button_continue}
+    <form data-component="form" method="post" onSubmit={handleSubmit}>
+      <FormAlert
+        message={
+          error?.type
+            ? copy[`error_${error.type}` as keyof AuthCopy]
+            : undefined
+        }
+      />
+      <input type="hidden" name="action" value="verify" />
+      <input
+        data-component="input"
+        autoFocus
+        name="code"
+        minLength={6}
+        maxLength={6}
+        required
+        placeholder={copy.input_code}
+        autoComplete="one-time-code"
+      />
+      <button data-component="button" type="submit">
+        {copy.button_continue}
+      </button>
+      <div data-component="form-footer">
+        <button type="button" data-component="link" onClick={onResendCode}>
+          {copy.code_resend}
         </button>
-        <div data-component="form-footer">
-          <button 
-            type="button" 
-            data-component="link" 
-            onClick={onResendCode}
-          >
-            {copy.code_resend}
-          </button>
-        </div>
-      </form>
-    </Layout>
+      </div>
+    </form>
   );
 }
 
@@ -342,7 +340,7 @@ export function TwoFactorForm({
  * Forgot Password Form Component
  * Handles password reset flow with email and code verification
  */
-export function ForgotPasswordForm({
+export function PasswordForgotForm({
   error,
   formData,
   state,
@@ -365,108 +363,107 @@ export function ForgotPasswordForm({
     onSubmit?.(data);
   };
 
-  const passwordError = ["invalid_password", "password_mismatch", "validation_error"].includes(error?.type || "");
+  const passwordError = [
+    "invalid_password",
+    "password_mismatch",
+    "validation_error",
+  ].includes(error?.type || "");
 
   return (
-    <Layout>
-      <form data-component="form" method="post" onSubmit={handleSubmit}>
-        <FormAlert
-          message={
-            error?.type
-              ? error.type === "validation_error"
-                ? (error.message ?? copy[`error_${error.type}` as keyof AuthCopy])
-                : copy[`error_${error.type}` as keyof AuthCopy]
-              : undefined
-          }
-        />
-        
-        {state?.type === "start" && (
-          <>
-            <input type="hidden" name="action" value="code" />
-            <input
-              data-component="input"
-              autoFocus
-              type="email"
-              name="email"
-              required
-              defaultValue={formData?.email || ""}
-              placeholder={copy.input_email}
-            />
-          </>
-        )}
-        
-        {state?.type === "code" && (
-          <>
-            <input type="hidden" name="action" value="verify" />
-            <input
-              data-component="input"
-              autoFocus
-              name="code"
-              minLength={6}
-              maxLength={6}
-              required
-              placeholder={copy.input_code}
-              autoComplete="one-time-code"
-            />
-          </>
-        )}
-        
-        {state?.type === "update" && (
-          <>
-            <input type="hidden" name="action" value="update" />
-            <input
-              data-component="input"
-              autoFocus
-              type="password"
-              name="password"
-              placeholder={copy.input_password}
-              required
-              defaultValue={!passwordError ? formData?.password || "" : ""}
-              autoComplete="new-password"
-            />
-            <input
-              data-component="input"
-              type="password"
-              name="repeat"
-              required
-              defaultValue={!passwordError ? formData?.password || "" : ""}
-              placeholder={copy.input_repeat}
-              autoComplete="new-password"
-            />
-          </>
-        )}
-        
-        <button data-component="button" type="submit">
-          {copy.button_continue}
-        </button>
-      </form>
-      
-      {state?.type === "code" && (
-        <form method="post">
+    <form data-component="form" method="post" onSubmit={handleSubmit}>
+      <FormAlert
+        message={
+          error?.type
+            ? error.type === "validation_error"
+              ? (error.message ?? copy[`error_${error.type}` as keyof AuthCopy])
+              : copy[`error_${error.type}` as keyof AuthCopy]
+            : undefined
+        }
+      />
+
+      {state?.type === "start" && (
+        <>
           <input type="hidden" name="action" value="code" />
-          <input type="hidden" name="email" value={state.email || ""} />
-          <div data-component="form-footer">
-            <span>
-              {copy.code_return}{" "}
-              <button 
-                type="button" 
-                data-component="link" 
-                onClick={onBackToLogin}
-              >
-                {copy.login.toLowerCase()}
-              </button>
-            </span>
-            <button 
-              type="button" 
-              data-component="link" 
-              onClick={onResendCode}
-            >
-              {copy.code_resend}
-            </button>
-          </div>
-        </form>
+          <input
+            data-component="input"
+            autoFocus
+            type="email"
+            name="email"
+            required
+            defaultValue={formData?.email || ""}
+            placeholder={copy.input_email}
+          />
+        </>
       )}
-    </Layout>
+
+      {state?.type === "code" && (
+        <>
+          <input type="hidden" name="action" value="verify" />
+          <input
+            data-component="input"
+            autoFocus
+            name="code"
+            minLength={6}
+            maxLength={6}
+            required
+            placeholder={copy.input_code}
+            autoComplete="one-time-code"
+          />
+          <form method="post">
+            <input type="hidden" name="action" value="code" />
+            <input type="hidden" name="email" value={state.email || ""} />
+            <div data-component="form-footer">
+              <span>
+                {copy.code_return}{" "}
+                <button
+                  type="button"
+                  data-component="link"
+                  onClick={onBackToLogin}
+                >
+                  {copy.login.toLowerCase()}
+                </button>
+              </span>
+              <button
+                type="button"
+                data-component="link"
+                onClick={onResendCode}
+              >
+                {copy.code_resend}
+              </button>
+            </div>
+          </form>
+        </>
+      )}
+
+      {state?.type === "update" && (
+        <>
+          <input type="hidden" name="action" value="update" />
+          <input
+            data-component="input"
+            autoFocus
+            type="password"
+            name="password"
+            placeholder={copy.input_password}
+            required
+            defaultValue={!passwordError ? formData?.password || "" : ""}
+            autoComplete="new-password"
+          />
+          <input
+            data-component="input"
+            type="password"
+            name="repeat"
+            required
+            defaultValue={!passwordError ? formData?.password || "" : ""}
+            placeholder={copy.input_repeat}
+            autoComplete="new-password"
+          />
+        </>
+      )}
+
+      <button data-component="button" type="submit">
+        {copy.button_continue}
+      </button>
+    </form>
   );
 }
 

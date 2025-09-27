@@ -1,9 +1,9 @@
-import type { LinkProps } from "react-router";
+import { Outlet, type LinkProps } from "react-router";
 import theme from "../lib/theme";
 import css from "./ui.css?raw";
 import type { CSSProperties } from "react";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function() {
   function get(key: "primary" | "background" | "logo", mode: "light" | "dark") {
     if (!theme[key]) return;
     if (typeof theme[key] === "string") return theme[key];
@@ -20,7 +20,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return "1";
   })();
 
- return (
+  return (
     <div
       style={
         {
@@ -34,13 +34,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         } as CSSProperties
       }
     >
-      <head>
-        <title>{theme?.title || "OpenAuthJS"}</title>
-        <style dangerouslySetInnerHTML={{ __html: css }} />
-        {theme?.css && (
-          <style dangerouslySetInnerHTML={{ __html: theme.css }} />
-        )}
-      </head>
+      <title>{theme?.title || "OpenAuthJS"}</title>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
+      {theme?.css && <style dangerouslySetInnerHTML={{ __html: theme.css }} />}
       <body>
         <div data-component="root">
           <div data-component="center">
@@ -54,7 +50,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               src={get("logo", "dark")}
               data-mode="dark"
             />
-            {children}
+            <Outlet />
           </div>
         </div>
       </body>
@@ -62,4 +58,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const Links = ({}: LinkProps) =>  <link rel="icon" href={theme?.favicon} /> 
+export const Links = ({}: LinkProps) => (
+  <link rel="icon" href={theme?.favicon} />
+);

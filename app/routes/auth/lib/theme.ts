@@ -1,5 +1,3 @@
-
-
 /**
  * Use one of the built-in themes.
  *
@@ -50,11 +48,11 @@ export interface ColorScheme {
   /**
    * The value for dark mode.
    */
-  dark: string
+  dark: string;
   /**
    * The value for light mode.
    */
-  light: string
+  light: string;
 }
 
 /**
@@ -71,7 +69,7 @@ export interface Theme {
    * }
    * ```
    */
-  title?: string
+  title?: string;
   /**
    * A URL to the favicon of your app.
    *
@@ -82,7 +80,7 @@ export interface Theme {
    * }
    * ```
    */
-  favicon?: string
+  favicon?: string;
   /**
    * The border radius of the UI elements.
    *
@@ -93,7 +91,7 @@ export interface Theme {
    * }
    * ```
    */
-  radius?: "none" | "sm" | "md" | "lg" | "full"
+  radius?: "none" | "sm" | "md" | "lg" | "full";
   /**
    * The primary color of the theme.
    *
@@ -106,7 +104,7 @@ export interface Theme {
    * }
    * ```
    */
-  primary: string | ColorScheme
+  primary: string | ColorScheme;
   /**
    * The background color of the theme.
    *
@@ -119,7 +117,7 @@ export interface Theme {
    * }
    * ```
    */
-  background?: string | ColorScheme
+  background?: string | ColorScheme;
   /**
    * A URL to the logo of your app.
    *
@@ -132,7 +130,7 @@ export interface Theme {
    * }
    * ```
    */
-  logo?: string | ColorScheme
+  logo?: string | ColorScheme;
   /**
    * The font family and scale of the theme.
    */
@@ -149,7 +147,7 @@ export interface Theme {
      * }
      * ```
      */
-    family?: string
+    family?: string;
     /**
      * The font scale of the theme. Can be used to increase or decrease the font sizes across
      * the UI.
@@ -164,8 +162,8 @@ export interface Theme {
      * }
      * ```
      */
-    scale?: string
-  }
+    scale?: string;
+  };
   /**
    * Custom CSS that's added to the page in a `<style>` tag.
    *
@@ -178,7 +176,7 @@ export interface Theme {
    * }
    * ```
    */
-  css?: string
+  css?: string;
 }
 
 /**
@@ -201,7 +199,7 @@ export const THEME_OPENAUTH: Theme = {
   css: `
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&display=swap');
   `,
-}
+};
 
 /**
  * Built-in theme based on [Terminal](https://terminal.shop).
@@ -222,7 +220,8 @@ export const THEME_TERMINAL: Theme = {
   font: {
     family: "Geist Mono, monospace",
   },
-  css: ` @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100;200;300;400;500;600;700;800;900&display=swap'); `, }
+  css: ` @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100;200;300;400;500;600;700;800;900&display=swap'); `,
+};
 
 /**
  * Built-in theme based on [SST](https://sst.dev).
@@ -245,7 +244,7 @@ export const THEME_SST: Theme = {
   css: `
     @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@100;200;300;400;500;600;700;800;900&display=swap');
   `,
-}
+};
 
 /**
  * Built-in theme based on [Supabase](https://supabase.com).
@@ -271,7 +270,7 @@ export const THEME_SUPABASE: Theme = {
   css: `
     @import url('https://fonts.googleapis.com/css2?family=Varela+Round:wght@100;200;300;400;500;600;700;800;900&display=swap');
   `,
-}
+};
 
 /**
  * Built-in theme based on [Vercel](https://vercel.com).
@@ -279,9 +278,8 @@ export const THEME_SUPABASE: Theme = {
 export const THEME_VERCEL: Theme = {
   title: "Vercel",
   logo: {
-    dark: "https://vercel.com/mktng/_next/static/media/vercel-logotype-dark.e8c0a742.svg",
-    light:
-      "https://vercel.com/mktng/_next/static/media/vercel-logotype-light.700a8d26.svg",
+    dark: "https://reluekiss.com/favicon.svg",
+    light: "https://reluekiss.com/favicon.svg",
   },
   background: {
     dark: "black",
@@ -297,6 +295,6 @@ export const THEME_VERCEL: Theme = {
   css: `
     @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap');
   `,
-}
+};
 
-export default THEME_VERCEL
+export default THEME_VERCEL;

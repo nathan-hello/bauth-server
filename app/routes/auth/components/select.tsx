@@ -23,7 +23,6 @@
  * @packageDocumentation
  */
 
-import { Layout } from "./base.js"
 import { ICON_GITHUB, ICON_GOOGLE } from "./icon.js"
 
 export interface SelectProps {
@@ -64,7 +63,6 @@ export function Select(props?: SelectProps) {
     _req: Request,
   ): Promise<Response> => {
     const jsx = (
-      <Layout>
         <div data-component="form">
           {Object.entries(providers).map(([key, type]) => {
             const match = props?.providers?.[key]
@@ -82,7 +80,6 @@ export function Select(props?: SelectProps) {
             )
           })}
         </div>
-      </Layout>
     )
 
     return new Response(jsx.toString(), {
