@@ -1,8 +1,7 @@
 import { createAuthClient } from "better-auth/react";
+import { passkeyClient, usernameClient } from "better-auth/client/plugins"
 
-const authClient = createAuthClient({
+export const authClient = createAuthClient({
   baseURL: "http://localhost:5173",
+  plugins: [passkeyClient(), usernameClient()]
 });
-
-export const { signIn, signUp, linkSocial, deleteUser, signOut } =
-  createAuthClient();

@@ -1,7 +1,8 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./drizzle/db";
-import { jwt } from "better-auth/plugins";
+import { jwt, username } from "better-auth/plugins";
+import {passkey} from "better-auth/plugins/passkey"
 
 const prodUrl = process.env.PRODUCTION_URL;
 
@@ -11,8 +12,10 @@ if (!prodUrl) {
 
 const devUrl = "http://localhost:5173";
 
+const url = process.env.NODE_ENV === "development" ? devUrl : prodUrl
+
 export const auth = betterAuth({
-  plugins: [jwt()],
+  plugins: [jwt(), username(), passkey({rpID: url, rpName: url})],
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "pg" or "mysql"
   }),
@@ -22,7 +25,7 @@ export const auth = betterAuth({
     requireEmailVerification: false,
     revokeSessionsOnPasswordReset: true,
   },
-  trustedOrigins: [prodUrl, devUrl],
+  trustedOrigins: [url],
   account: {
     accountLinking: {
       enabled: true,
@@ -33,7 +36,7 @@ export const auth = betterAuth({
     updateAccountOnSignIn: true,
   },
   cors: {
-    origin: [prodUrl, devUrl],
+    origin: [url],
     credentials: true,
   },
 });

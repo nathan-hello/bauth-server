@@ -1,5 +1,5 @@
-import { PasswordLoginForm } from "./components/password";
-import { useNavigate, useNavigation } from "react-router";
+import { PasswordLoginForm, type AuthFormData } from "./components/password";
+import { useNavigate } from "react-router";
 
 export function meta() {
   return [
@@ -11,6 +11,9 @@ export function meta() {
 
 export default function () {
   const navigate = useNavigate();
+
+  function onSubmit(data: AuthFormData) {
+  }
 
   return (
     <PasswordLoginForm
