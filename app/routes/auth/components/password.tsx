@@ -1,93 +1,82 @@
 import React from "react";
 import { FormAlert } from "./form.js";
+import { useCopy } from "../lib/copy.js";
 
-// Types for the authentication components
-interface AuthError {
-  type?: string;
+export type AuthError = {
+  type?:
+    | "email_taken"
+    | "code_invalid"
+    | "email_invalid"
+    | "password_invalid"
+    | "password_mismatch"
+    | "validation_error"
+    | "username_invalid";
   message?: string;
-}
+};
 
-interface AuthFormData {
+export type PasswordLoginFormData = {
+  email?: string;
+  password?: string;
+};
+
+export type PasswordRegisterFormData = {
+  username?: string;
   email?: string;
   password?: string;
   repeat?: string;
   code?: string;
-}
-
-interface AuthState {
-  type: "start" | "code" | "update";
-  email?: string;
-}
-
-// Default copy text for all components
-const DEFAULT_COPY = {
-  // Error messages
-  error_email_taken: "There is already an account with this email.",
-  error_invalid_code: "Code is incorrect.",
-  error_invalid_email: "Email is not valid.",
-  error_invalid_password: "Password is incorrect.",
-  error_password_mismatch: "Passwords do not match.",
-  error_validation_error: "Password does not meet requirements.",
-
-  // Page titles and descriptions
-  register_title: "Welcome to the app",
-  register_description: "Sign in with your email",
-  login_title: "Welcome to the app",
-  login_description: "Sign in with your email",
-
-  // Button and link text
-  register: "Register",
-  register_prompt: "Don't have an account?",
-  login_prompt: "Already have an account?",
-  login: "Login",
-  change_prompt: "Forgot password?",
-  code_resend: "Resend code",
-  code_return: "Back to",
-  logo: "A",
-
-  // Input placeholders
-  input_email: "Email",
-  input_password: "Password",
-  input_code: "Code",
-  input_repeat: "Repeat password",
-  button_continue: "Continue",
 };
 
-type AuthCopy = typeof DEFAULT_COPY;
+export type TwoFactorFormData = {
+  code?: string;
+};
+
+export type PasswordForgotFormData = {
+  email?: string;
+  password?: string;
+  repeat?: string;
+  code?: string;
+};
+
+export type AuthState = {
+  type: "start" | "code" | "update";
+  email?: string;
+};
+
+// Default copy text for all components
 
 // Props interfaces for each component
-interface LoginFormProps {
-  error?: AuthError;
-  formData?: AuthFormData;
-  copy?: Partial<AuthCopy>;
-  onSubmit?: (data: AuthFormData) => void;
+type LoginFormProps = {
+  errors?: AuthError[];
+  formData?: PasswordLoginFormData;
+  onSubmit?: (data: PasswordLoginFormData) => void;
   onRegisterClick?: () => void;
   onForgotPasswordClick?: () => void;
-}
+};
 
 interface RegisterFormProps {
-  error?: AuthError;
-  formData?: AuthFormData;
+  errors?: AuthError[];
+  formData?: PasswordRegisterFormData;
+  emailVerificationRequired?: boolean;
   state?: AuthState;
-  copy?: Partial<AuthCopy>;
-  onSubmit?: (data: AuthFormData) => void;
+  totpUri?: string;
+  onSubmit?: (data: PasswordRegisterFormData) => void;
   onLoginClick?: () => void;
+  onSkipClick?: () => void;
 }
 
 interface TwoFactorFormProps {
-  error?: AuthError;
-  formData?: AuthFormData;
-  copy?: Partial<AuthCopy>;
-  onSubmit?: (data: AuthFormData) => void;
+  errors?: AuthError[];
+  formData?: TwoFactorFormData;
+  onSubmit?: (data: TwoFactorFormData) => void;
   onResendCode?: () => void;
 }
 
 interface ForgotPasswordFormProps {
-  error?: AuthError;
-  formData?: AuthFormData;
+  errors?: AuthError[];
+  formData?: PasswordForgotFormData;
   state?: AuthState;
-  copy?: Partial<AuthCopy>;
-  onSubmit?: (data: AuthFormData) => void;
+  onSubmit?: (data: PasswordForgotFormData) => void;
   onBackToLogin?: () => void;
   onResendCode?: () => void;
 }
@@ -97,19 +86,17 @@ interface ForgotPasswordFormProps {
  * Handles user authentication with email and password
  */
 export function PasswordLoginForm({
-  error,
-  formData,
-  copy: customCopy,
+  errors,
   onSubmit,
   onRegisterClick,
   onForgotPasswordClick,
 }: LoginFormProps) {
-  const copy = { ...DEFAULT_COPY, ...customCopy };
+  const copy = useCopy();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data: AuthFormData = {
+    const data: PasswordLoginFormData = {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
     };
@@ -118,25 +105,22 @@ export function PasswordLoginForm({
 
   return (
     <form data-component="form" method="post" onSubmit={handleSubmit}>
-      <FormAlert
-        message={
-          error?.type
-            ? copy[`error_${error.type}` as keyof AuthCopy]
-            : undefined
-        }
-      />
+      {errors?.map((error) => (
+        <FormAlert
+          key={error.type || "error"}
+          message={error?.type ? copy.error[error.type] : undefined}
+        />
+      ))}
       <input
         data-component="input"
         type="email"
         name="email"
         required
         placeholder={copy.input_email}
-        autoFocus={!error}
-        defaultValue={formData?.email || ""}
+        autoFocus={!errors}
       />
       <input
         data-component="input"
-        autoFocus={error?.type === "invalid_password"}
         required
         type="password"
         name="password"
@@ -170,115 +154,82 @@ export function PasswordLoginForm({
  * Handles user registration with email, password, and confirmation
  */
 export function PasswordRegisterForm({
-  error,
-  formData,
-  state,
-  copy: customCopy,
+  errors,
   onSubmit,
   onLoginClick,
 }: RegisterFormProps) {
-  const copy = { ...DEFAULT_COPY, ...customCopy };
+  const copy = useCopy();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data: AuthFormData = {
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-      repeat: formData.get("repeat") as string,
-      code: formData.get("code") as string,
+    const data: PasswordRegisterFormData = {
+      username: formData.get("username")?.toString(),
+      email: formData.get("email")?.toString(),
+      password: formData.get("password")?.toString(),
+      repeat: formData.get("repeat")?.toString(),
+      code: formData.get("code")?.toString(),
     };
     onSubmit?.(data);
   };
 
-  const emailError = ["invalid_email", "email_taken"].includes(
-    error?.type || "",
-  );
-  const passwordError = [
-    "invalid_password",
-    "password_mismatch",
-    "validation_error",
-  ].includes(error?.type || "");
-
   return (
     <form data-component="form" method="post" onSubmit={handleSubmit}>
-      <FormAlert
-        message={
-          error?.type
-            ? error.type === "validation_error"
-              ? (error.message ?? copy[`error_${error.type}` as keyof AuthCopy])
-              : copy[`error_${error.type}` as keyof AuthCopy]
-            : undefined
-        }
+      {errors?.map((error) => (
+        <FormAlert
+          message={
+            error?.type
+              ? error.type === "validation_error"
+                ? (error.message ?? copy.error[error.type])
+                : copy.error[error.type]
+              : undefined
+          }
+        />
+      ))}
+
+      <input type="hidden" name="action" value="register" />
+      <input
+        data-component="input"
+        type="text"
+        name="username"
+        required
+        placeholder={copy.input_username}
       />
-
-      {state?.type === "start" && (
-        <>
-          <input type="hidden" name="action" value="register" />
-          <input
-            data-component="input"
-            autoFocus={!error || emailError}
-            type="email"
-            name="email"
-            defaultValue={!emailError ? formData?.email || "" : ""}
-            required
-            placeholder={copy.input_email}
-          />
-          <input
-            data-component="input"
-            autoFocus={passwordError}
-            type="password"
-            name="password"
-            placeholder={copy.input_password}
-            required
-            defaultValue={!passwordError ? formData?.password || "" : ""}
-            autoComplete="new-password"
-          />
-          <input
-            data-component="input"
-            type="password"
-            name="repeat"
-            required
-            autoFocus={passwordError}
-            placeholder={copy.input_repeat}
-            autoComplete="new-password"
-          />
-          <button data-component="button" type="submit">
-            {copy.button_continue}
+      <input
+        data-component="input"
+        type="email"
+        name="email"
+        required
+        placeholder={copy.input_email}
+      />
+      <input
+        data-component="input"
+        type="password"
+        name="password"
+        placeholder={copy.input_password}
+        required
+        defaultValue={""}
+        autoComplete="new-password"
+      />
+      <input
+        data-component="input"
+        type="password"
+        name="repeat"
+        required
+        placeholder={copy.input_repeat}
+        autoComplete="new-password"
+      />
+      <button data-component="button" type="submit">
+        {copy.button_continue}
+      </button>
+      <div data-component="form-footer">
+        <span>
+          {copy.login_prompt}{" "}
+          <button type="button" data-component="link" onClick={onLoginClick}>
+            {copy.login}
           </button>
-          <div data-component="form-footer">
-            <span>
-              {copy.login_prompt}{" "}
-              <button
-                type="button"
-                data-component="link"
-                onClick={onLoginClick}
-              >
-                {copy.login}
-              </button>
-            </span>
-          </div>
-        </>
-      )}
-
-      {state?.type === "code" && (
-        <>
-          <input type="hidden" name="action" value="verify" />
-          <input
-            data-component="input"
-            autoFocus
-            name="code"
-            minLength={6}
-            maxLength={6}
-            required
-            placeholder={copy.input_code}
-            autoComplete="one-time-code"
-          />
-          <button data-component="button" type="submit">
-            {copy.button_continue}
-          </button>
-        </>
-      )}
+        </span>
+      </div>
     </form>
   );
 }
@@ -287,32 +238,27 @@ export function PasswordRegisterForm({
  * Two Factor Authentication Form Component
  * Handles 2FA code verification
  */
-export function TwoFactorForm({
-  error,
-  copy: customCopy,
+export function PasswordLoginTwoFactorForm({
+  errors,
   onSubmit,
   onResendCode,
 }: TwoFactorFormProps) {
-  const copy = { ...DEFAULT_COPY, ...customCopy };
+  const copy = useCopy();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data: AuthFormData = {
-      code: formData.get("code") as string,
+    const data: TwoFactorFormData = {
+      code: formData.get("code")?.toString(),
     };
     onSubmit?.(data);
   };
 
   return (
     <form data-component="form" method="post" onSubmit={handleSubmit}>
-      <FormAlert
-        message={
-          error?.type
-            ? copy[`error_${error.type}` as keyof AuthCopy]
-            : undefined
-        }
-      />
+      {errors?.map((error) => (
+        <FormAlert message={error?.type ? copy.error[error.type] : undefined} />
+      ))}
       <input type="hidden" name="action" value="verify" />
       <input
         data-component="input"
@@ -341,45 +287,39 @@ export function TwoFactorForm({
  * Handles password reset flow with email and code verification
  */
 export function PasswordForgotForm({
-  error,
-  formData,
+  errors,
   state,
-  copy: customCopy,
   onSubmit,
   onBackToLogin,
   onResendCode,
 }: ForgotPasswordFormProps) {
-  const copy = { ...DEFAULT_COPY, ...customCopy };
+  const copy = useCopy();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data: AuthFormData = {
-      email: formData.get("email") as string,
-      code: formData.get("code") as string,
-      password: formData.get("password") as string,
-      repeat: formData.get("repeat") as string,
+    const data: PasswordForgotFormData = {
+      email: formData.get("email")?.toString(),
+      code: formData.get("code")?.toString(),
+      password: formData.get("password")?.toString(),
+      repeat: formData.get("repeat")?.toString(),
     };
     onSubmit?.(data);
   };
 
-  const passwordError = [
-    "invalid_password",
-    "password_mismatch",
-    "validation_error",
-  ].includes(error?.type || "");
-
   return (
     <form data-component="form" method="post" onSubmit={handleSubmit}>
-      <FormAlert
-        message={
-          error?.type
-            ? error.type === "validation_error"
-              ? (error.message ?? copy[`error_${error.type}` as keyof AuthCopy])
-              : copy[`error_${error.type}` as keyof AuthCopy]
-            : undefined
-        }
-      />
+      {errors?.map((error) => (
+        <FormAlert
+          message={
+            error?.type
+              ? error.type === "validation_error"
+                ? (error.message ?? copy.error[error.type])
+                : copy.error[error.type]
+              : undefined
+          }
+        />
+      ))}
 
       {state?.type === "start" && (
         <>
@@ -390,7 +330,6 @@ export function PasswordForgotForm({
             type="email"
             name="email"
             required
-            defaultValue={formData?.email || ""}
             placeholder={copy.input_email}
           />
         </>
@@ -445,7 +384,7 @@ export function PasswordForgotForm({
             name="password"
             placeholder={copy.input_password}
             required
-            defaultValue={!passwordError ? formData?.password || "" : ""}
+            defaultValue={""}
             autoComplete="new-password"
           />
           <input
@@ -453,7 +392,7 @@ export function PasswordForgotForm({
             type="password"
             name="repeat"
             required
-            defaultValue={!passwordError ? formData?.password || "" : ""}
+            defaultValue={""}
             placeholder={copy.input_repeat}
             autoComplete="new-password"
           />
@@ -466,7 +405,3 @@ export function PasswordForgotForm({
     </form>
   );
 }
-
-// Export the copy object for external use
-export { DEFAULT_COPY as AuthCopy };
-export type { AuthError, AuthFormData, AuthState };
