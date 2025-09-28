@@ -11,9 +11,9 @@ export default [
 
   ...prefix("auth", [
     layout("./routes/auth/components/layout.tsx", [
-      route("login", "./routes/auth/signin.tsx"),
-      route("register", "./routes/auth/signup.tsx"),
-      route("logout", "./routes/auth/signout.tsx"),
+      route("login", "./routes/auth/login.tsx"),
+      route("register", "./routes/auth/register.tsx"),
+      route("logout", "./routes/auth/logout.tsx"),
       route("forgot", "./routes/auth/forgot.tsx"),
       route("2fa", "./routes/auth/factor.tsx"),
     ]),

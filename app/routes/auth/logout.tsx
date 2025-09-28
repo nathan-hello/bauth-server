@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { signOut } from "@/lib/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
+import { authClient } from "@/lib/auth";
 
 export function meta() {
     return [
@@ -17,7 +17,7 @@ export default function SignOut() {
     useEffect(() => {
         async function doSignOut() {
             try {
-                await signOut();
+                await authClient.signOut();;
                 // Invalidate user query so UI updates
                 queryClient.invalidateQueries();
             } catch (err) {

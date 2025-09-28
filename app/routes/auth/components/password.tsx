@@ -1,6 +1,5 @@
 import React from "react";
 import { FormAlert } from "./form.js";
-import { Form } from "react-router";
 
 // Types for the authentication components
 interface AuthError {
@@ -202,7 +201,7 @@ export function PasswordRegisterForm({
   ].includes(error?.type || "");
 
   return (
-    <Form data-component="form" method="post" onSubmit={handleSubmit}>
+    <form data-component="form" method="post" onSubmit={handleSubmit}>
       <FormAlert
         message={
           error?.type
@@ -280,7 +279,7 @@ export function PasswordRegisterForm({
           </button>
         </>
       )}
-    </Form>
+    </form>
   );
 }
 
