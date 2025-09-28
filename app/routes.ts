@@ -7,14 +7,15 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
-  index("routes/home.tsx"),
+  index("./routes/home.tsx"),
 
   ...prefix("auth", [
     layout("./routes/auth/components/layout.tsx", [
-      route("signin", "routes/auth/signin.tsx"),
-      route("signup", "routes/auth/signup.tsx"),
-      route("signout", "routes/auth/signout.tsx"),
-      route("forgot", "routes/auth/forgot.tsx"),
+      route("login", "./routes/auth/signin.tsx"),
+      route("register", "./routes/auth/signup.tsx"),
+      route("logout", "./routes/auth/signout.tsx"),
+      route("forgot", "./routes/auth/forgot.tsx"),
+      route("2fa", "./routes/auth/factor.tsx"),
     ]),
   ]),
 
