@@ -34,7 +34,7 @@ export default function() {
         } as CSSProperties
       }
     >
-      <title>{theme?.title || "OpenAuthJS"}</title>
+      <title>{theme?.title}</title>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       {theme?.css && <style dangerouslySetInnerHTML={{ __html: theme.css }} />}
       <body>

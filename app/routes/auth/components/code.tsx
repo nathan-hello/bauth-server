@@ -95,7 +95,7 @@ export interface CodeUIOptions {
    * The mode to use for the input.
    * @default "email"
    */
-  mode?: "email" | "phone";
+  mode?: "email" | "phone" | "totp";
 }
 
 /**
@@ -139,7 +139,7 @@ export function CodeUI(props: CodeUIOptions) {
   if (state.type === "code") {
     return (
       <div>
-        <form data-component="form" className="form" method="post">
+        <form data-component="form" method="post">
           {error?.type === "invalid_code" && (
             <FormAlert message={copy.code_invalid} />
           )}
