@@ -1,7 +1,6 @@
 import { auth } from "@server/auth";
 import { router, protectedProcedure } from ".";
 import { z } from "zod/v4";
-import { AUTH_REDIRECT_AFTER_SUCESS } from "@/lib/url";
 
 export default router({
   getTotpCodeFromSecret: protectedProcedure
@@ -43,7 +42,7 @@ export default router({
     }),
   resendEmailVerification: protectedProcedure.mutation(async ({ ctx }) => {
     return await auth.api.sendVerificationEmail({
-      body: { email: ctx.user.email, callbackURL: AUTH_REDIRECT_AFTER_SUCESS },
+      body: { email: ctx.user.email, callbackURL: "/" },
     });
   }),
   generateBackupCodes: protectedProcedure

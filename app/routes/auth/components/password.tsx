@@ -93,10 +93,10 @@ export function PasswordLoginForm({
   };
 
   return (
-    <form data-component="form" onSubmit={handleSubmit}>
+    <form data-component="form" action="#" onSubmit={handleSubmit}>
       {errors?.map((error) => (
         <FormAlert
-          key={error.type || "error"}
+          key={error.type}
           message={error?.type ? copy.error[error.type] : undefined}
         />
       ))}
@@ -163,9 +163,10 @@ export function PasswordRegisterForm({
   };
 
   return (
-    <form data-component="form" onSubmit={handleSubmit}>
+    <form data-component="form" action="#" onSubmit={handleSubmit}>
       {errors?.map((error) => (
         <FormAlert
+          key={error.type}
           message={
             error?.type
               ? error.type === "generic_error"
@@ -245,8 +246,11 @@ export function PasswordLoginTwoFactorForm({
 
   return (
     <form data-component="form" onSubmit={handleSubmit}>
-      {errors?.map((error) => (
-        <FormAlert message={error?.type ? copy.error[error.type] : undefined} />
+      {errors?.map((error, i) => (
+        <FormAlert
+          key={error.type}
+          message={error?.type ? copy.error[error.type] : undefined}
+        />
       ))}
       <input type="hidden" name="action" value="verify" />
       <input
@@ -297,9 +301,10 @@ export function PasswordForgotForm({
   };
 
   return (
-    <form data-component="form" onSubmit={handleSubmit}>
+    <form data-component="form" action="#" onSubmit={handleSubmit}>
       {errors?.map((error) => (
         <FormAlert
+          key={error.type}
           message={
             error?.type
               ? error.type === "generic_error"

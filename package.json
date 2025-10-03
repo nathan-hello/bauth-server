@@ -10,9 +10,9 @@
     "typegen:ba": "bunx --bun cli generate --config ./server/auth.ts --output ./server/drizzle/schema.auth.ts -y",
     "typegen:db": "bunx drizzle-kit generate --config ./server/drizzle/config.ts",
     "typegen": "bun run typegen:rr && bun run typegen:ba && bun run typegen:db",
-    "db:migrate": "bunx drizzle-kit migrate --config ./server/drizzle/config.ts",
-    "db:push": "bunx drizzle-kit push --config ./server/drizzle/config.ts",
-    "db:studio": "bunx drizzle-kit studio --config ./server/drizzle/config.ts"
+    "db:migrate": "bunx --bun drizzle-kit migrate --config ./server/drizzle/config.ts",
+    "db:push": "bunx --bun drizzle-kit push --config ./server/drizzle/config.ts",
+    "db:studio": "bunx --bun drizzle-kit studio --config ./server/drizzle/config.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",
