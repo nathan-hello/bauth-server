@@ -2,7 +2,6 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./drizzle/db";
 import {
-  jwt,
   username,
   twoFactor,
   oneTimeToken,
@@ -10,20 +9,27 @@ import {
 } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 
+const url =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5173"
+    : process.env.PRODUCTION_URL;
+if (!url) {
+  throw Error("process.env.PRODUCTION_URL was undefined");
+}
+
 export const auth = betterAuth({
   plugins: [
-    passkey({ rpID: VITE_URL, rpName: VITE_URL }),
+    passkey({ rpID: url, rpName: url }),
     username(),
     twoFactor(),
     emailOTP({
       sendVerificationOTP: async (data, request) => {},
       sendVerificationOnSignUp: true,
     }),
-    oneTimeToken(),
-    jwt(),
+    oneTimeToken()
   ],
   database: drizzleAdapter(db, {
-    provider: "sqlite", // or "pg" or "mysql"
+    provider: "sqlite",
   }),
   emailAndPassword: {
     enabled: true,
@@ -31,7 +37,12 @@ export const auth = betterAuth({
     requireEmailVerification: false,
     revokeSessionsOnPasswordReset: true,
   },
-  trustedOrigins: [VITE_URL],
+        emailVerification: {
+                autoSignInAfterVerification: true,
+                sendVerificationEmail: async (data, request) => {},
+                sendOnSignUp: true,
+        },
+  trustedOrigins: [url],
   account: {
     accountLinking: {
       enabled: true,
@@ -40,9 +51,10 @@ export const auth = betterAuth({
       updateUserInfoOnLink: true,
     },
     updateAccountOnSignIn: true,
+    encryptOAuthTokens: true,
   },
   cors: {
-    origin: [VITE_URL],
+    origin: [url],
     credentials: true,
   },
 });

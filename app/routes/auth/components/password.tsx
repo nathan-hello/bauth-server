@@ -45,10 +45,6 @@ type LoginFormProps = {
 
 interface RegisterFormProps {
   errors?: AuthError[];
-  formData?: PasswordRegisterFormData;
-  emailVerificationRequired?: boolean;
-  state?: AuthState;
-  totpUri?: string;
   onSubmit?: (data: PasswordRegisterFormData) => void;
   onLoginClick?: () => void;
   onSkipClick?: () => void;
