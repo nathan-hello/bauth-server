@@ -1,7 +1,7 @@
-import { auth, AUTH_REDIRECT_AFTER_SUCESS } from "@server/auth";
-import { publicProcedure, router, protectedProcedure } from ".";
+import { auth } from "@server/auth";
+import { router, protectedProcedure } from ".";
 import { z } from "zod/v4";
-import { ZodError } from "better-auth";
+import { AUTH_REDIRECT_AFTER_SUCESS } from "@/lib/url";
 
 export default router({
   getTotpCodeFromSecret: protectedProcedure

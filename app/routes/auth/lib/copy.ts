@@ -1,4 +1,4 @@
-import type { AuthError } from "../components/password";
+import type { AuthError } from "../errors/auth-error";
 
 export const ERROR_COPY: Record<AuthError["type"], string> = {
   code_invalid: "Code is incorrect.",
