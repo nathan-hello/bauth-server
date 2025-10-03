@@ -1,42 +1,105 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { authClient } from "@/lib/auth";
+import { trpc } from "@/lib/trpc";
 import { useState } from "react";
+
+type AlertType = "success" | "error" | "info" | "warning";
+
+// Response types for better-auth API calls
+interface TotpCodeResponse {
+  code?: string;
+  secret?: string;
+}
+
+interface ChangeEmailResponse {
+  success?: boolean;
+  message?: string;
+}
+
+interface EmailVerificationResponse {
+  success?: boolean;
+  message?: string;
+}
+
+interface BackupCodesResponse {
+  backupCodes?: string[];
+  success?: boolean;
+}
+
+interface LogoutResponse {
+  success?: boolean;
+  message?: string;
+}
+
+interface TotpSecretResponse {
+  secret?: string;
+  qrCodeUrl?: string;
+  uri?: string;
+}
+
+interface AlertModalState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type: AlertType;
+}
+
+interface PasswordModalState {
+  isOpen: boolean;
+  verify: (password: string) => void;
+}
+
+interface TwoFactorModalState {
+  isOpen: boolean;
+  type: "totp" | "email";
+  verify: (code: string) => void;
+}
+
+interface BackupCodesModalState {
+  isOpen: boolean;
+  codes: string[];
+}
+
+interface QRCodeModalState {
+  isOpen: boolean;
+  secret: string;
+  qrCodeUrl: string;
+}
 
 export function useAuthManagement() {
   const queryClient = useQueryClient();
 
   // Modal states
-  const [alertModal, setAlertModal] = useState({
+  const [alertModal, setAlertModal] = useState<AlertModalState>({
     isOpen: false,
     title: "",
     message: "",
-    type: "info" as "success" | "error" | "info" | "warning"
+    type: "info"
   });
 
-  const [passwordModal, setPasswordModal] = useState({
+  const [passwordModal, setPasswordModal] = useState<PasswordModalState>({
     isOpen: false,
-    verify: (password: string) => {}
+    verify: () => {}
   });
 
-  const [twoFactorModal, setTwoFactorModal] = useState({
+  const [twoFactorModal, setTwoFactorModal] = useState<TwoFactorModalState>({
     isOpen: false,
-    type: "totp" as "totp" | "email",
-    verify: (code: string) => {}
+    type: "totp",
+    verify: () => {}
   });
 
-  const [backupCodesModal, setBackupCodesModal] = useState({
+  const [backupCodesModal, setBackupCodesModal] = useState<BackupCodesModalState>({
     isOpen: false,
-    codes: [] as string[]
+    codes: []
   });
 
-  const [qrCodeModal, setQrCodeModal] = useState({
+  const [qrCodeModal, setQrCodeModal] = useState<QRCodeModalState>({
     isOpen: false,
     secret: "",
     qrCodeUrl: ""
   });
 
   // Helper functions
-  const showAlert = (title: string, message: string, type: "success" | "error" | "info" | "warning" = "info") => {
+  const showAlert = (title: string, message: string, type: AlertType = "info") => {
     setAlertModal({ isOpen: true, title, message, type });
   };
 
@@ -56,149 +119,115 @@ export function useAuthManagement() {
     setQrCodeModal({ isOpen: true, secret, qrCodeUrl });
   };
 
-  // Email verification mutations
-  const resendEmailMutation = useMutation({
-    mutationFn: async () => {
-      return await authClient.resendEmailVerification();
+  // TOTP Code Generation Mutation
+  const getTotpCodeMutation = useMutation<TotpCodeResponse, Error, { secret: string }>({
+    mutationFn: (input: { secret: string }) => 
+      trpc.auth.getTotpCodeFromSecret.mutationOptions(),
+    onSuccess: (data: TotpCodeResponse) => {
+      showAlert("TOTP Code Generated", "Your TOTP code has been generated successfully.", "success");
     },
-    onSuccess: () => {
-      showAlert("Success", "Verification email sent!", "success");
-    },
-    onError: (error) => {
-      console.error("Failed to resend verification email:", error);
-      showAlert("Error", "Failed to send verification email", "error");
-    },
+    onError: (error: Error) => {
+      showAlert("Error", `Failed to generate TOTP code: ${error.message}`, "error");
+    }
   });
 
-  const changeEmailMutation = useMutation({
-    mutationFn: async (email: string) => {
-      return await authClient.changeEmail({ email });
+  // Change Email Mutation
+  const changeEmailMutation = useMutation<ChangeEmailResponse, Error, { newEmail: string }>({
+    mutationFn: (input: { newEmail: string }) => 
+      trpc.auth.changeEmail.mutate(input),
+    onSuccess: (data: ChangeEmailResponse) => {
+      showAlert("Email Change Requested", "Please check your new email for verification instructions.", "success");
+      // Invalidate user query to refresh user data
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
-    onSuccess: () => {
-      showAlert("Success", "Email change request sent! Check your new email for verification.", "success");
-      queryClient.invalidateQueries({ queryKey: ["better-auth", "session"] });
-    },
-    onError: (error) => {
-      console.error("Failed to change email:", error);
-      showAlert("Error", "Failed to change email", "error");
-    },
+    onError: (error: Error) => {
+      showAlert("Error", `Failed to change email: ${error.message}`, "error");
+    }
   });
 
-  // 2FA mutations
-  const disableEmailOTPMutation = useMutation({
-    mutationFn: async () => {
-      return await authClient.disableTwoFactor({ type: "email" });
+  // Resend Email Verification Mutation
+  const resendEmailVerificationMutation = useMutation<EmailVerificationResponse, Error, void>({
+    mutationFn: () => trpc.auth.resendEmailVerification.mutate(),
+    onSuccess: (data: EmailVerificationResponse) => {
+      showAlert("Verification Email Sent", "Please check your email for verification instructions.", "success");
     },
-    onSuccess: () => {
-      showAlert("Success", "Email OTP disabled successfully", "success");
-      queryClient.invalidateQueries({ queryKey: ["better-auth", "session"] });
-    },
-    onError: (error) => {
-      console.error("Failed to disable email OTP:", error);
-      showAlert("Error", "Failed to disable email OTP", "error");
-    },
+    onError: (error: Error) => {
+      showAlert("Error", `Failed to resend verification email: ${error.message}`, "error");
+    }
   });
 
-  const enableTOTPMutation = useMutation({
-    mutationFn: async () => {
-      return await authClient.enableTwoFactor({ type: "totp" });
+  // Generate Backup Codes Mutation
+  const generateBackupCodesMutation = useMutation<BackupCodesResponse, Error, { password: string }>({
+    mutationFn: (input: { password: string }) => 
+      trpc.auth.generateBackupCodes.mutate(input),
+    onSuccess: (data: BackupCodesResponse) => {
+      if (data?.backupCodes && Array.isArray(data.backupCodes)) {
+        showBackupCodes(data.backupCodes);
+        showAlert("Backup Codes Generated", "Your backup codes have been generated. Please save them securely.", "success");
+      } else {
+        showAlert("Backup Codes Generated", "Your backup codes have been generated successfully.", "success");
+      }
     },
-    onSuccess: (data) => {
-      showQRCode(data.secret, data.qrCodeUrl);
-      queryClient.invalidateQueries({ queryKey: ["better-auth", "session"] });
-    },
-    onError: (error) => {
-      console.error("Failed to enable TOTP:", error);
-      showAlert("Error", "Failed to enable TOTP", "error");
-    },
+    onError: (error: Error) => {
+      showAlert("Error", `Failed to generate backup codes: ${error.message}`, "error");
+    }
   });
 
-  const verifyTOTPMutation = useMutation({
-    mutationFn: async (code: string) => {
-      return await authClient.verifyTwoFactor({ type: "totp", code });
+  // Logout Everywhere Mutation
+  const logoutEverywhereMutation = useMutation<LogoutResponse, Error, void>({
+    mutationFn: () => trpc.auth.logoutEverywhere.mutate(),
+    onSuccess: (data: LogoutResponse) => {
+      showAlert("Logged Out Everywhere", "You have been logged out from all other devices.", "success");
+      // Invalidate user query to refresh authentication state
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
-    onSuccess: () => {
-      showAlert("Success", "TOTP verified successfully!", "success");
-      queryClient.invalidateQueries({ queryKey: ["better-auth", "session"] });
-    },
-    onError: (error) => {
-      console.error("Failed to verify TOTP:", error);
-      showAlert("Error", "Invalid TOTP code", "error");
-    },
+    onError: (error: Error) => {
+      showAlert("Error", `Failed to logout from other devices: ${error.message}`, "error");
+    }
   });
 
-  const resetTOTPSecretMutation = useMutation({
-    mutationFn: async () => {
-      return await authClient.resetTwoFactorSecret({ type: "totp" });
+  // View TOTP Secret Mutation
+  const viewTotpSecretMutation = useMutation<TotpSecretResponse, Error, { password: string }>({
+    mutationFn: (input: { password: string }) => 
+      trpc.auth.viewTotpSecret.mutate(input),
+    onSuccess: (data: TotpSecretResponse) => {
+      if (data?.secret) {
+        showQRCode(data.secret, data.qrCodeUrl);
+        showAlert("TOTP Secret Retrieved", "Your TOTP secret has been retrieved successfully.", "success");
+      } else {
+        showAlert("Error", "No TOTP secret found in response.", "error");
+      }
     },
-    onSuccess: (data) => {
-      showQRCode(data.secret, data.qrCodeUrl);
-      queryClient.invalidateQueries({ queryKey: ["better-auth", "session"] });
-    },
-    onError: (error) => {
-      console.error("Failed to reset TOTP secret:", error);
-      showAlert("Error", "Failed to reset TOTP secret", "error");
-    },
+    onError: (error: Error) => {
+      showAlert("Error", `Failed to retrieve TOTP secret: ${error.message}`, "error");
+    }
   });
 
-  const generateBackupCodesMutation = useMutation({
-    mutationFn: async () => {
-      return await authClient.generateBackupCodes();
-    },
-    onSuccess: (data) => {
-      showBackupCodes(data.codes);
-    },
-    onError: (error) => {
-      console.error("Failed to generate backup codes:", error);
-      showAlert("Error", "Failed to generate backup codes", "error");
-    },
-  });
+  // Convenience functions for common workflows
+  const generateBackupCodesWithPassword = () => {
+    showPasswordModal((password: string) => {
+      generateBackupCodesMutation.mutate({ password });
+      setPasswordModal(prev => ({ ...prev, isOpen: false }));
+    });
+  };
 
-  // Session management mutations
-  const logoutEverywhereMutation = useMutation({
-    mutationFn: async () => {
-      return await authClient.logoutEverywhere();
-    },
-    onSuccess: () => {
-      showAlert("Success", "Logged out from all devices", "success");
-      queryClient.invalidateQueries({ queryKey: ["better-auth", "sessions"] });
-    },
-    onError: (error) => {
-      console.error("Failed to logout everywhere:", error);
-      showAlert("Error", "Failed to logout from all devices", "error");
-    },
-  });
+  const viewTotpSecretWithPassword = () => {
+    showPasswordModal((password: string) => {
+      viewTotpSecretMutation.mutate({ password });
+      setPasswordModal(prev => ({ ...prev, isOpen: false }));
+    });
+  };
 
-  const logoutSessionMutation = useMutation({
-    mutationFn: async (sessionId: string) => {
-      return await authClient.logoutSession({ sessionId });
-    },
-    onSuccess: () => {
-      showAlert("Success", "Session logged out", "success");
-      queryClient.invalidateQueries({ queryKey: ["better-auth", "sessions"] });
-    },
-    onError: (error) => {
-      console.error("Failed to logout session:", error);
-      showAlert("Error", "Failed to logout session", "error");
-    },
-  });
+  // Loading states
+  const isLoading = 
+    getTotpCodeMutation.isPending ||
+    changeEmailMutation.isPending ||
+    resendEmailVerificationMutation.isPending ||
+    generateBackupCodesMutation.isPending ||
+    logoutEverywhereMutation.isPending ||
+    viewTotpSecretMutation.isPending;
 
   return {
-    // Email mutations
-    resendEmailMutation,
-    changeEmailMutation,
-    
-    // 2FA mutations
-    disableEmailOTPMutation,
-    enableTOTPMutation,
-    verifyTOTPMutation,
-    resetTOTPSecretMutation,
-    generateBackupCodesMutation,
-    
-    // Session mutations
-    logoutEverywhereMutation,
-    logoutSessionMutation,
-
     // Modal states and helpers
     alertModal: {
       ...alertModal,
@@ -220,10 +249,43 @@ export function useAuthManagement() {
       ...qrCodeModal,
       close: () => setQrCodeModal(prev => ({ ...prev, isOpen: false }))
     },
+    
+    // Modal helper functions
     showAlert,
     showPasswordModal,
     showTwoFactorModal,
     showBackupCodes,
     showQRCode,
+
+    // Direct mutation functions
+    getTotpCode: getTotpCodeMutation.mutate,
+    changeEmail: changeEmailMutation.mutate,
+    resendEmailVerification: resendEmailVerificationMutation.mutate,
+    logoutEverywhere: logoutEverywhereMutation.mutate,
+    
+    // Convenience functions with password modals
+    generateBackupCodesWithPassword,
+    viewTotpSecretWithPassword,
+
+    // Loading states
+    isLoading,
+    loadingStates: {
+      getTotpCode: getTotpCodeMutation.isPending,
+      changeEmail: changeEmailMutation.isPending,
+      resendEmailVerification: resendEmailVerificationMutation.isPending,
+      generateBackupCodes: generateBackupCodesMutation.isPending,
+      logoutEverywhere: logoutEverywhereMutation.isPending,
+      viewTotpSecret: viewTotpSecretMutation.isPending,
+    },
+
+    // Error states
+    errors: {
+      getTotpCode: getTotpCodeMutation.error,
+      changeEmail: changeEmailMutation.error,
+      resendEmailVerification: resendEmailVerificationMutation.error,
+      generateBackupCodes: generateBackupCodesMutation.error,
+      logoutEverywhere: logoutEverywhereMutation.error,
+      viewTotpSecret: viewTotpSecretMutation.error,
+    }
   };
 }

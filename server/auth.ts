@@ -1,21 +1,28 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./drizzle/db";
-import { jwt, username } from "better-auth/plugins";
-import {passkey} from "better-auth/plugins/passkey"
-
-const prodUrl = process.env.PRODUCTION_URL;
-
-if (!prodUrl) {
-  throw Error(".env: `PRODUCTION_URL` is required");
-}
-
-const devUrl = "http://localhost:5173";
-
-const url = process.env.NODE_ENV === "development" ? devUrl : prodUrl
+import {
+  jwt,
+  username,
+  twoFactor,
+  oneTimeToken,
+  emailOTP,
+} from "better-auth/plugins";
+import { passkey } from "better-auth/plugins/passkey";
+import { url } from "shared/url";
 
 export const auth = betterAuth({
-  plugins: [jwt(), username(), passkey({rpID: url, rpName: url})],
+  plugins: [
+    passkey({ rpID: url, rpName: url }),
+    username(),
+    twoFactor(),
+    emailOTP({
+      sendVerificationOTP: async (data, request) => {},
+      sendVerificationOnSignUp: true,
+    }),
+    oneTimeToken(),
+    jwt(),
+  ],
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "pg" or "mysql"
   }),

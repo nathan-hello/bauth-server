@@ -6,7 +6,6 @@ import {
   type AuthError,
 } from "./components/password";
 import { useNavigate } from "react-router";
-import { ParseRegister } from "./lib/parse";
 import { authClient } from "@/lib/auth";
 import { useMutation } from "@tanstack/react-query";
 
@@ -39,6 +38,7 @@ function useSignUp(): {
   errors: AuthError[];
   onSubmit: (data: PasswordRegisterFormData) => void;
 } {
+  const navigate = useNavigate();
   const [state, setState] = useState<AuthState>({ type: "start" });
   const [errors, setErrors] = useState<AuthError[]>([]);
   const signUpMutation = useMutation({
@@ -48,20 +48,59 @@ function useSignUp(): {
       username: string;
       name: string;
     }) => {
-      return await authClient.signUp.email(data);
+      const signUp = await authClient.signUp.email(data);
+      if (signUp.error) {
+        throw Error(JSON.stringify(signUp.error));
+      }
+      const sendEmail = await authClient.sendVerificationEmail({
+        email: signUp.data.user.email,
+      });
+      if (sendEmail.error) {
+        throw Error(JSON.stringify(sendEmail.error));
+      }
+      return { email: signUp.data.user.email };
     },
     onSuccess: (user) => {
-      setState({ type: "code", email: user.data?.user.email });
+      setState({ type: "code", email: user.email });
     },
     onError: (error) => {
       console.error("Sign up failed:", error);
-      setErrors([{ type: "validation_error", message: error.message }]);
+      setErrors([{ type: "server_error", message: error.message }]);
+    },
+  });
+
+  const verifyEmailMutation = useMutation({
+    mutationFn: async (data: { email: string; code: string }) => {
+      const verified = await authClient.emailOtp.verifyEmail({
+        email: data.email,
+        otp: data.code,
+      });
+      if (verified.error) {
+        throw Error(JSON.stringify(verified.error));
+      }
+      if (verified.data.status === false) {
+        throw Error(JSON.stringify({ type: "code_invalid" }));
+      }
+      return;
+    },
+    onSuccess: () => {
+      navigate("/");
+    },
+    onError: (error) => {
+      if (error.message === JSON.stringify({ type: "code_invalid" })) {
+        setErrors([{ type: "code_invalid" }]);
+        return;
+      }
+      setErrors([{ type: "server_error", message: error.message }]);
     },
   });
 
   function onSubmit(data: PasswordRegisterFormData) {
     if (data.email) {
       setState({ ...state, email: data.email });
+    }
+    if (!data.email) {
+      return;
     }
 
     if (state.type === "start") {
@@ -82,17 +121,27 @@ function useSignUp(): {
         name: p.username,
       });
     }
+
+    if (state.type === "code") {
+      if (!data.code) {
+        return;
+      }
+      verifyEmailMutation.mutate({
+        email: data.email,
+        code: data.code,
+      });
+    }
   }
   return { state, errors, onSubmit };
 }
 
-
 type ParsedRegisterFormData = {
-  [K in keyof Omit<PasswordRegisterFormData, "code">]-?: NonNullable<PasswordRegisterFormData[K]>;
+  [K in keyof Omit<PasswordRegisterFormData, "code">]-?: NonNullable<
+    PasswordRegisterFormData[K]
+  >;
 };
 
-
-export function ParseRegister(
+function ParseRegister(
   data: PasswordRegisterFormData,
 ): [ParsedRegisterFormData | null, AuthError[]] {
   const errors: AuthError[] = [];

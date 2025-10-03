@@ -1,39 +1,28 @@
-import { useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router";
+import {  useNavigate } from "react-router";
+import { useEffect, useRef } from "react";
 import { authClient } from "@/lib/auth";
 
 export function meta() {
-    return [
-        { title: "Sign Out - Playlist PowerTools" },
-        { name: "description", content: "Sign out of your Playlist PowerTools account" },
-    ];
+  return [
+    { title: "Sign Out - Playlist PowerTools" },
+    {
+      name: "description",
+      content: "Sign out of your Playlist PowerTools account",
+    },
+  ];
 }
 
 export default function SignOut() {
-    const navigate = useNavigate();
-    const queryClient = useQueryClient();
+  const signingOut = useRef(false);
 
-    useEffect(() => {
-        async function doSignOut() {
-            try {
-                await authClient.signOut();;
-                // Invalidate user query so UI updates
-                queryClient.invalidateQueries();
-            } catch (err) {
-                // Optionally handle error
-            } finally {
-                navigate("/", { replace: true });
-            }
-        }
-        doSignOut();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+  const navigate = useNavigate();
 
-    return (
-        <div>
-            <h1>Signing Out...</h1>
-            <p>You are being signed out. Please wait.</p>
-        </div>
-    );
+  useEffect(() => {
+    if (signingOut.current) return;
+    signingOut.current = true;
+
+    authClient.signOut().finally(() => navigate("/"));
+  }, [authClient, navigate]);
+
+  return null;
 }
