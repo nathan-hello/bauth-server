@@ -3,18 +3,14 @@ import {
   type AuthState,
   PasswordRegisterForm,
   type PasswordRegisterFormData,
-  type AuthError,
 } from "./components/password";
 import { useNavigate } from "react-router";
 import { authClient } from "@/lib/auth";
 import { useMutation } from "@tanstack/react-query";
+import { getAuthError, type AuthError } from "./errors/auth-error";
 
 export function meta() {
-  return [
-    { title: "Sign In " },
-    { name: "description", content: "Sign in to your account." },
-    {},
-  ];
+  return [{ title: "Sign Up" }];
 }
 
 export default function () {
@@ -41,6 +37,8 @@ function useSignUp(): {
   const navigate = useNavigate();
   const [state, setState] = useState<AuthState>({ type: "start" });
   const [errors, setErrors] = useState<AuthError[]>([]);
+  const [email, setEmail] = useState<string>("");
+
   const signUpMutation = useMutation({
     mutationFn: async (data: {
       email: string;
@@ -50,22 +48,22 @@ function useSignUp(): {
     }) => {
       const signUp = await authClient.signUp.email(data);
       if (signUp.error) {
-        throw Error(JSON.stringify(signUp.error));
+        throw Error(signUp.error.code);
       }
       const sendEmail = await authClient.sendVerificationEmail({
         email: signUp.data.user.email,
       });
       if (sendEmail.error) {
-        throw Error(JSON.stringify(sendEmail.error));
+        throw Error(sendEmail.error.code);
       }
       return { email: signUp.data.user.email };
     },
     onSuccess: (user) => {
+      setEmail(user.email);
       setState({ type: "code", email: user.email });
     },
     onError: (error) => {
-      console.error("Sign up failed:", error);
-      setErrors([{ type: "server_error", message: error.message }]);
+      setErrors([getAuthError(error)]);
     },
   });
 
@@ -76,10 +74,10 @@ function useSignUp(): {
         otp: data.code,
       });
       if (verified.error) {
-        throw Error(JSON.stringify(verified.error));
+        throw Error(verified.error.code);
       }
       if (verified.data.status === false) {
-        throw Error(JSON.stringify({ type: "code_invalid" }));
+        throw Error("code_invalid");
       }
       return;
     },
@@ -87,38 +85,28 @@ function useSignUp(): {
       navigate("/");
     },
     onError: (error) => {
-      if (error.message === JSON.stringify({ type: "code_invalid" })) {
-        setErrors([{ type: "code_invalid" }]);
-        return;
-      }
-      setErrors([{ type: "server_error", message: error.message }]);
+      setErrors([getAuthError(error)]);
     },
   });
 
   function onSubmit(data: PasswordRegisterFormData) {
+    setErrors([]);
     if (data.email) {
-      setState({ ...state, email: data.email });
-    }
-    if (!data.email) {
-      return;
+      setEmail(data.email);
     }
 
     if (state.type === "start") {
-      const [p, sanityErrors] = ParseRegister(data);
-      if (sanityErrors.length > 0) {
-        setErrors(sanityErrors);
-        return;
-      }
-      if (p === null) {
-        setErrors([{ type: "validation_error" }]);
+      const [p, errs] = ParseRegister(data);
+      if (errs.length > 0) {
+        setErrors(errs);
         return;
       }
 
       signUpMutation.mutate({
-        email: p.email,
-        password: p.password,
-        username: p.username,
-        name: p.username,
+        email: p!.email,
+        password: p!.password,
+        username: p!.username,
+        name: p!.username,
       });
     }
 
@@ -127,7 +115,7 @@ function useSignUp(): {
         return;
       }
       verifyEmailMutation.mutate({
-        email: data.email,
+        email: data.email || email,
         code: data.code,
       });
     }
@@ -146,10 +134,10 @@ function ParseRegister(
 ): [ParsedRegisterFormData | null, AuthError[]] {
   const errors: AuthError[] = [];
   if (!data.email) {
-    errors.push({ type: "email_invalid" });
+    errors.push({ type: "INVALID_EMAIL" });
   }
   if (!data.password) {
-    errors.push({ type: "password_invalid" });
+    errors.push({ type: "INVALID_PASSWORD" });
   }
   if (!data.username) {
     errors.push({ type: "username_invalid" });
