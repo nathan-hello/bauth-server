@@ -1,4 +1,3 @@
-
 const prodUrl = process.env.PRODUCTION_URL;
 
 if (!prodUrl) {

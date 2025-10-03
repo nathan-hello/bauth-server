@@ -9,7 +9,7 @@ import {
   emailOTP,
 } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
-import { url } from "shared/url";
+import { url } from "@/lib/url";
 
 export const auth = betterAuth({
   plugins: [

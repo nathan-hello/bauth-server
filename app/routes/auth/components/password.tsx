@@ -93,7 +93,7 @@ export function PasswordLoginForm({
   };
 
   return (
-    <form data-component="form" method="post" onSubmit={handleSubmit}>
+    <form data-component="form" onSubmit={handleSubmit}>
       {errors?.map((error) => (
         <FormAlert
           key={error.type || "error"}
@@ -163,7 +163,7 @@ export function PasswordRegisterForm({
   };
 
   return (
-    <form data-component="form" method="post" onSubmit={handleSubmit}>
+    <form data-component="form" onSubmit={handleSubmit}>
       {errors?.map((error) => (
         <FormAlert
           message={
@@ -244,7 +244,7 @@ export function PasswordLoginTwoFactorForm({
   };
 
   return (
-    <form data-component="form" method="post" onSubmit={handleSubmit}>
+    <form data-component="form" onSubmit={handleSubmit}>
       {errors?.map((error) => (
         <FormAlert message={error?.type ? copy.error[error.type] : undefined} />
       ))}
@@ -297,7 +297,7 @@ export function PasswordForgotForm({
   };
 
   return (
-    <form data-component="form" method="post" onSubmit={handleSubmit}>
+    <form data-component="form" onSubmit={handleSubmit}>
       {errors?.map((error) => (
         <FormAlert
           message={
@@ -337,7 +337,7 @@ export function PasswordForgotForm({
             placeholder={copy.input_code}
             autoComplete="one-time-code"
           />
-          <form method="post">
+          <form>
             <input type="hidden" name="action" value="code" />
             <input type="hidden" name="email" value={state.email || ""} />
             <div data-component="form-footer">
