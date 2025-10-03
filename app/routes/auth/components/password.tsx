@@ -10,7 +10,8 @@ export type AuthError = {
     | "password_invalid"
     | "password_mismatch"
     | "validation_error"
-    | "username_invalid";
+    | "username_invalid"
+    | "server_error";
   message?: string;
 };
 

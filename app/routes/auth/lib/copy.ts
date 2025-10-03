@@ -8,6 +8,7 @@ const DEFAULT_COPY = {
     password_mismatch: "Passwords do not match.",
     validation_error: "Password does not meet requirements.",
     username_invalid: "Username is not valid",
+    server_error: "Something wrong happened"
   },
 
   // Page titles and descriptions

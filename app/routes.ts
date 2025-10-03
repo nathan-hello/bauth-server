@@ -19,6 +19,6 @@ export default [
     ]),
   ]),
 
-  route("api/trpc/*", "./api/trpc.ts"),
-  route("api/auth/*", "./api/auth.ts"),
+  route("api/trpc/*", "../server/api/trpc.ts"),
+  route("api/auth/*", "../server/api/auth.ts"),
 ] satisfies RouteConfig;
