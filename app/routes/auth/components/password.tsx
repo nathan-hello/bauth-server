@@ -1,19 +1,7 @@
 import React from "react";
 import { FormAlert } from "./form.js";
 import { useCopy } from "../lib/copy.js";
-
-export type AuthError = {
-  type?:
-    | "email_taken"
-    | "code_invalid"
-    | "email_invalid"
-    | "password_invalid"
-    | "password_mismatch"
-    | "validation_error"
-    | "username_invalid"
-    | "server_error";
-  message?: string;
-};
+import type { AuthError } from "../errors/auth-error.js";
 
 export type PasswordLoginFormData = {
   email?: string;
@@ -180,7 +168,7 @@ export function PasswordRegisterForm({
         <FormAlert
           message={
             error?.type
-              ? error.type === "validation_error"
+              ? error.type === "generic_error"
                 ? (error.message ?? copy.error[error.type])
                 : copy.error[error.type]
               : undefined
@@ -314,7 +302,7 @@ export function PasswordForgotForm({
         <FormAlert
           message={
             error?.type
-              ? error.type === "validation_error"
+              ? error.type === "generic_error"
                 ? (error.message ?? copy.error[error.type])
                 : copy.error[error.type]
               : undefined
