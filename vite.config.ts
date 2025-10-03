@@ -18,4 +18,7 @@ export default defineConfig({
       "@server": path.resolve(__dirname, "./server"),
     },
   },
+  define: {
+    VITE_URL: JSON.stringify("http://localhost:5173"),
+  },
 });

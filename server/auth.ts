@@ -9,11 +9,10 @@ import {
   emailOTP,
 } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
-import { url } from "@/lib/url";
 
 export const auth = betterAuth({
   plugins: [
-    passkey({ rpID: url, rpName: url }),
+    passkey({ rpID: VITE_URL, rpName: VITE_URL }),
     username(),
     twoFactor(),
     emailOTP({
@@ -32,7 +31,7 @@ export const auth = betterAuth({
     requireEmailVerification: false,
     revokeSessionsOnPasswordReset: true,
   },
-  trustedOrigins: [url],
+  trustedOrigins: [VITE_URL],
   account: {
     accountLinking: {
       enabled: true,
@@ -43,7 +42,7 @@ export const auth = betterAuth({
     updateAccountOnSignIn: true,
   },
   cors: {
-    origin: [url],
+    origin: [VITE_URL],
     credentials: true,
   },
 });
