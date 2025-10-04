@@ -11,10 +11,23 @@ export type AuthError =
     }
   | { type: "generic_error"; message?: string };
 
-export function getAuthError(err: string | Error): AuthError {
-  const str = err instanceof Error ? err.message : err;
-  if (str in ERROR_COPY) {
-    return { type: err } as AuthError;
+export function getAuthError(err: string | Error | unknown): AuthError[] {
+  let errorMessage: string;
+  
+  if (err instanceof Error) {
+    errorMessage = err.message;
+  } else if (typeof err === "string") {
+    errorMessage = err;
+  } else if (err && typeof err === "object" && "message" in err && typeof err.message === "string") {
+    errorMessage = err.message;
+  } else {
+    errorMessage = "An unknown error occurred";
   }
-  return { type: "generic_error", message: str };
+  
+  // Check if the error message matches any known error codes
+  if (errorMessage in ERROR_COPY) {
+    return [{ type: errorMessage }] as AuthError[];
+  }
+  
+  return [{ type: "generic_error", message: errorMessage }];
 }
