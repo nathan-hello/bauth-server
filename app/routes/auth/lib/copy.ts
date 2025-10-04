@@ -3,8 +3,10 @@ import type { AuthError } from "../errors/auth-error";
 export const ERROR_COPY: Record<AuthError["type"], string> = {
   code_invalid: "Code is incorrect.",
   password_mismatch: "Passwords do not match.",
-  username_invalid: "Username is not valid",
-  generic_error: "Something wrong happened",
+  username_invalid: "Username is not valid.",
+  generic_error: "Something wrong happened.",
+  username_taken: "Username is taken.",
+  otp_failed: "Email one-time passcode failed for an unknown reason.",
 
   // better auth errors
   ACCOUNT_NOT_FOUND: "",

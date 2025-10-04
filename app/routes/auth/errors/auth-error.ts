@@ -7,6 +7,8 @@ export type AuthError =
         | "code_invalid"
         | "password_mismatch"
         | "username_invalid"
+        | "username_taken"
+        | "otp_failed"
         | keyof typeof authClient.$ERROR_CODES;
     }
   | { type: "generic_error"; message?: string };

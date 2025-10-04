@@ -47,6 +47,7 @@
     "vite-tsconfig-paths": "^5.1.4"
   },
   "prettier": {
-    "tabwidth": 8
+    "tabWidth": 2,
+    "printWidth": 120
   }
 }
