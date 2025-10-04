@@ -1,88 +1,82 @@
-import { useState } from "react";
 import {
-  type AuthState,
   PasswordRegisterForm,
+  type AuthState,
   type PasswordRegisterFormData,
 } from "./components/password";
-import { useNavigate } from "react-router";
-import { authClient } from "@/lib/auth";
-import { useMutation } from "@tanstack/react-query";
-import { getAuthError, type AuthError } from "./errors/auth-error";
+import { redirect, useNavigate, createCookie } from "react-router";
+import { type AuthError } from "./errors/auth-error";
+import type { Route } from "./+types/register";
+import { auth, BA_COOKIE_PREFIX } from "@server/auth";
 
 export function meta() {
   return [{ title: "Sign Up" }];
 }
 
-export default function () {
+export default function ({ actionData }: Route.ComponentProps) {
   const navigate = useNavigate();
-  const { errors, onSubmit } = useSignUp();
 
   return (
     <PasswordRegisterForm
+      state={actionData}
       onSkipClick={() => navigate("/")}
       onLoginClick={() => navigate("/auth/login")}
-      onSubmit={onSubmit}
-      errors={errors}
     />
   );
 }
 
-function useSignUp(): {
-  errors: AuthError[];
-  onSubmit: (data: PasswordRegisterFormData) => void;
-} {
-  const navigate = useNavigate();
-  const [errors, setErrors] = useState<AuthError[]>([]);
+export async function action({
+  request,
+}: Route.ActionArgs): Promise<AuthState> {
+  const form = await request.formData();
 
-  const signUpMutation = useMutation({
-    mutationFn: async (data: {
-      email: string;
-      password: string;
-      username: string;
-      name: string;
-    }) => {
-      const signUp = await authClient.signUp.email(data);
-      if (signUp.error) {
-        throw Error(signUp.error.code);
-      }
-      console.log("sign up success", JSON.stringify(signUp.data.user));
-      return { email: signUp.data.user.email };
+  const username = form.get("username")?.toString();
+  const email = form.get("email")?.toString();
+  const password = form.get("password")?.toString();
+  const repeat = form.get("repeat")?.toString();
+
+  const errs = ParseRegister({ username, email, password, repeat });
+  if (errs !== null) {
+    return { type: "start", email: email, errors: errs };
+  }
+
+  if (!username || !email || !password || !repeat) {
+    return {
+      type: "start",
+      email: email,
+      errors: [{ type: "INVALID_EMAIL_OR_PASSWORD" }],
+    };
+  }
+
+  const r = await auth.api.signUpEmail({
+    body: {
+      username,
+      password,
+      email,
+      name: username,
+      displayUsername: username,
     },
-    onSuccess: () => {
-      navigate("/chat");
-    },
-    onError: (error) => {
-      setErrors([getAuthError(error)]);
-    },
+    returnHeaders: true,
   });
 
-  function onSubmit(data: PasswordRegisterFormData) {
-    setErrors([]);
-    const [p, errs] = ParseRegister(data);
-    if (errs.length > 0) {
-      setErrors(errs);
-      return;
-    }
-
-    signUpMutation.mutate({
-      email: p!.email,
-      password: p!.password,
-      username: p!.username,
-      name: p!.username,
-    });
+  if (r.response.token === null) {
+    return { type: "start", email: email, errors: [{ type: "generic_error" }] };
   }
-  return { errors, onSubmit };
+
+  const cookie = createCookie(BA_COOKIE_PREFIX + ".session_token", {
+    path: "/",
+    sameSite: "lax",
+    httpOnly: true,
+    secure: true,
+    expires: new Date(Date.now() + 60_000),
+    maxAge: 60,
+  });
+
+  throw redirect("/chat", {
+    headers: { "Set-Cookie": await cookie.serialize(r.response.token) },
+  });
 }
 
-type ParsedRegisterFormData = {
-  [K in keyof Omit<PasswordRegisterFormData, "code">]-?: NonNullable<
-    PasswordRegisterFormData[K]
-  >;
-};
-
-function ParseRegister(
-  data: PasswordRegisterFormData,
-): [ParsedRegisterFormData | null, AuthError[]] {
+function ParseRegister(data: PasswordRegisterFormData): AuthError[] | null {
   const errors: AuthError[] = [];
   if (!data.email) {
     errors.push({ type: "INVALID_EMAIL" });
@@ -94,25 +88,19 @@ function ParseRegister(
     errors.push({ type: "username_invalid" });
   }
 
+  // We don't want to show "password invalid" and "password mismatch" at the same time.
+  // So, return early before that check
   if (errors.length > 0) {
-    return [null, errors];
+    return errors;
   }
 
-  // We don't want to show "password invalid and password mismatch at the same time.
   if (!data.repeat || data.password !== data.repeat) {
     errors.push({ type: "password_mismatch" });
   }
 
   if (errors.length > 0) {
-    return [null, errors];
+    return errors;
   }
 
-  const parsedData: ParsedRegisterFormData = {
-    username: data.username!,
-    email: data.email!,
-    password: data.password!,
-    repeat: data.repeat!,
-  };
-
-  return [parsedData, errors];
+  return null;
 }

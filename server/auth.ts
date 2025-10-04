@@ -17,6 +17,8 @@ if (!url) {
   throw Error("process.env.PRODUCTION_URL was undefined");
 }
 
+export const BA_COOKIE_PREFIX = "asdf";
+
 export const auth = betterAuth({
   plugins: [
     passkey({ rpID: url, rpName: url }),
@@ -24,24 +26,27 @@ export const auth = betterAuth({
     twoFactor(),
     emailOTP({
       sendVerificationOTP: async (data, request) => {},
-      sendVerificationOnSignUp: true,
     }),
-    oneTimeToken()
+    oneTimeToken(),
   ],
   database: drizzleAdapter(db, {
     provider: "sqlite",
   }),
+  advanced: {
+    cookiePrefix: BA_COOKIE_PREFIX,
+    useSecureCookies: true, // cookies become httponly in dev as well as prod.
+  },
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
     requireEmailVerification: false,
     revokeSessionsOnPasswordReset: true,
   },
-        emailVerification: {
-                autoSignInAfterVerification: true,
-                sendVerificationEmail: async (data, request) => {},
-                sendOnSignUp: true,
-        },
+  emailVerification: {
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async (data, request) => {},
+    sendOnSignUp: true,
+  },
   trustedOrigins: [url],
   account: {
     accountLinking: {
