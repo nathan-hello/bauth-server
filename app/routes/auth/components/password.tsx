@@ -1,4 +1,3 @@
-import React from "react";
 import { FormAlert } from "./form.js";
 import { useCopy } from "../lib/copy.js";
 import type { AuthError } from "../errors/auth-error.js";

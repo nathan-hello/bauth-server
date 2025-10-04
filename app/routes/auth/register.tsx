@@ -7,6 +7,7 @@ import { redirect, useNavigate, createCookie } from "react-router";
 import { type AuthError } from "./errors/auth-error";
 import type { Route } from "./+types/register";
 import { auth, BA_COOKIE_PREFIX } from "@server/auth";
+import { throwRedirectSessionToken } from "./cookies/session";
 
 export function meta() {
   return [{ title: "Sign Up" }];
@@ -26,7 +27,7 @@ export default function ({ actionData }: Route.ComponentProps) {
 
 export async function action({
   request,
-}: Route.ActionArgs): Promise<AuthState> {
+}: Route.ActionArgs): Promise<AuthState | undefined> {
   const form = await request.formData();
 
   const username = form.get("username")?.toString();
@@ -55,25 +56,15 @@ export async function action({
       name: username,
       displayUsername: username,
     },
-    returnHeaders: true,
+    headers: request.headers 
   });
 
-  if (r.response.token === null) {
+  if (r.token === null) {
     return { type: "start", email: email, errors: [{ type: "generic_error" }] };
   }
 
-  const cookie = createCookie(BA_COOKIE_PREFIX + ".session_token", {
-    path: "/",
-    sameSite: "lax",
-    httpOnly: true,
-    secure: true,
-    expires: new Date(Date.now() + 60_000),
-    maxAge: 60,
-  });
-
-  throw redirect("/chat", {
-    headers: { "Set-Cookie": await cookie.serialize(r.response.token) },
-  });
+  await throwRedirectSessionToken(r.token);
+  return undefined
 }
 
 function ParseRegister(data: PasswordRegisterFormData): AuthError[] | null {
