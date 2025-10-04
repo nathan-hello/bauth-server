@@ -1,26 +1,21 @@
 import {
   PasswordRegisterForm,
   type AuthState,
-  type PasswordRegisterFormData,
 } from "./components/password";
-import { redirect, useNavigate, createCookie } from "react-router";
-import { type AuthError } from "./errors/auth-error";
+import { redirect } from "react-router";
+import { getAuthError, type AuthError } from "./errors/auth-error";
 import type { Route } from "./+types/register";
-import { auth, BA_COOKIE_PREFIX } from "@server/auth";
-import { throwRedirectSessionToken } from "./cookies/session";
+import { auth } from "@server/auth";
 
 export function meta() {
   return [{ title: "Sign Up" }];
 }
 
 export default function ({ actionData }: Route.ComponentProps) {
-  const navigate = useNavigate();
 
   return (
     <PasswordRegisterForm
       state={actionData}
-      onSkipClick={() => navigate("/")}
-      onLoginClick={() => navigate("/auth/login")}
     />
   );
 }
@@ -37,37 +32,61 @@ export async function action({
 
   const errs = ParseRegister({ username, email, password, repeat });
   if (errs !== null) {
-    return { type: "start", email: email, errors: errs };
+    return { email: email, errors: errs };
   }
 
   if (!username || !email || !password || !repeat) {
     return {
-      type: "start",
       email: email,
       errors: [{ type: "INVALID_EMAIL_OR_PASSWORD" }],
     };
   }
-
-  const r = await auth.api.signUpEmail({
-    body: {
-      username,
-      password,
-      email,
-      name: username,
-      displayUsername: username,
-    },
-    headers: request.headers 
-  });
-
-  if (r.token === null) {
-    return { type: "start", email: email, errors: [{ type: "generic_error" }] };
+  if (username) {
+    const r = await auth.api.isUsernameAvailable({
+      headers: request.headers,
+      body: { username: username },
+    });
+    if (!r.available) {
+      return {
+        email: email,
+        errors: [{ type: "username_taken" }],
+      };
+    }
   }
 
-  await throwRedirectSessionToken(r.token);
-  return undefined
+  try {
+    const { headers, response } = await auth.api.signUpEmail({
+      body: {
+        username,
+        password,
+        email,
+        name: username,
+        displayUsername: username,
+      },
+      headers: request.headers,
+      returnHeaders: true,
+    });
+
+    if (response && "twoFactorRedirect" in response) {
+      throw redirect("/auth/2fa", { headers });
+    }
+
+    throw redirect("/auth/account", { headers });
+  } catch (error) {
+    if (error instanceof Response) {
+      throw error;
+    }
+
+    const aerr = getAuthError(error);
+
+    return {
+      email: email,
+      errors: aerr,
+    };
+  }
 }
 
-function ParseRegister(data: PasswordRegisterFormData): AuthError[] | null {
+function ParseRegister(data: any): AuthError[] | null {
   const errors: AuthError[] = [];
   if (!data.email) {
     errors.push({ type: "INVALID_EMAIL" });

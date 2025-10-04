@@ -2,75 +2,39 @@ import { FormAlert } from "./form.js";
 import { useCopy } from "../lib/copy.js";
 import type { AuthError } from "../errors/auth-error.js";
 import { Form } from "react-router";
-
-export type PasswordLoginFormData = {
-  email?: string;
-  password?: string;
-};
-
-export type PasswordRegisterFormData = {
-  username?: string;
-  email?: string;
-  password?: string;
-  repeat?: string;
-};
-
-export type TwoFactorFormData = {
-  code?: string;
-};
-
-export type PasswordForgotFormData = {
-  email?: string;
-  password?: string;
-  repeat?: string;
-  code?: string;
-};
+import { useAuthLinks } from "../hooks/use-redirect.js";
 
 export type AuthState = {
-  type: "start" | "code" | "update";
   email?: string;
   errors?: AuthError[];
 };
 
-// Default copy text for all components
-
-// Props interfaces for each component
 type LoginFormProps = {
   state?: AuthState;
-  onRegisterClick?: () => void;
-  onForgotPasswordClick?: () => void;
 };
 
-interface RegisterFormProps {
+type RegisterFormProps = {
   state?: AuthState;
-  onLoginClick?: () => void;
-  onSkipClick?: () => void;
-}
+};
 
-interface TwoFactorFormProps {
+type TwoFactorFormProps = {
   state?: AuthState;
-  onResendCode?: () => void;
-}
+};
 
-interface ForgotPasswordFormProps {
+type ForgotPasswordFormProps = {
   state?: AuthState;
-  onBackToLogin?: () => void;
-  onResendCode?: () => void;
-}
+  step: "start" | "code" | "update";
+};
 
 /**
  * Login Form Component
  * Handles user authentication with email and password
  */
-export function PasswordLoginForm({
-  state,
-  onRegisterClick,
-  onForgotPasswordClick,
-}: LoginFormProps) {
+export function PasswordLoginForm({ state }: LoginFormProps) {
   const copy = useCopy();
-
+  const link = useAuthLinks();
   return (
-    <Form data-component="form" method="post" >
+    <Form data-component="form" method="post">
       {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
@@ -99,15 +63,11 @@ export function PasswordLoginForm({
       <div data-component="form-footer">
         <span>
           {copy.register_prompt}{" "}
-          <button type="button" data-component="link" onClick={onRegisterClick}>
+          <button type="button" data-component="link" onClick={link.register}>
             {copy.register}
           </button>
         </span>
-        <button
-          type="button"
-          data-component="link"
-          onClick={onForgotPasswordClick}
-        >
+        <button type="button" data-component="link" onClick={link.forgot}>
           {copy.change_prompt}
         </button>
       </div>
@@ -119,11 +79,9 @@ export function PasswordLoginForm({
  * Register Form Component
  * Handles user registration with email, password, and confirmation
  */
-export function PasswordRegisterForm({
-  state,
-  onLoginClick,
-}: RegisterFormProps) {
+export function PasswordRegisterForm({ state }: RegisterFormProps) {
   const copy = useCopy();
+  const link = useAuthLinks();
 
   return (
     <Form data-component="form" method="post">
@@ -179,7 +137,7 @@ export function PasswordRegisterForm({
       <div data-component="form-footer">
         <span>
           {copy.login_prompt}{" "}
-          <button type="button" data-component="link" onClick={onLoginClick}>
+          <button type="button" data-component="link" onClick={link.login}>
             {copy.login}
           </button>
         </span>
@@ -192,10 +150,7 @@ export function PasswordRegisterForm({
  * Two Factor Authentication Form Component
  * Handles 2FA code verification
  */
-export function PasswordLoginTwoFactorForm({
-        state,
-  onResendCode,
-}: TwoFactorFormProps) {
+export function PasswordLoginTwoFactorForm({ state }: TwoFactorFormProps) {
   const copy = useCopy();
 
   return (
@@ -221,7 +176,7 @@ export function PasswordLoginTwoFactorForm({
         {copy.button_continue}
       </button>
       <div data-component="form-footer">
-        <button type="button" data-component="link" onClick={onResendCode}>
+        <button type="submit" data-component="link" name="resend" value="true">
           {copy.code_resend}
         </button>
       </div>
@@ -233,15 +188,12 @@ export function PasswordLoginTwoFactorForm({
  * Forgot Password Form Component
  * Handles password reset flow with email and code verification
  */
-export function PasswordForgotForm({
-  state,
-  onBackToLogin,
-  onResendCode,
-}: ForgotPasswordFormProps) {
+export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
   const copy = useCopy();
+  const link = useAuthLinks();
 
   return (
-    <Form data-component="form" action="#" >
+    <Form data-component="form" action="#">
       {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
@@ -255,9 +207,9 @@ export function PasswordForgotForm({
         />
       ))}
 
-      {state?.type === "start" && (
+      {step === "start" && (
         <>
-          <input type="hidden" name="action" value="code" />
+          <input type="hidden" name="step" value="start" />
           <input
             data-component="input"
             autoFocus
@@ -269,9 +221,9 @@ export function PasswordForgotForm({
         </>
       )}
 
-      {state?.type === "code" && (
+      {step === "code" && (
         <>
-          <input type="hidden" name="action" value="verify" />
+          <input type="hidden" name="step" value="code" />
           <input
             data-component="input"
             autoFocus
@@ -284,22 +236,23 @@ export function PasswordForgotForm({
           />
           <Form>
             <input type="hidden" name="action" value="code" />
-            <input type="hidden" name="email" value={state.email || ""} />
+            <input type="hidden" name="email" defaultValue={state?.email} />
             <div data-component="form-footer">
               <span>
                 {copy.code_return}{" "}
                 <button
                   type="button"
                   data-component="link"
-                  onClick={onBackToLogin}
+                  onClick={link.login}
                 >
                   {copy.login.toLowerCase()}
                 </button>
               </span>
               <button
-                type="button"
+                type="submit"
                 data-component="link"
-                onClick={onResendCode}
+                name="resend"
+                value="true"
               >
                 {copy.code_resend}
               </button>
@@ -308,9 +261,9 @@ export function PasswordForgotForm({
         </>
       )}
 
-      {state?.type === "update" && (
+      {step === "update" && (
         <>
-          <input type="hidden" name="action" value="update" />
+          <input type="hidden" name="step" value="update" />
           <input
             data-component="input"
             autoFocus

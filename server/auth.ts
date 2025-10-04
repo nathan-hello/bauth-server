@@ -22,7 +22,20 @@ export const BA_COOKIE_PREFIX = "asdf";
 export const auth = betterAuth({
   plugins: [
     passkey({ rpID: url, rpName: url }),
-    username(),
+    username({
+      usernameValidator: (username) => {
+        if (username === "admin") {
+          return false;
+        }
+        return /^[a-zA-Z0-9_-]+$/.test(username);
+      },
+      displayUsernameValidator: (displayUsername) => {
+        if (displayUsername === "admin") {
+          return false;
+        }
+        return /^[a-zA-Z0-9_-]+$/.test(displayUsername);
+      },
+    }),
     twoFactor(),
     emailOTP({
       sendVerificationOTP: async (data, request) => {},
