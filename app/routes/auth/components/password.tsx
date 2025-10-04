@@ -2,6 +2,7 @@ import React from "react";
 import { FormAlert } from "./form.js";
 import { useCopy } from "../lib/copy.js";
 import type { AuthError } from "../errors/auth-error.js";
+import { Form } from "react-router";
 
 export type PasswordLoginFormData = {
   email?: string;
@@ -13,7 +14,6 @@ export type PasswordRegisterFormData = {
   email?: string;
   password?: string;
   repeat?: string;
-  code?: string;
 };
 
 export type TwoFactorFormData = {
@@ -30,38 +30,31 @@ export type PasswordForgotFormData = {
 export type AuthState = {
   type: "start" | "code" | "update";
   email?: string;
+  errors?: AuthError[];
 };
 
 // Default copy text for all components
 
 // Props interfaces for each component
 type LoginFormProps = {
-  errors?: AuthError[];
-  formData?: PasswordLoginFormData;
-  onSubmit?: (data: PasswordLoginFormData) => void;
+  state?: AuthState;
   onRegisterClick?: () => void;
   onForgotPasswordClick?: () => void;
 };
 
 interface RegisterFormProps {
-  errors?: AuthError[];
-  onSubmit?: (data: PasswordRegisterFormData) => void;
+  state?: AuthState;
   onLoginClick?: () => void;
   onSkipClick?: () => void;
 }
 
 interface TwoFactorFormProps {
-  errors?: AuthError[];
-  formData?: TwoFactorFormData;
-  onSubmit?: (data: TwoFactorFormData) => void;
+  state?: AuthState;
   onResendCode?: () => void;
 }
 
 interface ForgotPasswordFormProps {
-  errors?: AuthError[];
-  formData?: PasswordForgotFormData;
   state?: AuthState;
-  onSubmit?: (data: PasswordForgotFormData) => void;
   onBackToLogin?: () => void;
   onResendCode?: () => void;
 }
@@ -71,26 +64,15 @@ interface ForgotPasswordFormProps {
  * Handles user authentication with email and password
  */
 export function PasswordLoginForm({
-  errors,
-  onSubmit,
+  state,
   onRegisterClick,
   onForgotPasswordClick,
 }: LoginFormProps) {
   const copy = useCopy();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data: PasswordLoginFormData = {
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-    };
-    onSubmit?.(data);
-  };
-
   return (
-    <form data-component="form" action="#" onSubmit={handleSubmit}>
-      {errors?.map((error) => (
+    <Form data-component="form" method="post" >
+      {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
           message={error?.type ? copy.error[error.type] : undefined}
@@ -102,7 +84,7 @@ export function PasswordLoginForm({
         name="email"
         required
         placeholder={copy.input_email}
-        autoFocus={!errors}
+        autoFocus={!state?.errors}
       />
       <input
         data-component="input"
@@ -130,7 +112,7 @@ export function PasswordLoginForm({
           {copy.change_prompt}
         </button>
       </div>
-    </form>
+    </Form>
   );
 }
 
@@ -139,28 +121,14 @@ export function PasswordLoginForm({
  * Handles user registration with email, password, and confirmation
  */
 export function PasswordRegisterForm({
-  errors,
-  onSubmit,
+  state,
   onLoginClick,
 }: RegisterFormProps) {
   const copy = useCopy();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data: PasswordRegisterFormData = {
-      username: formData.get("username")?.toString(),
-      email: formData.get("email")?.toString(),
-      password: formData.get("password")?.toString(),
-      repeat: formData.get("repeat")?.toString(),
-      code: formData.get("code")?.toString(),
-    };
-    onSubmit?.(data);
-  };
-
   return (
-    <form data-component="form" action="#" onSubmit={handleSubmit}>
-      {errors?.map((error) => (
+    <Form data-component="form" method="post">
+      {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
           message={
@@ -185,6 +153,7 @@ export function PasswordRegisterForm({
         data-component="input"
         type="email"
         name="email"
+        defaultValue={state?.email}
         required
         placeholder={copy.input_email}
       />
@@ -216,7 +185,7 @@ export function PasswordRegisterForm({
           </button>
         </span>
       </div>
-    </form>
+    </Form>
   );
 }
 
@@ -225,24 +194,14 @@ export function PasswordRegisterForm({
  * Handles 2FA code verification
  */
 export function PasswordLoginTwoFactorForm({
-  errors,
-  onSubmit,
+        state,
   onResendCode,
 }: TwoFactorFormProps) {
   const copy = useCopy();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data: TwoFactorFormData = {
-      code: formData.get("code")?.toString(),
-    };
-    onSubmit?.(data);
-  };
-
   return (
-    <form data-component="form" onSubmit={handleSubmit}>
-      {errors?.map((error, i) => (
+    <Form data-component="form" method="post">
+      {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
           message={error?.type ? copy.error[error.type] : undefined}
@@ -267,7 +226,7 @@ export function PasswordLoginTwoFactorForm({
           {copy.code_resend}
         </button>
       </div>
-    </form>
+    </Form>
   );
 }
 
@@ -276,29 +235,15 @@ export function PasswordLoginTwoFactorForm({
  * Handles password reset flow with email and code verification
  */
 export function PasswordForgotForm({
-  errors,
   state,
-  onSubmit,
   onBackToLogin,
   onResendCode,
 }: ForgotPasswordFormProps) {
   const copy = useCopy();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data: PasswordForgotFormData = {
-      email: formData.get("email")?.toString(),
-      code: formData.get("code")?.toString(),
-      password: formData.get("password")?.toString(),
-      repeat: formData.get("repeat")?.toString(),
-    };
-    onSubmit?.(data);
-  };
-
   return (
-    <form data-component="form" action="#" onSubmit={handleSubmit}>
-      {errors?.map((error) => (
+    <Form data-component="form" action="#" >
+      {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
           message={
@@ -338,7 +283,7 @@ export function PasswordForgotForm({
             placeholder={copy.input_code}
             autoComplete="one-time-code"
           />
-          <form>
+          <Form>
             <input type="hidden" name="action" value="code" />
             <input type="hidden" name="email" value={state.email || ""} />
             <div data-component="form-footer">
@@ -360,7 +305,7 @@ export function PasswordForgotForm({
                 {copy.code_resend}
               </button>
             </div>
-          </form>
+          </Form>
         </>
       )}
 
@@ -392,6 +337,6 @@ export function PasswordForgotForm({
       <button data-component="button" type="submit">
         {copy.button_continue}
       </button>
-    </form>
+    </Form>
   );
 }
