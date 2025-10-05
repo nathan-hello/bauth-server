@@ -1,28 +1,18 @@
-import {
-  PasswordRegisterForm,
-  type AuthState,
-} from "./components/password";
+import { PasswordRegisterForm, type AuthState } from "./components/password";
 import { redirect } from "react-router";
 import { getAuthError, type AuthError } from "./errors/auth-error";
 import type { Route } from "./+types/register";
-import { auth } from "@server/auth";
+import { auth, validateUsername } from "@server/auth";
 
 export function meta() {
   return [{ title: "Sign Up" }];
 }
 
 export default function ({ actionData }: Route.ComponentProps) {
-
-  return (
-    <PasswordRegisterForm
-      state={actionData}
-    />
-  );
+  return <PasswordRegisterForm state={actionData} />;
 }
 
-export async function action({
-  request,
-}: Route.ActionArgs): Promise<AuthState | undefined> {
+export async function action({ request }: Route.ActionArgs): Promise<AuthState | undefined> {
   const form = await request.formData();
 
   const username = form.get("username")?.toString();
@@ -67,6 +57,8 @@ export async function action({
       returnHeaders: true,
     });
 
+    console.log(headers.toJSON());
+
     if (response && "twoFactorRedirect" in response) {
       throw redirect("/auth/2fa", { headers });
     }
@@ -86,7 +78,7 @@ export async function action({
   }
 }
 
-function ParseRegister(data: any): AuthError[] | null {
+function ParseRegister(data: Record<string, string | undefined>): AuthError[] | null {
   const errors: AuthError[] = [];
   if (!data.email) {
     errors.push({ type: "INVALID_EMAIL" });
@@ -94,14 +86,8 @@ function ParseRegister(data: any): AuthError[] | null {
   if (!data.password) {
     errors.push({ type: "INVALID_PASSWORD" });
   }
-  if (!data.username) {
+  if (!data.username || !validateUsername(data.username)) {
     errors.push({ type: "username_invalid" });
-  }
-
-  // We don't want to show "password invalid" and "password mismatch" at the same time.
-  // So, return early before that check
-  if (errors.length > 0) {
-    return errors;
   }
 
   if (!data.repeat || data.password !== data.repeat) {

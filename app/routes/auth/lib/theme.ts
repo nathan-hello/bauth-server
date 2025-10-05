@@ -297,4 +297,4 @@ export const THEME_VERCEL: Theme = {
   `,
 };
 
-export default THEME_VERCEL;
+export default THEME_SUPABASE;
