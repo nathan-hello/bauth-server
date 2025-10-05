@@ -1,18 +1,13 @@
-import {  useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useEffect, useRef } from "react";
 import { authClient } from "@/lib/auth";
+import { useCopy } from "./lib/copy";
 
-export function meta() {
-  return [
-    { title: "Sign Out - Playlist PowerTools" },
-    {
-      name: "description",
-      content: "Sign out of your Playlist PowerTools account",
-    },
-  ];
-}
+
+
 
 export default function SignOut() {
+  const copy = useCopy();
   const signingOut = useRef(false);
 
   const navigate = useNavigate();
@@ -24,5 +19,9 @@ export default function SignOut() {
     authClient.signOut().finally(() => navigate("/"));
   }, [authClient, navigate]);
 
-  return null;
+  return (
+    <>
+      <title>{copy.meta.login.title}</title>
+    </>
+  );
 }

@@ -9,10 +9,13 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   otp_failed: "Email one-time passcode failed for an unknown reason.",
 
   // better auth errors
-  ACCOUNT_NOT_FOUND: "",
-  CREDENTIAL_ACCOUNT_NOT_FOUND: "",
-  EMAIL_CAN_NOT_BE_UPDATED: "",
-  EMAIL_NOT_VERIFIED: "",
+  USERNAME_IS_INVALID: "Username is invalid.",
+  USERNAME_IS_TOO_SHORT: "Username is too short.", 
+  USERNAME_IS_TOO_LONG: "Username is too long.",
+  ACCOUNT_NOT_FOUND: "Invalid credentials.",
+  CREDENTIAL_ACCOUNT_NOT_FOUND: "Invalid credentials.",
+  EMAIL_CAN_NOT_BE_UPDATED: "Email cannot be updated.",
+  EMAIL_NOT_VERIFIED: "Email is not yet verified.",
   FAILED_TO_CREATE_SESSION: "",
   FAILED_TO_CREATE_USER: "",
   FAILED_TO_GET_SESSION: "",
@@ -20,8 +23,8 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   FAILED_TO_UNLINK_LAST_ACCOUNT: "",
   FAILED_TO_UPDATE_USER: "",
   ID_TOKEN_NOT_SUPPORTED: "",
-  INVALID_EMAIL: "",
-  INVALID_EMAIL_OR_PASSWORD: "",
+  INVALID_EMAIL: "Invalid email.",
+  INVALID_EMAIL_OR_PASSWORD: "Invalid credentials.",
   INVALID_PASSWORD: "Password does not meet requirements.",
   INVALID_TOKEN: "",
   PASSWORD_TOO_LONG: "",
@@ -35,9 +38,17 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   USER_NOT_FOUND: "",
 };
 
-const DEFAULT_COPY = {
+const META_COPY = {
+  login: { title: "Login" },
+  register: { title: "Register" },
+  forgot: { title: "Forgot Password" },
+  factor: { title: "2fa" },
+};
+
+const english = {
   // Error messages
   error: { ...ERROR_COPY },
+  meta: { ...META_COPY },
   // Page titles and descriptions
   register_title: "Welcome to the app",
   register_description: "Sign in with your email",
@@ -58,6 +69,7 @@ const DEFAULT_COPY = {
   // Input placeholders
   input_username: "Username",
   input_email: "Email",
+  input_email_or_username: "Email or username",
   input_password: "Password",
   input_code: "Code",
   input_repeat: "Repeat password",
@@ -66,5 +78,5 @@ const DEFAULT_COPY = {
 };
 
 export function useCopy() {
-  return DEFAULT_COPY;
+  return english;
 }

@@ -3,17 +3,17 @@ import type { Route } from "./+types/login";
 import { PasswordLoginForm, type AuthState } from "./components/password";
 import { redirect } from "react-router";
 import { getAuthError } from "./errors/auth-error";
-
-export function meta() {
-  return [{ title: "Forgot Password" }, { name: "description", content: "Reset your password." }, {}];
-}
+import { useCopy } from "./lib/copy";
 
 export default function ({ actionData }: Route.ComponentProps) {
+  const copy = useCopy();
 
+  console.log("action errors: \n", actionData?.errors);
   return (
-    <PasswordLoginForm
-      state={actionData}
-    />
+    <>
+      <title>{copy.meta.login.title}</title>
+      <PasswordLoginForm state={actionData} />
+    </>
   );
 }
 
@@ -29,18 +29,7 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState> 
       errors: [{ type: "INVALID_EMAIL_OR_PASSWORD" }],
     };
   }
-  return await login({ request, email, password });
-}
 
-async function login({
-  request,
-  email,
-  password,
-}: {
-  email: string;
-  password: string;
-  request: Request;
-}): Promise<AuthState> {
   try {
     // Determine if input is email or username based on @ symbol
     const isEmail = email.includes("@");
@@ -62,7 +51,6 @@ async function login({
           },
           returnHeaders: true,
         }));
-
     if (response && "twoFactorRedirect" in response) {
       throw redirect("/auth/2fa", { headers });
     }
@@ -81,3 +69,4 @@ async function login({
     };
   }
 }
+

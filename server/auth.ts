@@ -19,22 +19,19 @@ if (!url) {
 
 export const BA_COOKIE_PREFIX = "asdf";
 
-export const auth = betterAuth({
-  plugins: [
-    passkey({ rpID: url, rpName: url }),
-    username({
-      usernameValidator: (username) => {
+export function validateUsername  (username: string)  {
         if (username === "admin") {
           return false;
         }
         return /^[a-zA-Z0-9_-]+$/.test(username);
-      },
-      displayUsernameValidator: (displayUsername) => {
-        if (displayUsername === "admin") {
-          return false;
-        }
-        return /^[a-zA-Z0-9_-]+$/.test(displayUsername);
-      },
+      }
+
+export const auth = betterAuth({
+  plugins: [
+    passkey({ rpID: url, rpName: url }),
+    username({
+      usernameValidator: validateUsername,
+      displayUsernameValidator: validateUsername,
     }),
     twoFactor(),
     emailOTP({
@@ -47,7 +44,9 @@ export const auth = betterAuth({
   }),
   advanced: {
     cookiePrefix: BA_COOKIE_PREFIX,
-    useSecureCookies: true, // cookies become httponly in dev as well as prod.
+  },
+  onAPIError: {
+        
   },
   emailAndPassword: {
     enabled: true,

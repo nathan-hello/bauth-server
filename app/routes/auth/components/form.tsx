@@ -1,7 +1,9 @@
 export function FormAlert(props: {
   message?: string
+  submessage?: string;
   color?: "danger" | "success"
 }) {
+  console.log(props)
   return (
     <div data-component="form-alert" data-color={props.color}>
       <svg

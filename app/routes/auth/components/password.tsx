@@ -38,15 +38,16 @@ export function PasswordLoginForm({ state }: LoginFormProps) {
       {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
-          message={error?.type ? copy.error[error.type] : undefined}
+          message={error.type ? copy.error[error.type] : undefined}
+          submessage={error.type === "generic_error" ? error.message : ""}
         />
       ))}
       <input
         data-component="input"
-        type="email"
+        type="text"
         name="email"
         required
-        placeholder={copy.input_email}
+        placeholder={copy.input_email_or_username}
         autoFocus={!state?.errors}
       />
       <input
@@ -99,20 +100,14 @@ export function PasswordRegisterForm({ state }: RegisterFormProps) {
       ))}
 
       <input type="hidden" name="action" value="register" />
+      <input data-component="input" type="text" name="username" required placeholder={copy.input_username} />
       <input
         data-component="input"
         type="text"
-        name="username"
-        required
-        placeholder={copy.input_username}
-      />
-      <input
-        data-component="input"
-        type="email"
         name="email"
         defaultValue={state?.email}
         required
-        placeholder={copy.input_email}
+        placeholder={copy.input_email_or_username}
       />
       <input
         data-component="input"
@@ -156,10 +151,7 @@ export function PasswordLoginTwoFactorForm({ state }: TwoFactorFormProps) {
   return (
     <Form data-component="form" method="post">
       {state?.errors?.map((error) => (
-        <FormAlert
-          key={error.type}
-          message={error?.type ? copy.error[error.type] : undefined}
-        />
+        <FormAlert key={error.type} message={error?.type ? copy.error[error.type] : undefined} />
       ))}
       <input type="hidden" name="action" value="verify" />
       <input
@@ -210,14 +202,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
       {step === "start" && (
         <>
           <input type="hidden" name="step" value="start" />
-          <input
-            data-component="input"
-            autoFocus
-            type="email"
-            name="email"
-            required
-            placeholder={copy.input_email}
-          />
+          <input data-component="input" autoFocus type="email" name="email" required placeholder={copy.input_email} />
         </>
       )}
 
@@ -240,20 +225,11 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
             <div data-component="form-footer">
               <span>
                 {copy.code_return}{" "}
-                <button
-                  type="button"
-                  data-component="link"
-                  onClick={link.login}
-                >
+                <button type="button" data-component="link" onClick={link.login}>
                   {copy.login.toLowerCase()}
                 </button>
               </span>
-              <button
-                type="submit"
-                data-component="link"
-                name="resend"
-                value="true"
-              >
+              <button type="submit" data-component="link" name="resend" value="true">
                 {copy.code_resend}
               </button>
             </div>

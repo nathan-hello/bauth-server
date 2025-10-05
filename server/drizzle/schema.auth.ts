@@ -103,10 +103,3 @@ export const twoFactor = sqliteTable("two_factor", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 });
-
-export const jwks = sqliteTable("jwks", {
-  id: text("id").primaryKey(),
-  publicKey: text("public_key").notNull(),
-  privateKey: text("private_key").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-});
