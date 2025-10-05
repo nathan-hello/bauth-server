@@ -10,10 +10,12 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
 
   // better auth errors
   USERNAME_IS_INVALID: "Username is invalid.",
-  USERNAME_IS_TOO_SHORT: "Username is too short.", 
+  USERNAME_IS_TOO_SHORT: "Username is too short.",
   USERNAME_IS_TOO_LONG: "Username is too long.",
   ACCOUNT_NOT_FOUND: "Invalid credentials.",
   CREDENTIAL_ACCOUNT_NOT_FOUND: "Invalid credentials.",
+  INVALID_OTP: "Code is incorrect.",
+  TOO_MANY_ATTEMPTS: "Too many unsuccessful attempts.",
   EMAIL_CAN_NOT_BE_UPDATED: "Email cannot be updated.",
   EMAIL_NOT_VERIFIED: "Email is not yet verified.",
   FAILED_TO_CREATE_SESSION: "",
@@ -35,10 +37,11 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   USER_ALREADY_EXISTS: "There is already an account with this email.",
   USER_ALREADY_HAS_PASSWORD: "",
   USER_EMAIL_NOT_FOUND: "",
-  USER_NOT_FOUND: "",
+  USER_NOT_FOUND: "User not found.",
 };
 
 const META_COPY = {
+  auth: { title: "Authenticate" },
   login: { title: "Login" },
   register: { title: "Register" },
   forgot: { title: "Forgot Password" },

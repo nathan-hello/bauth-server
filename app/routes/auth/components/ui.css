@@ -1,10 +1,16 @@
 @import url("https://unpkg.com/tailwindcss@3.4.15/src/css/preflight.css");
 
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
 :root {
-  --color-background-dark: #0e0e11;
-  --color-background-light: #ffffff;
-  --color-primary-dark: #6772e5;
-  --color-primary-light: #6772e5;
+  --color-background-dark: #171717;
+  --color-background-light: #171717;
+  --color-primary-dark: #0a241e;
+  --color-primary-light: #261c4a;
+  --border-radius: 0;
+  --font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-scale: 1;
 
   --color-background-success-dark: oklch(0.3 0.04 172);
   --color-background-success-light: oklch(from var(--color-background-success-dark) 0.83 c h);
@@ -16,7 +22,6 @@
   --color-error-dark: oklch(from var(--color-background-error-dark) 0.92 c h);
   --color-error-light: oklch(from var(--color-background-error-dark) 0.25 c h);
 
-  --border-radius: 0;
 
   --color-background: var(--color-background-dark);
   --color-primary: var(--color-primary-dark);
@@ -50,9 +55,6 @@
     var(--color-low) 0%,
     oklch(var(--color-low) 0 0)
   );
-  --font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-scale: 1;
 
   --font-size-xs: calc(0.75rem * var(--font-scale));
   --font-size-sm: calc(0.875rem * var(--font-scale));
@@ -64,7 +66,10 @@
 
 [data-component="root"] {
   font-family: var(--font-family);
-  background-color: var(--color-background);
+  background-image: url("/carpark.webp");
+  background-repeat: no-repeat;
+  background-size: cover;
+  /* background-color: var(--color-background); */
   padding: 1rem;
   color: white;
   position: absolute;
@@ -82,6 +87,21 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-radius: calc(var(--border-radius) * 0.25rem);
+
+  @media (prefers-color-scheme: light) {
+     background: var(--color-background-dark);
+     opacity: 0.95;
+  }
+
+  @media (prefers-color-scheme: dark) {
+     background: var(--color-background-light);
+     opacity: 0.95;
+  }
 
   &[data-size="small"] {
     width: 300px;
@@ -141,7 +161,6 @@
   border: 1px solid transparent;
   --background: oklch(
     from var(--color-background) calc(l + (-0.06 * clamp(0, calc((l - 0.714) * 1000), 1) + 0.03)) c h
-
   );
   background: var(--background);
   border-color: oklch(

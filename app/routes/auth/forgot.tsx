@@ -1,19 +1,15 @@
 import { auth } from "@server/auth";
 import type { Route } from "./+types/forgot";
-import { PasswordForgotForm, type AuthState } from "./components/password";
+import { PasswordForgotForm, type AuthState, type ForgotPasswordFormProps } from "./components/password";
 import { getAuthError, type AuthError } from "./errors/auth-error";
 import { redirect } from "react-router";
+import { APIError } from "better-auth";
 
 export function meta() {
   return [{ title: "Forgot Password" }, { name: "description", content: "Reset your password." }, {}];
 }
 
-type Action =
-  | {
-      state: AuthState;
-      step: "start" | "code" | "update";
-    }
-  | undefined;
+type Action = ForgotPasswordFormProps | undefined;
 
 export async function action({ request }: Route.ActionArgs): Promise<Action> {
   const form = await request.formData();
@@ -23,7 +19,7 @@ export async function action({ request }: Route.ActionArgs): Promise<Action> {
   const resend = form.get("resend")?.toString();
   const password = form.get("password")?.toString();
   const repeat = form.get("repeat")?.toString();
-  if (!step || (step !== "start" && step !== "code" && step !== "update")) {
+  if (!step || (step !== "start" && step !== "code" && step !== "update" && step !== "try-again")) {
     return {
       state: { errors: [{ type: "generic_error" }] },
       step: "start",
@@ -34,18 +30,25 @@ export async function action({ request }: Route.ActionArgs): Promise<Action> {
     if (step === "start" || resend === "true") {
       return await stepStart({ request, email });
     }
+    if (step === "try-again") {
+      throw redirect("/auth/login");
+    }
     if (step === "code") {
       return await stepCode({ request, email, code });
     }
     if (step === "update") {
-      await stepUpdatePassword({request, email, password, repeat, code})
+      await stepUpdatePassword({ request, email, password, repeat, code });
     }
   } catch (error) {
     if (error instanceof Response) {
       throw error;
     }
-    const errors = getAuthError(error);
-    return { step, state: { email, errors } };
+    if (error instanceof APIError && error.body?.code === "TOO_MANY_ATTEMPTS") {
+      return { step: "try-again", state: { email: "", errors: [{ type: "TOO_MANY_ATTEMPTS" }] } };
+    } else {
+      const errors = getAuthError(error);
+      return { step, state: { email, errors } };
+    }
   }
 
   return undefined;
@@ -77,7 +80,7 @@ async function stepCode({ request, email, code }: StepCodeArgs): Promise<Action>
   if (!code) {
     throw Error("code_invalid");
   }
-  const ok = auth.api.checkVerificationOTP({
+  const ok = await auth.api.checkVerificationOTP({
     body: { email, otp: code, type: "forget-password" },
     headers: request.headers,
   });
