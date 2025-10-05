@@ -21,9 +21,9 @@ type TwoFactorFormProps = {
   state?: AuthState;
 };
 
-type ForgotPasswordFormProps = {
+export type ForgotPasswordFormProps = {
   state?: AuthState;
-  step: "start" | "code" | "update";
+  step: "start" | "code" | "update" | "try-again";
 };
 
 /**
@@ -185,7 +185,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
   const link = useAuthLinks();
 
   return (
-    <Form data-component="form" action="#">
+    <Form data-component="form" method="post">
       {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
@@ -209,6 +209,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
       {step === "code" && (
         <>
           <input type="hidden" name="step" value="code" />
+          <input type="hidden" name="email" defaultValue={state?.email} />
           <input
             data-component="input"
             autoFocus
@@ -219,27 +220,19 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
             placeholder={copy.input_code}
             autoComplete="one-time-code"
           />
-          <Form>
-            <input type="hidden" name="action" value="code" />
-            <input type="hidden" name="email" defaultValue={state?.email} />
-            <div data-component="form-footer">
-              <span>
-                {copy.code_return}{" "}
-                <button type="button" data-component="link" onClick={link.login}>
-                  {copy.login.toLowerCase()}
-                </button>
-              </span>
-              <button type="submit" data-component="link" name="resend" value="true">
-                {copy.code_resend}
-              </button>
-            </div>
-          </Form>
+        </>
+      )}
+
+      {step === "try-again" && (
+        <>
+          <input type="hidden" name="step" value="try-again" />
         </>
       )}
 
       {step === "update" && (
         <>
           <input type="hidden" name="step" value="update" />
+          <input type="hidden" name="email" defaultValue={state?.email} />
           <input
             data-component="input"
             autoFocus
@@ -265,6 +258,19 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
       <button data-component="button" type="submit">
         {copy.button_continue}
       </button>
+      <div data-component="form-footer">
+        <span>
+          {copy.code_return}{" "}
+          <button type="button" data-component="link" onClick={link.login}>
+            {copy.login.toLowerCase()}
+          </button>
+        </span>
+        {step === "code" && (
+          <button type="submit" data-component="link" name="resend" value="true">
+            {copy.code_resend}
+          </button>
+        )}
+      </div>
     </Form>
   );
 }

@@ -2,7 +2,6 @@ import {
   sqliteTable,
   text,
   integer,
-  index,
   primaryKey,
 } from "drizzle-orm/sqlite-core";
 import { user } from "./schema.auth";
