@@ -4,17 +4,21 @@ import { PasswordLoginForm, type AuthState } from "./components/password";
 import { redirect } from "react-router";
 import { getAuthError } from "./errors/auth-error";
 import { useCopy } from "./lib/copy";
+import { throwRedirectIfSessionExists } from "./lib/redirect";
 
 export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
 
-  console.log("action errors: \n", actionData?.errors);
   return (
     <>
       <title>{copy.meta.login.title}</title>
       <PasswordLoginForm state={actionData} />
     </>
   );
+}
+
+export async function loader({request}: Route.LoaderArgs) {
+       await throwRedirectIfSessionExists({request});
 }
 
 export async function action({ request }: Route.ActionArgs): Promise<AuthState> {
@@ -55,7 +59,7 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState> 
       throw redirect("/auth/2fa", { headers });
     }
 
-    throw redirect("/chat", { headers });
+    throw redirect("/", { headers });
   } catch (error) {
     if (error instanceof Response) {
       throw error;

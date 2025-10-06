@@ -1,17 +1,22 @@
 import { auth } from "@server/auth";
 import type { Route } from "./+types/forgot";
-import { PasswordForgotForm, type AuthState, type ForgotPasswordFormProps } from "./components/password";
-import { getAuthError, type AuthError } from "./errors/auth-error";
+import { PasswordForgotForm, type ForgotPasswordFormProps } from "./components/password";
+import { getAuthError } from "./errors/auth-error";
 import { redirect } from "react-router";
 import { APIError } from "better-auth";
+import { throwRedirectIfSessionExists } from "./lib/redirect";
 
-export function meta() {
-  return [{ title: "Forgot Password" }, { name: "description", content: "Reset your password." }, {}];
+
+export default function ({ actionData }: Route.ComponentProps) {
+  return <PasswordForgotForm state={actionData?.state} step={actionData?.step ?? "start"} />;
 }
 
-type Action = ForgotPasswordFormProps | undefined;
+export async function loader({request}: Route.LoaderArgs) {
+       await throwRedirectIfSessionExists({request});
+}
 
-export async function action({ request }: Route.ActionArgs): Promise<Action> {
+
+export async function action({ request }: Route.ActionArgs): Promise<ForgotPasswordFormProps | undefined> {
   const form = await request.formData();
   const step = form.get("step")?.toString();
   const email = form.get("email")?.toString();
@@ -54,7 +59,7 @@ export async function action({ request }: Route.ActionArgs): Promise<Action> {
   return undefined;
 }
 
-async function stepStart({ request, email }: { request: Request; email: string | undefined }): Promise<Action> {
+async function stepStart({ request, email }: { request: Request; email: string | undefined }): Promise<ForgotPasswordFormProps | undefined> {
   if (!email) {
     return { step: "start", state: {} };
   }
@@ -73,7 +78,7 @@ type StepCodeArgs = {
   email: string | undefined;
   code: string | undefined;
 };
-async function stepCode({ request, email, code }: StepCodeArgs): Promise<Action> {
+async function stepCode({ request, email, code }: StepCodeArgs): Promise<ForgotPasswordFormProps | undefined> {
   if (!email) {
     throw Error("otp_failed");
   }
@@ -114,9 +119,6 @@ async function stepUpdatePassword({ request, password, repeat, email, code }: St
     throw Error("generic_error");
   }
 
-  throw redirect("/auth/account", { headers });
+  throw redirect("/", { headers });
 }
 
-export default function ({ actionData }: Route.ComponentProps) {
-  return <PasswordForgotForm state={actionData?.state} step={actionData?.step ?? "start"} />;
-}

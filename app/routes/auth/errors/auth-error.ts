@@ -1,16 +1,14 @@
-import type { authClient } from "@/lib/auth";
 import { ERROR_COPY } from "../lib/copy";
 import { APIError } from "better-auth";
+import type { auth } from "@server/auth";
+
+export type AuthApiErrors = keyof typeof auth["$ERROR_CODES"]
 
 export type AuthError =
   | {
       type:
-        | "code_invalid"
         | "password_mismatch"
-        | "username_invalid"
-        | "username_taken"
-        | "otp_failed"
-        | keyof typeof authClient.$ERROR_CODES;
+        | AuthApiErrors
     }
   | { type: "generic_error"; message?: string };
 
