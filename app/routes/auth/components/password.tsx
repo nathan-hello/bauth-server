@@ -274,3 +274,36 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
     </Form>
   );
 }
+
+export function PasswordSignOut({ state }: { state?: AuthState }) {
+  const copy = useCopy();
+  const link = useAuthLinks();
+
+  return (
+    <Form data-component="form" method="post">
+      {state?.errors?.map((error) => (
+        <FormAlert
+          key={error.type}
+          message={
+            error?.type
+              ? error.type === "generic_error"
+                ? (error.message ?? copy.error[error.type])
+                : copy.error[error.type]
+              : undefined
+          }
+        />
+      ))}
+      <button data-component="button" type="submit">
+        {copy.button_continue}
+      </button>
+      <div data-component="form-footer">
+        <span>
+          {copy.code_return}{" "}
+          <button type="button" data-component="link" onClick={link.login}>
+            {copy.login.toLowerCase()}
+          </button>
+        </span>
+      </div>
+    </Form>
+  );
+}

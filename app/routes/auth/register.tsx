@@ -3,13 +3,14 @@ import { redirect } from "react-router";
 import { getAuthError, type AuthError } from "./errors/auth-error";
 import type { Route } from "./+types/register";
 import { auth, validateUsername } from "@server/auth";
-
-export function meta() {
-  return [{ title: "Sign Up" }];
-}
+import { throwRedirectIfSessionExists } from "./lib/redirect";
 
 export default function ({ actionData }: Route.ComponentProps) {
   return <PasswordRegisterForm state={actionData} />;
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  await throwRedirectIfSessionExists({ request });
 }
 
 export async function action({ request }: Route.ActionArgs): Promise<AuthState | undefined> {
@@ -31,18 +32,6 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState |
       errors: [{ type: "INVALID_EMAIL_OR_PASSWORD" }],
     };
   }
-  if (username) {
-    const r = await auth.api.isUsernameAvailable({
-      headers: request.headers,
-      body: { username: username },
-    });
-    if (!r.available) {
-      return {
-        email: email,
-        errors: [{ type: "username_taken" }],
-      };
-    }
-  }
 
   try {
     const { headers, response } = await auth.api.signUpEmail({
@@ -63,7 +52,7 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState |
       throw redirect("/auth/2fa", { headers });
     }
 
-    throw redirect("/auth/account", { headers });
+    throw redirect("/", { headers });
   } catch (error) {
     if (error instanceof Response) {
       throw error;

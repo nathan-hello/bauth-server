@@ -1,17 +1,13 @@
 import type { AuthError } from "../errors/auth-error";
 
 export const ERROR_COPY: Record<AuthError["type"], string> = {
-  code_invalid: "Code is incorrect.",
   password_mismatch: "Passwords do not match.",
-  username_invalid: "Username is not valid.",
   generic_error: "Something wrong happened.",
-  username_taken: "Username is taken.",
-  otp_failed: "Email one-time passcode failed for an unknown reason.",
 
   // better auth errors
-  USERNAME_IS_INVALID: "Username is invalid.",
-  USERNAME_IS_TOO_SHORT: "Username is too short.",
-  USERNAME_IS_TOO_LONG: "Username is too long.",
+  INVALID_USERNAME: "Username is invalid.",
+  USERNAME_TOO_SHORT: "Username is too short.",
+  USERNAME_TOO_LONG: "Username is too long.",
   ACCOUNT_NOT_FOUND: "Invalid credentials.",
   CREDENTIAL_ACCOUNT_NOT_FOUND: "Invalid credentials.",
   INVALID_OTP: "Code is incorrect.",
@@ -38,6 +34,28 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   USER_ALREADY_HAS_PASSWORD: "",
   USER_EMAIL_NOT_FOUND: "",
   USER_NOT_FOUND: "User not found.",
+  USERNAME_IS_ALREADY_TAKEN: "Username is taken.",
+  UNABLE_TO_CREATE_SESSION: "",
+  AUTHENTICATION_FAILED: "",  
+  BACKUP_CODES_NOT_ENABLED: "", 
+  CHALLENGE_NOT_FOUND: "", 
+  FAILED_TO_UPDATE_PASSKEY: "",
+  FAILED_TO_VERIFY_REGISTRATION: "",
+  INVALID_BACKUP_CODE: "",
+  INVALID_CODE: "",
+  INVALID_DISPLAY_USERNAME: "",
+  INVALID_TWO_FACTOR_COOKIE: "",
+  INVALID_USERNAME_OR_PASSWORD: "",
+  OTP_EXPIRED: "",
+  OTP_HAS_EXPIRED: "",
+  OTP_NOT_ENABLED: "",
+  PASSKEY_NOT_FOUND: "",
+  TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE: "",
+  TOTP_NOT_ENABLED: "",
+  TWO_FACTOR_NOT_ENABLED: "",
+  UNEXPECTED_ERROR: "",
+  YOU_ARE_NOT_ALLOWED_TO_REGISTER_THIS_PASSKEY: ""
+
 };
 
 const META_COPY = {
