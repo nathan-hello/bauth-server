@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "bunx react-router build",
+    "build": "bunx --bun react-router build",
     "dev": "bunx --bun vite ",
     "start": "bun --env-file=.env ./build/server/index.js",
     "typegen:rr": "bunx react-router typegen && tsc",
@@ -48,6 +48,6 @@
   },
   "prettier": {
     "tabWidth": 2,
-    "printWidth": 120
+    "printWidth": 80
   }
 }

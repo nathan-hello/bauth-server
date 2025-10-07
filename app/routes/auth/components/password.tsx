@@ -100,7 +100,13 @@ export function PasswordRegisterForm({ state }: RegisterFormProps) {
       ))}
 
       <input type="hidden" name="action" value="register" />
-      <input data-component="input" type="text" name="username" required placeholder={copy.input_username} />
+      <input
+        data-component="input"
+        type="text"
+        name="username"
+        required
+        placeholder={copy.input_username}
+      />
       <input
         data-component="input"
         type="text"
@@ -151,7 +157,10 @@ export function PasswordLoginTwoFactorForm({ state }: TwoFactorFormProps) {
   return (
     <Form data-component="form" method="post">
       {state?.errors?.map((error) => (
-        <FormAlert key={error.type} message={error?.type ? copy.error[error.type] : undefined} />
+        <FormAlert
+          key={error.type}
+          message={error?.type ? copy.error[error.type] : undefined}
+        />
       ))}
       <input type="hidden" name="action" value="verify" />
       <input
@@ -202,7 +211,14 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
       {step === "start" && (
         <>
           <input type="hidden" name="step" value="start" />
-          <input data-component="input" autoFocus type="email" name="email" required placeholder={copy.input_email} />
+          <input
+            data-component="input"
+            autoFocus
+            type="email"
+            name="email"
+            required
+            placeholder={copy.input_email}
+          />
         </>
       )}
 
@@ -266,7 +282,12 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
           </button>
         </span>
         {step === "code" && (
-          <button type="submit" data-component="link" name="resend" value="true">
+          <button
+            type="submit"
+            data-component="link"
+            name="resend"
+            value="true"
+          >
             {copy.code_resend}
           </button>
         )}
