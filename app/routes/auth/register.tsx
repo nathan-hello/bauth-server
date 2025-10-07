@@ -13,7 +13,9 @@ export async function loader({ request }: Route.LoaderArgs) {
   await throwRedirectIfSessionExists({ request });
 }
 
-export async function action({ request }: Route.ActionArgs): Promise<AuthState | undefined> {
+export async function action({
+  request,
+}: Route.ActionArgs): Promise<AuthState | undefined> {
   const form = await request.formData();
 
   const username = form.get("username")?.toString();
@@ -67,7 +69,9 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState |
   }
 }
 
-function ParseRegister(data: Record<string, string | undefined>): AuthError[] | null {
+function ParseRegister(
+  data: Record<string, string | undefined>,
+): AuthError[] | null {
   const errors: AuthError[] = [];
   if (!data.email) {
     errors.push({ type: "INVALID_EMAIL" });
@@ -76,7 +80,7 @@ function ParseRegister(data: Record<string, string | undefined>): AuthError[] | 
     errors.push({ type: "INVALID_PASSWORD" });
   }
   if (!data.username || !validateUsername(data.username)) {
-    errors.push({ type: "username_invalid" });
+    errors.push({ type: "INVALID_USERNAME" });
   }
 
   if (!data.repeat || data.password !== data.repeat) {
