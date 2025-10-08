@@ -17,6 +17,14 @@ if (!url) {
   throw Error("process.env.PRODUCTION_URL was undefined");
 }
 
+const secret =
+  process.env.NODE_ENV === "development"
+    ? "secret"
+    : process.env.BETTER_AUTH_SECRET;
+if (!secret) {
+  throw Error("process.env.BETTER_AUTH_SECRET was undefined");
+}
+
 export const BA_COOKIE_PREFIX = "asdf";
 
 export function validateUsername  (username: string)  {
@@ -27,6 +35,7 @@ export function validateUsername  (username: string)  {
       }
 
 export const auth = betterAuth({
+  secret: secret,
   plugins: [
     passkey({ rpID: url, rpName: url }),
     username({
