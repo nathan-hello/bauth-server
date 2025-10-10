@@ -2,6 +2,7 @@ import type { AuthError } from "../errors/auth-error";
 
 export const ERROR_COPY: Record<AuthError["type"], string> = {
   password_mismatch: "Passwords do not match.",
+  totp_uri_not_found: "",
   generic_error: "Something wrong happened.",
 
   // better auth errors
@@ -11,6 +12,7 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   ACCOUNT_NOT_FOUND: "Invalid credentials.",
   CREDENTIAL_ACCOUNT_NOT_FOUND: "Invalid credentials.",
   INVALID_OTP: "Code is incorrect.",
+  INVALID_OTP_CODE: "Code must be 6 digits.",
   TOO_MANY_ATTEMPTS: "Too many unsuccessful attempts.",
   EMAIL_CAN_NOT_BE_UPDATED: "Email cannot be updated.",
   EMAIL_NOT_VERIFIED: "Email is not yet verified.",
@@ -36,9 +38,9 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   USER_NOT_FOUND: "User not found.",
   USERNAME_IS_ALREADY_TAKEN: "Username is taken.",
   UNABLE_TO_CREATE_SESSION: "",
-  AUTHENTICATION_FAILED: "",  
-  BACKUP_CODES_NOT_ENABLED: "", 
-  CHALLENGE_NOT_FOUND: "", 
+  AUTHENTICATION_FAILED: "",
+  BACKUP_CODES_NOT_ENABLED: "",
+  CHALLENGE_NOT_FOUND: "",
   FAILED_TO_UPDATE_PASSKEY: "",
   FAILED_TO_VERIFY_REGISTRATION: "",
   INVALID_BACKUP_CODE: "",
@@ -54,8 +56,7 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   TOTP_NOT_ENABLED: "",
   TWO_FACTOR_NOT_ENABLED: "",
   UNEXPECTED_ERROR: "",
-  YOU_ARE_NOT_ALLOWED_TO_REGISTER_THIS_PASSKEY: ""
-
+  YOU_ARE_NOT_ALLOWED_TO_REGISTER_THIS_PASSKEY: "",
 };
 
 const META_COPY = {
@@ -64,6 +65,7 @@ const META_COPY = {
   register: { title: "Register" },
   forgot: { title: "Forgot Password" },
   factor: { title: "2fa" },
+  register_2fa: { title: "Register" },
 };
 
 const english = {

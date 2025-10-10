@@ -6,15 +6,13 @@ import { redirect } from "react-router";
 import { APIError } from "better-auth";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 
-
 export default function ({ actionData }: Route.ComponentProps) {
   return <PasswordForgotForm state={actionData?.state} step={actionData?.step ?? "start"} />;
 }
 
-export async function loader({request}: Route.LoaderArgs) {
-       await throwRedirectIfSessionExists({request});
+export async function loader({ request }: Route.LoaderArgs) {
+  await throwRedirectIfSessionExists({ request });
 }
-
 
 export async function action({ request }: Route.ActionArgs): Promise<ForgotPasswordFormProps | undefined> {
   const form = await request.formData();
@@ -42,14 +40,26 @@ export async function action({ request }: Route.ActionArgs): Promise<ForgotPassw
       return await stepCode({ request, email, code });
     }
     if (step === "update") {
-      await stepUpdatePassword({ request, email, password, repeat, code });
+      const headers = await stepUpdatePassword({
+        request,
+        email,
+        password,
+        repeat,
+        code,
+      });
+      if (headers) {
+        throw redirect("/", { headers });
+      }
     }
   } catch (error) {
     if (error instanceof Response) {
       throw error;
     }
     if (error instanceof APIError && error.body?.code === "TOO_MANY_ATTEMPTS") {
-      return { step: "try-again", state: { email: "", errors: [{ type: "TOO_MANY_ATTEMPTS" }] } };
+      return {
+        step: "try-again",
+        state: { email: "", errors: [{ type: "TOO_MANY_ATTEMPTS" }] },
+      };
     } else {
       const errors = getAuthError(error);
       return { step, state: { email, errors } };
@@ -59,7 +69,13 @@ export async function action({ request }: Route.ActionArgs): Promise<ForgotPassw
   return undefined;
 }
 
-async function stepStart({ request, email }: { request: Request; email: string | undefined }): Promise<ForgotPasswordFormProps | undefined> {
+async function stepStart({
+  request,
+  email,
+}: {
+  request: Request;
+  email: string | undefined;
+}): Promise<ForgotPasswordFormProps | undefined> {
   if (!email) {
     return { step: "start", state: {} };
   }
@@ -102,7 +118,13 @@ type StepUpdateArgs = {
   repeat: string | undefined;
   code: string | undefined;
 };
-async function stepUpdatePassword({ request, password, repeat, email, code }: StepUpdateArgs) {
+async function stepUpdatePassword({
+  request,
+  password,
+  repeat,
+  email,
+  code,
+}: StepUpdateArgs): Promise<Headers | undefined> {
   if (!password || !repeat || password !== repeat) {
     throw Error("password_mismatch");
   }
@@ -119,6 +141,5 @@ async function stepUpdatePassword({ request, password, repeat, email, code }: St
     throw Error("generic_error");
   }
 
-  throw redirect("/", { headers });
+  return headers;
 }
-

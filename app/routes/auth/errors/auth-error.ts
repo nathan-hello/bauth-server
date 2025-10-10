@@ -7,12 +7,15 @@ export type AuthApiErrors = keyof typeof auth["$ERROR_CODES"]
 export type AuthError =
   | {
       type:
+        | "totp_uri_not_found"
         | "password_mismatch"
+        | "INVALID_OTP_CODE"
         | AuthApiErrors
     }
   | { type: "generic_error"; message?: string };
 
-export function getAuthError(e: string | Error | unknown): AuthError[] {
+export function getAuthError(e: string | Error | unknown | AuthError[]): AuthError[] {
+
   let error: string;
 
   console.error(e);
@@ -27,8 +30,6 @@ export function getAuthError(e: string | Error | unknown): AuthError[] {
   } else {
     error = "generic_error";
   }
-
-  console.error(error);
 
   // Check if the error message matches any known error codes
   if (error in ERROR_COPY) {
