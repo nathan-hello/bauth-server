@@ -87,19 +87,15 @@ export function PasswordLoginForm({ state }: LoginFormProps) {
 
 export function PasswordRegisterForm(props: RegisterFormProps) {
   const copy = useCopy();
+  console.log(JSON.stringify(props));
 
   return (
     <Form data-component="form" method="post">
       {props.state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
-          message={
-            error?.type
-              ? error.type === "generic_error"
-                ? (error.message ?? copy.error[error.type])
-                : copy.error[error.type]
-              : undefined
-          }
+          message={error.type ? copy.error[error.type] : undefined}
+          submessage={error.type === "generic_error" ? error.message : ""}
         />
       ))}
       {props.step === "start" && <PasswordRegisterStartForm {...props} />}
@@ -195,7 +191,7 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
         name="email"
         defaultValue={state?.email}
         required
-        placeholder={copy.input_email_or_username}
+        placeholder={copy.input_email}
       />
       <input
         data-component="input"
