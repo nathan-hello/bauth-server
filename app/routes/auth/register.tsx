@@ -9,11 +9,18 @@ import type { Route } from "./+types/register";
 import { auth, validateUsername } from "@server/auth";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { useCopy } from "./lib/copy";
+import { data } from "react-router";
 
-export default function ({ actionData }: Route.ComponentProps) {
+
+type TwoFactorData = {
+  totp: TwoFactorTotpState;
+  email: TwoFactorEmailState;
+};
+
+export default function ({ loaderData, actionData }: Route.ComponentProps) {
   const copy = useCopy();
 
-  const two_factor = clientPersistTotpData({ email: actionData?.email, totp: actionData?.totp });
+  const two_factor = actionData?.two_factor ?? loaderData?.two_factor;
   return (
     <>
       <title>{copy.meta.register.title}</title>
@@ -24,48 +31,20 @@ export default function ({ actionData }: Route.ComponentProps) {
 
 export async function loader({ request }: Route.LoaderArgs) {
   await throwRedirectIfSessionExists({ request });
+  
+  const two_factor = getCookie(request);
+  return { two_factor };
 }
 
-function clientPersistTotpData(two_factor: {
-  totp: Partial<TwoFactorTotpState> | undefined;
-  email: Partial<TwoFactorEmailState> | undefined;
-}) {
-  const session_storage_key = "register_2fa_data";
-  const exists = sessionStorage.getItem(session_storage_key);
-  if (!exists) {
-    const empty: { totp: TwoFactorTotpState; email: TwoFactorEmailState } = {
-      email: { verified: false },
-      totp: { verified: false, totpUri: "", backupCodes: [] },
-    };
-
-    sessionStorage.setItem(session_storage_key, JSON.stringify({ ...empty, ...two_factor }));
-  } else {
-    const data = JSON.parse(exists);
-    sessionStorage.setItem(session_storage_key, JSON.stringify({ ...data, ...two_factor }));
-  }
-
-  const data = sessionStorage.getItem(session_storage_key);
-  if (!data) {
-    return;
-  }
-  return JSON.parse(data) as { totp: TwoFactorTotpState; email: TwoFactorEmailState };
-}
-
-export async function action({ request }: Route.ActionArgs): Promise<
-  | {
-      step: "start" | "verify";
-      state?: AuthState;
-      totp?: Partial<TwoFactorTotpState>;
-      email?: Partial<TwoFactorEmailState>;
-    }
-  | undefined
-> {
+export async function action({ request }: Route.ActionArgs) {
   const form = await request.formData();
 
   const email = form.get("email")?.toString();
   const password = form.get("password")?.toString();
   const code = form.get("code")?.toString();
   const action = form.get("action")?.toString();
+
+  const existingCookie = getCookie(request);
 
   try {
     if (!action) {
@@ -77,7 +56,7 @@ export async function action({ request }: Route.ActionArgs): Promise<
     if (action === "register") {
       const r = await ActionRegister({ request });
       if (r.errors) {
-        return { step: "start", state: { errors: r.errors } };
+        return { step: "start" as const, state: { errors: r.errors } };
       }
       if (!password) {
         throw Error("generic_error");
@@ -88,18 +67,45 @@ export async function action({ request }: Route.ActionArgs): Promise<
       });
       await auth.api.sendTwoFactorOTP({ body: { trustDevice: true }, headers: request.headers });
 
-      return {
-        step: "verify",
-        state: { email: r.email },
-        totp: { backupCodes, totpUri },
-      };
+      const updates = { totp: { backupCodes, totpUri } };
+      const cookieString = setCookie(existingCookie, updates);
+      const newData = getCookieFromString(cookieString);
+
+      return data(
+        {
+          step: "verify" as const,
+          state: { email: r.email },
+          two_factor: newData,
+        },
+        {
+          headers: {
+            "Set-Cookie": cookieString,
+          },
+        }
+      );
     }
     if (action === "verify:totp") {
       if (!code) {
         throw Error("INVALID_CODE");
       }
       await auth.api.verifyTOTP({ body: { code, trustDevice: true }, headers: request.headers });
-      return { step: "verify", state: { email: email }, totp: { verified: true } };
+      
+      const updates = { totp: { verified: true } };
+      const cookieString = setCookie(existingCookie, updates);
+      const newData = getCookieFromString(cookieString);
+
+      return data(
+        {
+          step: "verify" as const,
+          state: { email: email },
+          two_factor: newData,
+        },
+        {
+          headers: {
+            "Set-Cookie": cookieString,
+          },
+        }
+      );
     }
 
     if (action === "verify:email") {
@@ -107,14 +113,30 @@ export async function action({ request }: Route.ActionArgs): Promise<
         throw Error("INVALID_CODE");
       }
       await auth.api.verifyTwoFactorOTP({ body: { code, trustDevice: true }, headers: request.headers });
-      return { step: "verify", state: { email: email }, email: { verified: true } };
+      
+      const updates = { email: { verified: true } };
+      const cookieString = setCookie(existingCookie, updates);
+      const newData = getCookieFromString(cookieString);
+
+      return data(
+        {
+          step: "verify" as const,
+          state: { email: email },
+          two_factor: newData,
+        },
+        {
+          headers: {
+            "Set-Cookie": cookieString,
+          },
+        }
+      );
     }
   } catch (error) {
     if (error instanceof Response) {
       throw error;
     }
 
-    const step = action === "start" ? "start" : "verify";
+    const step = action === "start" ? ("start" as const) : ("verify" as const);
     const aerr = getAuthError(error);
 
     return {
@@ -123,6 +145,7 @@ export async function action({ request }: Route.ActionArgs): Promise<
         email: email,
         errors: aerr,
       },
+      two_factor: existingCookie,
     };
   }
 }
@@ -161,7 +184,7 @@ async function ActionRegister({ request }: { request: Request }): Promise<AuthSt
   return { email: email };
 }
 
-function ParseRegister(data: Record<string, string | undefined>): AuthError[] | null {
+function ParseRegister(data: Record<string, string | undefined>): AuthError[] | undefined {
   const errors: AuthError[] = [];
   if (!data.email) {
     errors.push({ type: "INVALID_EMAIL" });
@@ -181,5 +204,57 @@ function ParseRegister(data: Record<string, string | undefined>): AuthError[] | 
     return errors;
   }
 
-  return null;
+  return 
+}
+
+const COOKIE_NAME = "register_2fa_data";
+const COOKIE_MAX_AGE = 60 * 30; // 30 minutes
+
+function getCookie(request: Request): TwoFactorData | undefined {
+  const cookieHeader = request.headers.get("Cookie");
+  if (!cookieHeader) return ;
+
+  const cookies = cookieHeader.split(";").map((c) => c.trim());
+  const cookie = cookies.find((c) => c.startsWith(`${COOKIE_NAME}=`));
+  if (!cookie) return ;
+
+  try {
+    const value = cookie.substring(COOKIE_NAME.length + 1);
+    const decoded = decodeURIComponent(value);
+    return JSON.parse(decoded);
+  } catch {
+    return ;
+  }
+}
+
+function setCookie(
+  existingData: TwoFactorData | undefined,
+  updates: {
+    totp?: Partial<TwoFactorTotpState>;
+    email?: Partial<TwoFactorEmailState>;
+  }
+): string {
+  const empty: TwoFactorData = {
+    email: { verified: false },
+    totp: { verified: false, totpUri: "", backupCodes: [] },
+  };
+
+  const data: TwoFactorData = existingData
+    ? {
+        totp: { ...existingData.totp, ...updates.totp },
+        email: { ...existingData.email, ...updates.email },
+      }
+    : {
+        totp: { ...empty.totp, ...updates.totp },
+        email: { ...empty.email, ...updates.email },
+      };
+
+  const value = encodeURIComponent(JSON.stringify(data));
+  return `${COOKIE_NAME}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE}`;
+}
+
+function getCookieFromString(cookieString: string): TwoFactorData {
+  const value = cookieString.split(";")[0].substring(COOKIE_NAME.length + 1);
+  const decoded = decodeURIComponent(value);
+  return JSON.parse(decoded);
 }
