@@ -85,19 +85,32 @@ export async function action({
         returnHeaders: true,
       });
 
+      const parse = signUpHeaders.get("set-cookie")?.split(";")[0];
+      if (!parse) {
+        throw Error("could not parse cookie");
+      }
+      const key = parse.split("=")[0]
+      const val = parse.split("=")[1]
+      const pretend = new Headers({ [key]: val });
+
+      console.log("signupheaders");
       console.table(signUpHeaders);
+
+      console.log("pretend");
+      console.table(pretend);
       console.log("creating totp");
+
       // This doesn't actually force 2fa on login. That only happens after verification.
       const { totpURI: totpUri, backupCodes } = await auth.api.enableTwoFactor({
         body: { password: password },
-        headers: signUpHeaders,
+        headers: { ...request.headers, ...pretend },
       });
       console.table(totpUri, backupCodes);
 
       console.log("sending email otp");
       await auth.api.sendTwoFactorOTP({
         body: { trustDevice: true },
-        headers: { ...request.headers, ...signUpHeaders },
+        headers: { ...request.headers, ...pretend },
       });
       console.log("done sending email otp");
 
