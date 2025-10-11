@@ -2,9 +2,8 @@ import { PasswordRegisterForm, type TwoFactorEmailState, type TwoFactorTotpState
 import { getAuthError, type AuthError } from "./errors/auth-error";
 import type { Route } from "./+types/register";
 import { auth, validateUsername } from "@server/auth";
-import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { useCopy } from "./lib/copy";
-import { data } from "react-router";
+import { data, redirect } from "react-router";
 
 type TwoFactorData = {
   totp: TwoFactorTotpState;
@@ -15,19 +14,36 @@ export default function ({ loaderData, actionData }: Route.ComponentProps) {
   const copy = useCopy();
 
   const two_factor = actionData?.two_factor ?? loaderData?.two_factor;
+
+  const step = actionData?.step ?? loaderData?.step ?? "start";
+  const state = actionData?.state ?? loaderData?.state;
+
   return (
     <>
       <title>{copy.meta.register.title}</title>
-      <PasswordRegisterForm step={actionData?.step ?? "start"} state={actionData?.state} two_factor={two_factor} />;
+      <PasswordRegisterForm step={step} state={state} two_factor={two_factor} />
     </>
   );
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await throwRedirectIfSessionExists({ request });
-
   const two_factor = getCookie(request);
-  return { two_factor };
+
+  try {
+    const session = await auth.api.getSession({ headers: request.headers });
+    console.log("session found");
+    console.table(session);
+    if (session && two_factor) {
+      return { step: "verify" as const, state: { email: session.user.email }, two_factor };
+    }
+    if (session) {
+      throw redirect("/");
+    }
+  } catch (error) {
+    if (error instanceof Response) {
+      throw error;
+    }
+  }
 }
 
 type ActionReturn = {
@@ -45,7 +61,8 @@ export async function action({
   const email = form.get("email")?.toString();
   const password = form.get("password")?.toString();
   const repeat = form.get("repeat")?.toString();
-  const code = form.get("code")?.toString();
+  const code_totp = form.get("code_totp")?.toString();
+  const code_email = form.get("code_email")?.toString();
   const action = form.get("action")?.toString();
 
   const existingCookie = getCookie(request);
@@ -111,6 +128,10 @@ export async function action({
       const cookieString = setCookie(existingCookie, updates);
       const newData = getCookieFromString(cookieString);
 
+      signUpHeaders.append("Set-Cookie", cookieString);
+      console.log("signup cookies after start");
+      console.table(signUpHeaders);
+
       return data(
         {
           step: "verify",
@@ -118,42 +139,36 @@ export async function action({
           two_factor: newData,
         },
         {
-          headers: {
-            ...signUpHeaders,
-            "Set-Cookie": cookieString,
-          },
-        },
-      );
-    }
-    if (action === "verify:totp") {
-      if (!code) {
-        throw Error("INVALID_CODE");
-      }
-      await auth.api.verifyTOTP({ body: { code, trustDevice: true }, headers: request.headers });
-
-      const updates = { totp: { verified: true } };
-      const cookieString = setCookie(existingCookie, updates);
-      const newData = getCookieFromString(cookieString);
-
-      return data(
-        {
-          step: "verify",
-          state: { email: email },
-          two_factor: newData,
-        },
-        {
-          headers: {
-            "Set-Cookie": cookieString,
-          },
+          headers: signUpHeaders,
         },
       );
     }
 
-    if (action === "verify:email") {
-      if (!code) {
-        throw Error("INVALID_CODE");
+    if (action === "verify") {
+      if (code_totp) {
+        await auth.api.verifyTOTP({ body: { code: code_totp, trustDevice: true }, headers: request.headers });
+
+        const updates = { totp: { verified: true } };
+        const cookieString = setCookie(existingCookie, updates);
+        const newData = getCookieFromString(cookieString);
+
+        return data(
+          {
+            step: "verify",
+            state: { email: email },
+            two_factor: newData,
+          },
+          {
+            headers: {
+              "Set-Cookie": cookieString,
+            },
+          },
+        );
       }
-      await auth.api.verifyTwoFactorOTP({ body: { code, trustDevice: true }, headers: request.headers });
+    }
+
+    if (code_email) {
+      await auth.api.verifyTwoFactorOTP({ body: { code: code_email, trustDevice: true }, headers: request.headers });
 
       const updates = { email: { verified: true } };
       const cookieString = setCookie(existingCookie, updates);

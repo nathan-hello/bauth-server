@@ -14,7 +14,7 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   ACCOUNT_NOT_FOUND: "Invalid credentials.",
   CREDENTIAL_ACCOUNT_NOT_FOUND: "Invalid credentials.",
   INVALID_OTP: "Code is incorrect.",
-USERNAME_IS_ALREADY_TAKEN_PLEASE_TRY_ANOTHER: "Username taken.",
+  USERNAME_IS_ALREADY_TAKEN_PLEASE_TRY_ANOTHER: "Username taken.",
   USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "Email taken.",
   INVALID_OTP_CODE: "Code must be 6 digits.",
   TOO_MANY_ATTEMPTS: "Too many unsuccessful attempts.",
@@ -102,6 +102,19 @@ const english = {
   input_repeat: "Repeat password",
   button_continue: "Continue",
   button_skip: "Skip",
+  button_verify: "Verify",
+
+  otp_prompt: "Enter the code that was sent to your email.",
+  otp_verified: "Email verified.",
+
+  totp_show_qr: "Show QR Code",
+  totp_prompt: "Use your preferred 2FA app to save your secret key.",
+  totp_verified: "TOTP Verified.",
+  totp_manual_secret: "Secret:",
+  totp_manual_alg: "Algorithm:",
+  totp_manual_period: "Period:",
+  totp_manual_period_seconds: "seconds",
+  totp_manual_digits: "Digits:",
 };
 
 export function useCopy() {

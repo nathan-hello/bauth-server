@@ -27,7 +27,10 @@ type LoginFormProps = {
 type RegisterFormProps = {
   step: "start" | "verify";
   state?: AuthState;
-  two_factor?: { totp: Partial<TwoFactorTotpState>; email: Partial<TwoFactorEmailState> };
+  two_factor?: {
+    totp: Partial<TwoFactorTotpState>;
+    email: Partial<TwoFactorEmailState>;
+  };
 };
 
 type TwoFactorFormProps = {
@@ -87,7 +90,6 @@ export function PasswordLoginForm({ state }: LoginFormProps) {
 
 export function PasswordRegisterForm(props: RegisterFormProps) {
   const copy = useCopy();
-  console.log(JSON.stringify(props));
 
   return (
     <Form data-component="form" method="post">
@@ -100,80 +102,21 @@ export function PasswordRegisterForm(props: RegisterFormProps) {
       ))}
       {props.step === "start" && <PasswordRegisterStartForm {...props} />}
       {props.step === "verify" && (
-        <div className="flex flex-row gap-x-8">
-          <PasswordRegisterVerifyTotp {...props} />
-          <PasswordRegisterVerifyEmail {...props} />
+        <>
+      <input type="hidden" name="action" value="verify" />
+        <div className="flex flex-col gap-y-4 w-full">
+          <div className="flex flex-row gap-x-8 w-full">
+            <PasswordRegisterVerifyTotp {...props} />
+            <div className="bg-gray-500 h-[80%] my-auto w-[0.1rem]" />
+            <PasswordRegisterVerifyEmail {...props} />
+          </div>
+          <button data-component="button" data-color="ghost">
+            {copy.button_skip}
+          </button>
         </div>
+        </>
       )}
     </Form>
-  );
-}
-
-function PasswordRegisterVerifyTotp({ state, two_factor }: RegisterFormProps) {
-  const copy = useCopy();
-
-  return (
-    <div className="flex-1">
-      <input type="hidden" name="action" value="verify:totp" />
-      <input type="hidden" name="email" value={state?.email} />
-
-      <div className="flex justify-center mb-4">
-        <div className="w-48 h-48 bg-white p-2 rounded">
-          {two_factor?.totp.totpUri ? <QRCode data={two_factor?.totp.totpUri} /> : null}
-        </div>
-      </div>
-
-      {two_factor?.totp.verified ? (
-        <div className="text-green-600 font-semibold mb-4">TOTP Verified</div>
-      ) : (
-        <>
-          <input
-            data-component="input"
-            autoFocus
-            name="code"
-            minLength={6}
-            maxLength={6}
-            required
-            placeholder={copy.input_code}
-            autoComplete="one-time-code"
-          />
-          <button data-component="button" type="submit">
-            {copy.button_continue}
-          </button>
-        </>
-      )}
-    </div>
-  );
-}
-
-function PasswordRegisterVerifyEmail({ two_factor, state }: RegisterFormProps) {
-  const copy = useCopy();
-
-  return (
-    <div className="flex-1">
-      <input type="hidden" name="action" value="verify:email" />
-      <input type="hidden" name="email" value={state?.email} />
-
-      {two_factor?.email.verified ? (
-        <div className="text-green-600 font-semibold mb-4">Email Verified</div>
-      ) : (
-        <>
-          <input
-            data-component="input"
-            autoFocus
-            name="code"
-            minLength={6}
-            maxLength={6}
-            required
-            placeholder={copy.input_code}
-            autoComplete="one-time-code"
-          />
-          <button data-component="button" type="submit">
-            {copy.button_continue}
-          </button>
-        </>
-      )}
-    </div>
   );
 }
 
@@ -223,6 +166,65 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
         </span>
       </div>
     </>
+  );
+}
+
+function PasswordRegisterVerifyTotp({ state, two_factor }: RegisterFormProps) {
+  const copy = useCopy();
+
+  console.log("totpuri");
+  console.log(two_factor?.totp.totpUri);
+
+  return (
+    <div className="w-64 flex flex-col gap-y-4 justify-around">
+      <input type="hidden" name="email" value={state?.email} />
+
+      <div className="text-center">{two_factor?.totp.verified ? copy.totp_verified : copy.totp_prompt}</div>
+      <div className="flex justify-center">
+        {two_factor?.totp.totpUri ? <QRCode className="w-[200px] h-[200px]" data={two_factor?.totp.totpUri} /> : null}
+      </div>
+
+      <input
+        data-component="input"
+        autoFocus
+        name="code_totp"
+        minLength={6}
+        maxLength={6}
+        placeholder={copy.input_code}
+        autoComplete="one-time-code"
+      />
+      <button data-component="button" type="submit">
+        {copy.button_verify}
+      </button>
+    </div>
+  );
+}
+
+function PasswordRegisterVerifyEmail({ two_factor, state }: RegisterFormProps) {
+  const copy = useCopy();
+
+  return (
+    <div className="w-64 flex flex-col gap-y-4 justify-around">
+      <input type="hidden" name="email" value={state?.email} />
+
+      <div className="text-center">{two_factor?.email.verified ? copy.otp_verified : copy.otp_prompt}</div>
+      <div className="w-[200px] h-[200px] flex flex-col m-auto align-middle">
+        <button style={{backgroundColor: "var(--color-primary)"}} className="m-auto" name="resend_email">Resend email</button>
+      </div>
+
+      <input
+        data-component="input"
+        autoFocus
+        name="code_email"
+        minLength={6}
+        maxLength={6}
+        placeholder={copy.input_code}
+        autoComplete="one-time-code"
+      />
+      <button data-component="button" type="submit">
+        {copy.button_verify}
+      </button>
+    </div>
   );
 }
 

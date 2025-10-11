@@ -4,7 +4,7 @@ import type { auth } from "@server/auth";
 
 export type AuthApiErrors = keyof (typeof auth)["$ERROR_CODES"];
 
-export type AuthError =
+export type TAuthError =
   | {
       type:
         | "totp_uri_not_found"
@@ -20,10 +20,36 @@ export type AuthError =
     }
   | { type: "generic_error"; message?: string };
 
+export class AuthError {
+  type: TAuthError["type"];
+  message?: string;
+
+  constructor(e: TAuthError["type"] | TAuthError) {
+    if (typeof e === "string") {
+      this.type = e;
+    } else {
+
+      this.type = e.type;
+
+      if ("message" in e) {
+        this.message = e.message;
+      }
+    }
+  }
+}
+
 export function getAuthError(e: string | Error | unknown | AuthError[]): AuthError[] {
   let error: string;
 
   console.error(e);
+
+  if (e instanceof AuthError) {
+    return [e]
+  }
+
+  if (Array.isArray(e) && e.every(i => i instanceof AuthError)) {
+    return e
+  }
 
   // get the better-auth errors first. their "code" is what gets indexed into the copy object to get the text for the screen
   if (e instanceof APIError) {
