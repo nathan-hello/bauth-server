@@ -1,31 +1,35 @@
 import QR from "qrcode";
-import { useState, type HTMLAttributes } from "react";
+import { useEffect, useState, type HTMLAttributes } from "react";
 export type QRCodeProps = HTMLAttributes<HTMLDivElement> & {
   data: string;
-  foreground?: string;
-  background?: string;
-  robustness?: "L" | "M" | "Q" | "H";
 };
-export const QRCode = async ({ data, foreground = "#111", background = "#eee", robustness = "M", className, ...props }: QRCodeProps) => {
+
+export function QRCode({ data, ...props }: QRCodeProps) {
   const [qrSvg, setQrSvg] = useState("");
-  QR.toString(
-    data,
-    {
-      type: "svg",
-      color: {
-        dark: foreground,
-        light: background,
+  const foreground = "#111";
+  const background = "#eee";
+  const robustness = "M";
+  useEffect(() => {
+    QR.toString(
+      data,
+      {
+        type: "svg",
+        color: {
+          dark: foreground,
+          light: background,
+        },
+        width: 200,
+        errorCorrectionLevel: robustness,
       },
-      width: 200,
-      errorCorrectionLevel: robustness,
-    },
-    (error, svg) => {
-      if (error) {
-        console.error("QR code could not be rendered", error);
-      }
-      setQrSvg(svg);
-    },
-  );
+      (error, svg) => {
+        if (error) {
+          console.error("QR code could not be rendered", error);
+        }
+        setQrSvg(svg);
+      },
+    );
+  });
+
   return (
     <div
       className="size-full [&_svg]:size-full"
@@ -34,4 +38,4 @@ export const QRCode = async ({ data, foreground = "#111", background = "#eee", r
       {...props}
     />
   );
-};
+}
