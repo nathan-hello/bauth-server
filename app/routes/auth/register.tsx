@@ -85,34 +85,27 @@ export async function action({
         returnHeaders: true,
       });
 
-      const parse = signUpHeaders.get("set-cookie")?.split(";")[0];
-      if (!parse) {
+      const cookieValue = signUpHeaders.get("set-cookie")?.split(";")[0];
+      if (!cookieValue) {
         throw Error("could not parse cookie");
       }
-      const key = parse.split("=")[0]
-      const val = parse.split("=")[1]
-      const pretend = new Headers({ [key]: val });
 
-      console.log("signupheaders");
-      console.table(signUpHeaders);
-
-      console.log("pretend");
-      console.table(pretend);
-      console.log("creating totp");
+      // Force enableTwoFactor to generate a totp
+      const authenticatedHeaders = new Headers(request.headers);
+      authenticatedHeaders.set("cookie", cookieValue);
 
       // This doesn't actually force 2fa on login. That only happens after verification.
       const { totpURI: totpUri, backupCodes } = await auth.api.enableTwoFactor({
         body: { password: password },
-        headers: { ...request.headers, ...pretend },
+        headers: authenticatedHeaders,
       });
-      console.table(totpUri, backupCodes);
 
-      console.log("sending email otp");
-      await auth.api.sendTwoFactorOTP({
-        body: { trustDevice: true },
-        headers: { ...request.headers, ...pretend },
+      // This both verifies the email for better-auth's emailVerified, and
+      // enables (forces?) 2fa on the account. Can be turned off in settings.
+      await auth.api.sendVerificationOTP({
+        body: { email: email, type: "email-verification" },
+        headers: authenticatedHeaders,
       });
-      console.log("done sending email otp");
 
       const updates = { totp: { backupCodes, totpUri } };
       const cookieString = setCookie(existingCookie, updates);
