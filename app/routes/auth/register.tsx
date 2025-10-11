@@ -31,8 +31,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   try {
     const session = await auth.api.getSession({ headers: request.headers });
-    console.log("session found");
-    console.table(session);
     if (session && two_factor) {
       return { step: "verify" as const, state: { email: session.user.email }, two_factor };
     }
@@ -64,6 +62,7 @@ export async function action({
   const code_totp = form.get("code_totp")?.toString();
   const code_email = form.get("code_email")?.toString();
   const action = form.get("action")?.toString();
+  const resend_email = form.get("resend_email")?.toString();
 
   const existingCookie = getCookie(request);
 
@@ -117,10 +116,9 @@ export async function action({
         headers: authenticatedHeaders,
       });
 
-      // This both verifies the email for better-auth's emailVerified, and
-      // enables (forces?) 2fa on the account. Can be turned off in settings.
-      await auth.api.sendVerificationOTP({
-        body: { email: email, type: "email-verification" },
+      // twoFactor.otpOptions.sendOTP
+      await auth.api.sendTwoFactorOTP({
+        body: { trustDevice: true },
         headers: authenticatedHeaders,
       });
 
@@ -129,8 +127,6 @@ export async function action({
       const newData = getCookieFromString(cookieString);
 
       signUpHeaders.append("Set-Cookie", cookieString);
-      console.log("signup cookies after start");
-      console.table(signUpHeaders);
 
       return data(
         {
@@ -165,27 +161,33 @@ export async function action({
           },
         );
       }
-    }
 
-    if (code_email) {
-      await auth.api.verifyTwoFactorOTP({ body: { code: code_email, trustDevice: true }, headers: request.headers });
+      if (code_email) {
+        await auth.api.verifyTwoFactorOTP({ body: { code: code_email, trustDevice: true }, headers: request.headers });
 
-      const updates = { email: { verified: true } };
-      const cookieString = setCookie(existingCookie, updates);
-      const newData = getCookieFromString(cookieString);
+        const updates = { email: { verified: true } };
+        const cookieString = setCookie(existingCookie, updates);
+        const newData = getCookieFromString(cookieString);
 
-      return data(
-        {
-          step: "verify",
-          state: { email: email },
-          two_factor: newData,
-        },
-        {
-          headers: {
-            "Set-Cookie": cookieString,
+        return data(
+          {
+            step: "verify",
+            state: { email: email },
+            two_factor: newData,
           },
-        },
-      );
+          {
+            headers: {
+              "Set-Cookie": cookieString,
+            },
+          },
+        );
+      }
+      if (resend_email) {
+        // await auth.api.sendTwoFactorOTP({
+        //   body: { trustDevice: true },
+        //   headers: request.headers,
+        // });
+      }
     }
   } catch (error) {
     if (error instanceof Response) {

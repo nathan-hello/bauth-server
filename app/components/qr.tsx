@@ -36,30 +36,29 @@ export function QRCode({ data, ...props }: QRCodeProps) {
     );
   }, []);
 
-  const handleClick = () => {
-    setMode((prev) => {
-      if (prev === "text") {
-        return "text";
-      }
-      if (prev === "blur") return "qr";
-      if (prev === "qr") return "text";
-      return "blur";
-    });
-  };
-
   const copy = useCopy();
   return (
-    <div className="size-full cursor-pointer" onClick={handleClick} {...props}>
+    <div className="size-full cursor-pointer" {...props}>
       {mode === "text" ? (
-        <div className="size-full  flex flex-col justify-around border border-white overflow-auto text-xs select-text break-all">
-          <strong>Secret:</strong>    <span className="font-mono">{manual.secret}   </span>
+        <div className="size-full  flex flex-col justify-around overflow-auto text-xs select-text break-all">
+          <strong>Secret:</strong> <span className="font-mono">{manual.secret} </span>
           <strong>Algorithm:</strong> <span className="font-mono">{manual.algorithm}</span>
-          <strong>Period:</strong>    <span className="font-mono">{manual.period}   </span>
-          <strong>Digits:</strong>    <span className="font-mono">{manual.digits}   </span>
-          <div data-component="button" className="cursor-pointer" onPointerDown={() => setMode("qr")}>{copy.totp_show_qr}</div>
+          <strong>Period:</strong> <span className="font-mono">{manual.period} </span>
+          <strong>Digits:</strong> <span className="font-mono">{manual.digits} </span>
+          <div data-component="button" className="cursor-pointer" onClick={() => setMode("qr")}>
+            {copy.totp_show_qr}
+          </div>
         </div>
       ) : (
         <div
+          onClick={() => {
+            if (mode === "blur") {
+              setMode("qr");
+            }
+            if (mode === "qr") {
+              setMode("text");
+            }
+          }}
           className={`size-full [&_svg]:size-full ${mode === "blur" ? "blur-md" : ""}`}
           dangerouslySetInnerHTML={{ __html: qrSvg }}
         />

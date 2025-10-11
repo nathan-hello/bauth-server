@@ -92,7 +92,7 @@ export function PasswordRegisterForm(props: RegisterFormProps) {
   const copy = useCopy();
 
   return (
-    <Form data-component="form" method="post">
+    <div data-component="form">
       {props.state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
@@ -103,20 +103,20 @@ export function PasswordRegisterForm(props: RegisterFormProps) {
       {props.step === "start" && <PasswordRegisterStartForm {...props} />}
       {props.step === "verify" && (
         <>
-      <input type="hidden" name="action" value="verify" />
-        <div className="flex flex-col gap-y-4 w-full">
-          <div className="flex flex-row gap-x-8 w-full">
-            <PasswordRegisterVerifyTotp {...props} />
-            <div className="bg-gray-500 h-[80%] my-auto w-[0.1rem]" />
-            <PasswordRegisterVerifyEmail {...props} />
+          <input type="hidden" name="action" value="verify" />
+          <div className="flex flex-col gap-y-4 w-full">
+            <div className="flex flex-row gap-x-8 w-full">
+              <PasswordRegisterVerifyTotp {...props} />
+              <div className="bg-gray-500 h-[80%] my-auto w-[0.1rem]" />
+              <PasswordRegisterVerifyEmail {...props} />
+            </div>
+            <button data-component="button" data-color="ghost">
+              {copy.button_skip}
+            </button>
           </div>
-          <button data-component="button" data-color="ghost">
-            {copy.button_skip}
-          </button>
-        </div>
         </>
       )}
-    </Form>
+    </div>
   );
 }
 
@@ -125,7 +125,7 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
   const link = useAuthLinks();
 
   return (
-    <>
+    <Form method="post" className="flex flex-col gap-y-4">
       <input type="hidden" name="action" value="register" />
       <input data-component="input" type="text" name="username" required placeholder={copy.input_username} />
       <input
@@ -165,7 +165,7 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
           </button>
         </span>
       </div>
-    </>
+    </Form>
   );
 }
 
@@ -176,26 +176,28 @@ function PasswordRegisterVerifyTotp({ state, two_factor }: RegisterFormProps) {
   console.log(two_factor?.totp.totpUri);
 
   return (
-    <div className="w-64 flex flex-col gap-y-4 justify-around">
-      <input type="hidden" name="email" value={state?.email} />
-
+    <div className="w-64 flex flex-col gap-y-8 justify-around">
       <div className="text-center">{two_factor?.totp.verified ? copy.totp_verified : copy.totp_prompt}</div>
       <div className="flex justify-center">
         {two_factor?.totp.totpUri ? <QRCode className="w-[200px] h-[200px]" data={two_factor?.totp.totpUri} /> : null}
       </div>
 
-      <input
-        data-component="input"
-        autoFocus
-        name="code_totp"
-        minLength={6}
-        maxLength={6}
-        placeholder={copy.input_code}
-        autoComplete="one-time-code"
-      />
-      <button data-component="button" type="submit">
-        {copy.button_verify}
-      </button>
+      <Form method="post" className="flex flex-col gap-y-2">
+        <input type="hidden" name="action" value="verify" />
+        <input type="hidden" name="email" value={state?.email} />
+        <input
+          data-component="input"
+          autoFocus
+          name="code_totp"
+          minLength={6}
+          maxLength={6}
+          placeholder={copy.input_code}
+          autoComplete="one-time-code"
+        />
+        <button data-component="button" type="submit">
+          {copy.button_verify}
+        </button>
+      </Form>
     </div>
   );
 }
@@ -204,26 +206,35 @@ function PasswordRegisterVerifyEmail({ two_factor, state }: RegisterFormProps) {
   const copy = useCopy();
 
   return (
-    <div className="w-64 flex flex-col gap-y-4 justify-around">
-      <input type="hidden" name="email" value={state?.email} />
-
+    <div className="w-64 flex flex-col gap-y-8 justify-around">
       <div className="text-center">{two_factor?.email.verified ? copy.otp_verified : copy.otp_prompt}</div>
-      <div className="w-[200px] h-[200px] flex flex-col m-auto align-middle">
-        <button style={{backgroundColor: "var(--color-primary)"}} className="m-auto" name="resend_email">Resend email</button>
-      </div>
+      <Form method="post">
+        <input type="hidden" name="email" value={state?.email} />
+        <input type="hidden" name="action" value="verify" />
+        <input type="hidden" name="resend_email" value="true" />
+        <div className="w-[200px] h-[200px] flex items-center justify-center mx-auto">
+          <button data-component="button" className="px-4 py-2" type="submit">
+            Resend email
+          </button>
+        </div>
+      </Form>
 
-      <input
-        data-component="input"
-        autoFocus
-        name="code_email"
-        minLength={6}
-        maxLength={6}
-        placeholder={copy.input_code}
-        autoComplete="one-time-code"
-      />
-      <button data-component="button" type="submit">
-        {copy.button_verify}
-      </button>
+      <Form method="post" className="flex flex-col gap-y-2">
+        <input type="hidden" name="email" value={state?.email} />
+        <input type="hidden" name="action" value="verify" />
+        <input
+          data-component="input"
+          autoFocus
+          name="code_email"
+          minLength={6}
+          maxLength={6}
+          placeholder={copy.input_code}
+          autoComplete="one-time-code"
+        />
+        <button data-component="button" type="submit">
+          {copy.button_verify}
+        </button>
+      </Form>
     </div>
   );
 }
