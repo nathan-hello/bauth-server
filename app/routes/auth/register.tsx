@@ -30,7 +30,15 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { two_factor };
 }
 
-export async function action({ request }: Route.ActionArgs) {
+type ActionReturn = {
+  step: "start" | "verify";
+  state: { email?: string; errors?: AuthError[] };
+  two_factor?: { email: Partial<TwoFactorEmailState>; totp: Partial<TwoFactorTotpState> };
+};
+
+export async function action({
+  request,
+}: Route.ActionArgs): Promise<ActionReturn | ReturnType<typeof data<ActionReturn>> | undefined> {
   const form = await request.formData();
 
   const username = form.get("username")?.toString();
@@ -41,36 +49,30 @@ export async function action({ request }: Route.ActionArgs) {
   const action = form.get("action")?.toString();
 
   const existingCookie = getCookie(request);
-  console.log("start");
-  console.table(form);
 
   try {
     if (!action) {
-      console.log("no action");
       throw Error("no action");
     }
     if (!email) {
-      console.log("no email");
       throw Error("no email");
     }
-    console.log("zxcv");
     if (action === "register") {
-      console.log("register");
       const errs = ParseRegister({ username, email, password, repeat });
-      if (errs !== null) {
-        return { email: email, errors: errs };
+      if (errs) {
+        return { step: "start", state: { email: email, errors: errs } };
       }
-      console.table(errs);
 
       if (!username || !email || !password || !repeat) {
-        console.table("asdffdsa");
         return {
-          email: email,
-          errors: [{ type: "INVALID_EMAIL_OR_PASSWORD" }],
+          step: "start",
+          state: {
+            email: email,
+            errors: [{ type: "INVALID_EMAIL_OR_PASSWORD" }],
+          },
         };
       }
 
-      console.log("asdf");
       const { headers: signUpHeaders } = await auth.api.signUpEmail({
         body: {
           username,
@@ -82,40 +84,40 @@ export async function action({ request }: Route.ActionArgs) {
         headers: request.headers,
         returnHeaders: true,
       });
-      console.log("sign up");
-      console.table(headers)
 
+      console.table(signUpHeaders);
+      console.log("creating totp");
       // This doesn't actually force 2fa on login. That only happens after verification.
       const { totpURI: totpUri, backupCodes } = await auth.api.enableTwoFactor({
         body: { password: password },
-        headers: { ...request.headers, ...signUpHeaders },
+        headers: signUpHeaders,
       });
+      console.table(totpUri, backupCodes);
 
+      console.log("sending email otp");
       await auth.api.sendTwoFactorOTP({
         body: { trustDevice: true },
         headers: { ...request.headers, ...signUpHeaders },
       });
+      console.log("done sending email otp");
 
-      console.log("fdsa");
       const updates = { totp: { backupCodes, totpUri } };
       const cookieString = setCookie(existingCookie, updates);
       const newData = getCookieFromString(cookieString);
 
-      const ret = {
-        step: "verify" as const,
-        state: { email },
-        two_factor: newData,
-      };
-
-      const h = {
-        headers: {
-          ...signUpHeaders,
-          "Set-Cookie": cookieString,
+      return data(
+        {
+          step: "verify",
+          state: { email },
+          two_factor: newData,
         },
-      };
-      console.log(ret, h);
-
-      return data(ret, h);
+        {
+          headers: {
+            ...signUpHeaders,
+            "Set-Cookie": cookieString,
+          },
+        },
+      );
     }
     if (action === "verify:totp") {
       if (!code) {
@@ -129,7 +131,7 @@ export async function action({ request }: Route.ActionArgs) {
 
       return data(
         {
-          step: "verify" as const,
+          step: "verify",
           state: { email: email },
           two_factor: newData,
         },
@@ -153,7 +155,7 @@ export async function action({ request }: Route.ActionArgs) {
 
       return data(
         {
-          step: "verify" as const,
+          step: "verify",
           state: { email: email },
           two_factor: newData,
         },
@@ -169,7 +171,7 @@ export async function action({ request }: Route.ActionArgs) {
       throw error;
     }
 
-    const step = action === "start" ? ("start" as const) : ("verify" as const);
+    const step = action?.startsWith("verify") ? "verify" : "start";
     const aerr = getAuthError(error);
 
     return {

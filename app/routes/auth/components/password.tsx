@@ -27,7 +27,7 @@ type LoginFormProps = {
 type RegisterFormProps = {
   step: "start" | "verify";
   state?: AuthState;
-  two_factor?: { totp: TwoFactorTotpState; email: TwoFactorEmailState };
+  two_factor?: { totp: Partial<TwoFactorTotpState>; email: Partial<TwoFactorEmailState> };
 };
 
 type TwoFactorFormProps = {
@@ -207,6 +207,7 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
         type="password"
         name="repeat"
         required
+        defaultValue={""}
         placeholder={copy.input_repeat}
         autoComplete="new-password"
       />
