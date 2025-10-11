@@ -7,11 +7,15 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
 
   // better auth errors
   INVALID_USERNAME: "Username is invalid.",
+  USERNAME_IS_TOO_SHORT: "Username is too short.",
   USERNAME_TOO_SHORT: "Username is too short.",
+  USERNAME_IS_TOO_LONG: "Username is too long.",
   USERNAME_TOO_LONG: "Username is too long.",
   ACCOUNT_NOT_FOUND: "Invalid credentials.",
   CREDENTIAL_ACCOUNT_NOT_FOUND: "Invalid credentials.",
   INVALID_OTP: "Code is incorrect.",
+USERNAME_IS_ALREADY_TAKEN_PLEASE_TRY_ANOTHER: "Username taken.",
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "Email taken.",
   INVALID_OTP_CODE: "Code must be 6 digits.",
   TOO_MANY_ATTEMPTS: "Too many unsuccessful attempts.",
   EMAIL_CAN_NOT_BE_UPDATED: "Email cannot be updated.",

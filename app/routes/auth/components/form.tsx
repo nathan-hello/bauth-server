@@ -1,9 +1,4 @@
-export function FormAlert(props: {
-  message?: string
-  submessage?: string;
-  color?: "danger" | "success"
-}) {
-  console.log(props)
+export function FormAlert(props: { message?: string; submessage?: string; color?: "danger" | "success" }) {
   return (
     <div data-component="form-alert" data-color={props.color}>
       <svg
@@ -34,7 +29,15 @@ export function FormAlert(props: {
           d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
         />
       </svg>
-      <span data-slot="message">{props.message}</span>
+      <span data-slot="message">
+        {props.message}
+        {props.submessage && (
+          <>
+            <br />
+            <span>{props.submessage}</span>
+          </>
+        )}
+      </span>
     </div>
-  )
+  );
 }
