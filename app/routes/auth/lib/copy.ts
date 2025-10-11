@@ -53,7 +53,7 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   INVALID_TWO_FACTOR_COOKIE: "",
   INVALID_USERNAME_OR_PASSWORD: "",
   OTP_EXPIRED: "",
-  OTP_HAS_EXPIRED: "",
+  OTP_HAS_EXPIRED: "OTP has expired.",
   OTP_NOT_ENABLED: "",
   PASSKEY_NOT_FOUND: "",
   TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE: "",

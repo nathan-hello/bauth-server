@@ -32,9 +32,12 @@ export const auth = betterAuth({
       displayUsernameValidator: validateUsername,
     }),
     twoFactor({
+      skipVerificationOnEnable: true,
       otpOptions: {
+        storeOTP: "plain",
         sendOTP: async (data, request) => {
           console.log("plugins.twofactor.otpoptions.sendotp:");
+          console.log(new Date())
           console.table({ email: data.user.email, token: data.otp });
           console.log("Request:");
           console.table(request);
