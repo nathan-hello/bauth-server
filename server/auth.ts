@@ -32,7 +32,6 @@ export const auth = betterAuth({
       displayUsernameValidator: validateUsername,
     }),
     twoFactor({
-      skipVerificationOnEnable: true,
       otpOptions: {
         storeOTP: "plain",
         sendOTP: async (data, request) => {
@@ -71,9 +70,17 @@ export const auth = betterAuth({
     requireEmailVerification: false,
     revokeSessionsOnPasswordReset: true,
   },
-  // Email verification is done via Email OTP's auth.api.verifyEmailOTP
   emailVerification: {
-    sendOnSignUp: false,
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    expiresIn: 60 * 60 * 24,
+    sendVerificationEmail: async (data, request) => {
+        console.log("emailverification.sendverificationemail");
+        console.table(data);
+        console.log("Request:");
+        console.table(request);
+    },
+
   },
   trustedOrigins: [url],
   account: {
