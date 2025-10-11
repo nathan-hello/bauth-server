@@ -83,7 +83,7 @@
 }
 
 [data-component="center"] {
-  width: 380px;
+  width: 600px;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

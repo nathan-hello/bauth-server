@@ -4,6 +4,7 @@ import { redirect } from "react-router";
 export async function throwRedirectIfSessionExists({ request }: { request: Request }) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
+    console.log("session");
     console.table(session);
     if (session !== null) {
       throw redirect("/");
