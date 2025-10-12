@@ -41,8 +41,6 @@ export class AuthError {
 export function getAuthError(e: string | Error | unknown | AuthError[]): AuthError[] {
   let error: string;
 
-  console.error(e);
-
   if (e instanceof AuthError) {
     return [e]
   }

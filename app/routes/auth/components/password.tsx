@@ -10,27 +10,12 @@ export type AuthState = {
   errors?: AuthError[];
 };
 
-export type TwoFactorTotpState = {
-  verified: boolean;
-  backupCodes: string[];
-  totpUri: string;
-};
-
-export type TwoFactorEmailState = {
-  verified: boolean;
-};
-
 type LoginFormProps = {
   state?: AuthState;
 };
 
 type RegisterFormProps = {
-  step: "start" | "verify";
   state?: AuthState;
-  two_factor?: {
-    totp: Partial<TwoFactorTotpState>;
-    email: Partial<TwoFactorEmailState>;
-  };
 };
 
 type TwoFactorFormProps = {
@@ -100,22 +85,7 @@ export function PasswordRegisterForm(props: RegisterFormProps) {
           submessage={error.type === "generic_error" ? error.message : ""}
         />
       ))}
-      {props.step === "start" && <PasswordRegisterStartForm {...props} />}
-      {props.step === "verify" && (
-        <>
-          <input type="hidden" name="action" value="verify" />
-          <div className="flex flex-col gap-y-4 w-full">
-            <div className="flex flex-row gap-x-8 w-full">
-              <PasswordRegisterVerifyTotp {...props} />
-              <div className="bg-gray-500 h-[80%] my-auto w-[0.1rem]" />
-              <PasswordRegisterVerifyEmail {...props} />
-            </div>
-            <button data-component="button" data-color="ghost">
-              {copy.button_skip}
-            </button>
-          </div>
-        </>
-      )}
+      <PasswordRegisterStartForm {...props} />
     </div>
   );
 }
@@ -169,11 +139,8 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
   );
 }
 
-function PasswordRegisterVerifyTotp({ state, two_factor }: RegisterFormProps) {
+function PasswordRegisterVerifyTotp({ state, two_factor }: RegisterFormProps & {two_factor: any}) {
   const copy = useCopy();
-
-  console.log("totpuri");
-  console.log(two_factor?.totp.totpUri);
 
   return (
     <div className="w-64 flex flex-col gap-y-8 justify-around">
@@ -202,7 +169,7 @@ function PasswordRegisterVerifyTotp({ state, two_factor }: RegisterFormProps) {
   );
 }
 
-function PasswordRegisterVerifyEmail({ two_factor, state }: RegisterFormProps) {
+function PasswordRegisterVerifyEmail({ two_factor, state }: RegisterFormProps & {two_factor: any}) {
   const copy = useCopy();
 
   return (
