@@ -10,10 +10,10 @@ export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
 
   return (
-    <>
+    <div data-component="center">
       <title>{copy.meta.register.title}</title>
       <PasswordRegisterForm state={actionData?.state} />
-    </>
+    </div>
   );
 }
 
