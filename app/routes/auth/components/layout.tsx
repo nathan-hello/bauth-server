@@ -11,11 +11,9 @@ export default function () {
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <body>
         <div data-component="root">
-          <div data-component="center">
             <img onClick={() => navigate("/")} data-component="logo" data-mode="light" src="/favicon.ico" />
             <img onClick={() => navigate("/")} data-component="logo" data-mode="dark" src="/favicon.ico" />
             <Outlet />
-          </div>
         </div>
       </body>
     </div>
