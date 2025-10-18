@@ -19,7 +19,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const allSessions = await auth.api.listSessions({ headers: request.headers });
   const s = allSessions
     .filter((s) => typeof s.ipAddress === "string")
-    .map((s) => ({ token: s.token, ipAddress: s.ipAddress as string, lastLoggedIn: s.updatedAt }));
+    .map((s) => ({ id: s.token, ipAddress: s.ipAddress as string, lastLoggedIn: s.updatedAt }));
 
 
   return {
