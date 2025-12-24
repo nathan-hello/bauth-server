@@ -116,9 +116,7 @@ export function CodeUI(props: CodeUIOptions) {
     return (
       <div>
         <form data-component="form" method="post">
-          {error?.type === "invalid_claim" && (
-            <FormAlert message={copy.email_invalid} />
-          )}
+          {error?.type === "invalid_claim" && <FormAlert message={copy.email_invalid} />}
           <input type="hidden" name="action" value="request" />
           <input
             data-component="input"
@@ -140,15 +138,10 @@ export function CodeUI(props: CodeUIOptions) {
     return (
       <div>
         <form data-component="form" method="post">
-          {error?.type === "invalid_code" && (
-            <FormAlert message={copy.code_invalid} />
-          )}
+          {error?.type === "invalid_code" && <FormAlert message={copy.code_invalid} />}
           {state.type === "code" && (
             <FormAlert
-              message={
-                (state.resend ? copy.code_resent : copy.code_sent) +
-                state.claims.email
-              }
+              message={(state.resend ? copy.code_resent : copy.code_sent) + state.claims.email}
               color="success"
             />
           )}
@@ -169,19 +162,12 @@ export function CodeUI(props: CodeUIOptions) {
         </form>
         <form method="post">
           {Object.entries(state.claims).map(([key, value]) => (
-            <input
-              key={key}
-              type="hidden"
-              name={key}
-              value={String(value)}
-              className="hidden"
-            />
+            <input key={key} type="hidden" name={key} value={String(value)} className="hidden" />
           ))}
           <input type="hidden" name="action" value="request" />
           <div data-component="form-footer">
             <span>
-              {copy.code_didnt_get}{" "}
-              <button data-component="link">{copy.code_resend}</button>
+              {copy.code_didnt_get} <button data-component="link">{copy.code_resend}</button>
             </span>
           </div>
         </form>

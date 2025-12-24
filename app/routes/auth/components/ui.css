@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 :root {
   --color-background-dark: #171717;
@@ -6,8 +6,9 @@
   --color-primary-dark: #0a241e;
   --color-primary-light: #261c4a;
   --border-radius: 0;
-  --font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-family:
+    ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
   --font-scale: 1;
 
   --color-background-success-dark: oklch(0.3 0.04 172);
@@ -19,7 +20,6 @@
   --color-background-error-light: oklch(from var(--color-background-error-dark) 0.92 c h);
   --color-error-dark: oklch(from var(--color-background-error-dark) 0.92 c h);
   --color-error-light: oklch(from var(--color-background-error-dark) 0.25 c h);
-
 
   --color-background: var(--color-background-dark);
   --color-primary: var(--color-primary-dark);
@@ -39,20 +39,10 @@
     --color-error: var(--color-error-light);
   }
 
-  --color-high: oklch(
-    from var(--color-background) clamp(0, calc((l - 0.714) * -1000), 1) 0 0
-  );
+  --color-high: oklch(from var(--color-background) clamp(0, calc((l - 0.714) * -1000), 1) 0 0);
   --color-low: oklch(from var(--color-background) clamp(0, calc((l - 0.714) * 1000), 1) 0 0);
-  --lightness-high: color-mix(
-    in oklch,
-    var(--color-high) 0%,
-    oklch(var(--color-high) 0 0)
-  );
-  --lightness-low: color-mix(
-    in oklch,
-    var(--color-low) 0%,
-    oklch(var(--color-low) 0 0)
-  );
+  --lightness-high: color-mix(in oklch, var(--color-high) 0%, oklch(var(--color-high) 0 0));
+  --lightness-low: color-mix(in oklch, var(--color-low) 0%, oklch(var(--color-low) 0 0));
 
   --font-size-xs: calc(0.75rem * var(--font-scale));
   --font-size-sm: calc(0.875rem * var(--font-scale));
@@ -92,13 +82,13 @@
   border-radius: calc(var(--border-radius) * 0.25rem);
 
   @media (prefers-color-scheme: light) {
-     background: var(--color-background-dark);
-     opacity: 0.95;
+    background: var(--color-background-dark);
+    opacity: 0.95;
   }
 
   @media (prefers-color-scheme: dark) {
-     background: var(--color-background-light);
-     opacity: 0.95;
+    background: var(--color-background-light);
+    opacity: 0.95;
   }
 
   &[data-size="small"] {
@@ -158,7 +148,8 @@
   padding: 0 1rem;
   border: 1px solid transparent;
   --background: oklch(
-    from var(--color-background) calc(l + (-0.06 * clamp(0, calc((l - 0.714) * 1000), 1) + 0.03)) c h
+    from var(--color-background) calc(l + (-0.06 * clamp(0, calc((l - 0.714) * 1000), 1) + 0.03)) c
+      h
   );
   background: var(--background);
   border-color: oklch(
@@ -240,8 +231,12 @@
     background: var(--color-background-success);
     color: var(--color-success);
 
-    [data-slot="icon-success"] { display: block; }
-    [data-slot="icon-danger"] { display: none; }
+    [data-slot="icon-success"] {
+      display: block;
+    }
+    [data-slot="icon-danger"] {
+      display: none;
+    }
   }
 
   &:has([data-slot="message"]:empty) {
@@ -253,7 +248,9 @@
     width: 1rem;
     height: 1rem;
   }
-  [data-slot="icon-success"] { display: none; }
+  [data-slot="icon-success"] {
+    display: none;
+  }
 }
 
 [data-component="form-footer"] {

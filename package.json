@@ -45,9 +45,5 @@
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
     "vite-tsconfig-paths": "^5.1.4"
-  },
-  "prettier": {
-    "tabWidth": 2,
-    "printWidth": 120
   }
 }

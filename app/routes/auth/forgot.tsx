@@ -18,10 +18,14 @@ export default function ({ actionData }: Route.ComponentProps) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await throwRedirectIfSessionExists({ request });
+  await throwRedirectIfSessionExists({
+    request,
+  });
 }
 
-export async function action({ request }: Route.ActionArgs): Promise<ForgotPasswordFormProps | undefined> {
+export async function action({
+  request,
+}: Route.ActionArgs): Promise<ForgotPasswordFormProps | undefined> {
   const form = await request.formData();
   const step = form.get("step")?.toString();
   const email = form.get("email")?.toString();
@@ -31,20 +35,29 @@ export async function action({ request }: Route.ActionArgs): Promise<ForgotPassw
   const repeat = form.get("repeat")?.toString();
   if (!step || (step !== "start" && step !== "code" && step !== "update" && step !== "try-again")) {
     return {
-      state: { errors: [{ type: "generic_error" }] },
+      state: {
+        errors: [{ type: "generic_error" }],
+      },
       step: "start",
     };
   }
 
   try {
     if (step === "start" || resend === "true") {
-      return await stepStart({ request, email });
+      return await stepStart({
+        request,
+        email,
+      });
     }
     if (step === "try-again") {
       throw redirect("/auth/login");
     }
     if (step === "code") {
-      return await stepCode({ request, email, code });
+      return await stepCode({
+        request,
+        email,
+        code,
+      });
     }
     if (step === "update") {
       const headers = await stepUpdatePassword({
@@ -55,7 +68,9 @@ export async function action({ request }: Route.ActionArgs): Promise<ForgotPassw
         code,
       });
       if (headers) {
-        throw redirect("/", { headers });
+        throw redirect("/", {
+          headers,
+        });
       }
     }
   } catch (error) {
@@ -65,11 +80,21 @@ export async function action({ request }: Route.ActionArgs): Promise<ForgotPassw
     if (error instanceof APIError && error.body?.code === "TOO_MANY_ATTEMPTS") {
       return {
         step: "try-again",
-        state: { email: "", errors: [{ type: "TOO_MANY_ATTEMPTS" }] },
+        state: {
+          email: "",
+          errors: [
+            {
+              type: "TOO_MANY_ATTEMPTS",
+            },
+          ],
+        },
       };
     } else {
       const errors = getAuthError(error);
-      return { step, state: { email, errors } };
+      return {
+        step,
+        state: { email, errors },
+      };
     }
   }
 
@@ -93,7 +118,10 @@ async function stepStart({
   if (!ok) {
     throw Error("Server was not able to send verification email.");
   }
-  return { step: "code", state: { email: email } };
+  return {
+    step: "code",
+    state: { email: email },
+  };
 }
 
 type StepCodeArgs = {
@@ -101,7 +129,11 @@ type StepCodeArgs = {
   email: string | undefined;
   code: string | undefined;
 };
-async function stepCode({ request, email, code }: StepCodeArgs): Promise<ForgotPasswordFormProps | undefined> {
+async function stepCode({
+  request,
+  email,
+  code,
+}: StepCodeArgs): Promise<ForgotPasswordFormProps | undefined> {
   if (!email) {
     throw Error("otp_failed");
   }
@@ -109,13 +141,20 @@ async function stepCode({ request, email, code }: StepCodeArgs): Promise<ForgotP
     throw Error("code_invalid");
   }
   const ok = await auth.api.checkVerificationOTP({
-    body: { email, otp: code, type: "forget-password" },
+    body: {
+      email,
+      otp: code,
+      type: "forget-password",
+    },
     headers: request.headers,
   });
   if (!ok) {
     throw Error("otp_failed");
   }
-  return { step: "update", state: { email } };
+  return {
+    step: "update",
+    state: { email },
+  };
 }
 
 type StepUpdateArgs = {
@@ -141,7 +180,11 @@ async function stepUpdatePassword({
 
   const { headers, response } = await auth.api.resetPasswordEmailOTP({
     headers: request.headers,
-    body: { email: email, password: password, otp: code },
+    body: {
+      email: email,
+      password: password,
+      otp: code,
+    },
     returnHeaders: true,
   });
   if (!response.success) {

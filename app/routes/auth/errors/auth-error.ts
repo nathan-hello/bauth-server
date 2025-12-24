@@ -18,7 +18,10 @@ export type TAuthError =
         | "INVALID_OTP_CODE"
         | AuthApiErrors;
     }
-  | { type: "generic_error"; message?: string };
+  | {
+      type: "generic_error";
+      message?: string;
+    };
 
 export class AuthError {
   type: TAuthError["type"];
@@ -28,7 +31,6 @@ export class AuthError {
     if (typeof e === "string") {
       this.type = e;
     } else {
-
       this.type = e.type;
 
       if ("message" in e) {
@@ -42,11 +44,11 @@ export function getAuthError(e: string | Error | unknown | AuthError[]): AuthErr
   let error: string;
 
   if (e instanceof AuthError) {
-    return [e]
+    return [e];
   }
 
-  if (Array.isArray(e) && e.every(i => i instanceof AuthError)) {
-    return e
+  if (Array.isArray(e) && e.every((i) => i instanceof AuthError)) {
+    return e;
   }
 
   // get the better-auth errors first. their "code" is what gets indexed into the copy object to get the text for the screen
@@ -65,5 +67,10 @@ export function getAuthError(e: string | Error | unknown | AuthError[]): AuthErr
     return [{ type: error }] as AuthError[];
   }
 
-  return [{ type: "generic_error", message: error }];
+  return [
+    {
+      type: "generic_error",
+      message: error,
+    },
+  ];
 }

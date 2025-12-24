@@ -17,8 +17,11 @@ export const queryClient = new QueryClient({
 });
 
 const trpcClient = createTRPCClient<AppRouter>({
-  links: [httpBatchLink({ url: "/api/trpc" })],
-
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+    }),
+  ],
 });
 
 export const trpc = createTRPCOptionsProxy<AppRouter>({
@@ -26,10 +29,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   queryClient,
 });
 
-export function TRPCProvider({ children }: { children: React.ReactNode; }) {
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
-} 
+export function TRPCProvider({ children }: { children: React.ReactNode }) {
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+}

@@ -3,6 +3,9 @@ import type { AuthError } from "../errors/auth-error";
 export const ERROR_COPY: Record<AuthError["type"], string> = {
   password_mismatch: "Passwords do not match.",
   totp_uri_not_found: "",
+  // TODO(nate): whenever generic_error is true,
+  // we are currently sending that error to client.
+  // This is good for dev but not prod.
   generic_error: "Something wrong happened.",
 
   // better auth errors

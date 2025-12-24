@@ -97,7 +97,13 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
   return (
     <Form method="post" className="flex flex-col gap-y-4">
       <input type="hidden" name="action" value="register" />
-      <input data-component="input" type="text" name="username" required placeholder={copy.input_username} />
+      <input
+        data-component="input"
+        type="text"
+        name="username"
+        required
+        placeholder={copy.input_username}
+      />
       <input
         data-component="input"
         type="text"
@@ -180,11 +186,11 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
         <FormAlert
           key={error.type}
           message={
-            error?.type
-              ? error.type === "generic_error"
-                ? (error.message ?? copy.error[error.type])
-                : copy.error[error.type]
-              : undefined
+            error?.type ?
+              error.type === "generic_error" ?
+                (error.message ?? copy.error[error.type])
+              : copy.error[error.type]
+            : undefined
           }
         />
       ))}
@@ -192,7 +198,14 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
       {step === "start" && (
         <>
           <input type="hidden" name="step" value="start" />
-          <input data-component="input" autoFocus type="email" name="email" required placeholder={copy.input_email} />
+          <input
+            data-component="input"
+            autoFocus
+            type="email"
+            name="email"
+            required
+            placeholder={copy.input_email}
+          />
         </>
       )}
 
@@ -271,11 +284,11 @@ export function PasswordSignOut({ state }: { state?: AuthState }) {
         <FormAlert
           key={error.type}
           message={
-            error?.type
-              ? error.type === "generic_error"
-                ? (error.message ?? copy.error[error.type])
-                : copy.error[error.type]
-              : undefined
+            error?.type ?
+              error.type === "generic_error" ?
+                (error.message ?? copy.error[error.type])
+              : copy.error[error.type]
+            : undefined
           }
         />
       ))}

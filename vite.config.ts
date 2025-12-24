@@ -6,7 +6,14 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import path from "path";
 
 export default defineConfig({
-  plugins: [reactRouterHonoServer({ runtime: "bun" }), tailwindcss(), reactRouter(), tsconfigPaths()],
+  plugins: [
+    reactRouterHonoServer({
+      runtime: "bun",
+    }),
+    tailwindcss(),
+    reactRouter(),
+    tsconfigPaths(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./app"),

@@ -39,7 +39,7 @@ export function QRCode({ data, ...props }: QRCodeProps) {
   const copy = useCopy();
   return (
     <div className="size-full cursor-pointer" {...props}>
-      {mode === "text" ? (
+      {mode === "text" ?
         <div className="size-full  flex flex-col justify-around overflow-auto text-xs select-text break-all">
           <strong>Secret:</strong> <span className="font-mono">{manual.secret} </span>
           <strong>Algorithm:</strong> <span className="font-mono">{manual.algorithm}</span>
@@ -49,8 +49,7 @@ export function QRCode({ data, ...props }: QRCodeProps) {
             {copy.totp_show_qr}
           </div>
         </div>
-      ) : (
-        <div
+      : <div
           onClick={() => {
             if (mode === "blur") {
               setMode("qr");
@@ -60,9 +59,11 @@ export function QRCode({ data, ...props }: QRCodeProps) {
             }
           }}
           className={`size-full [&_svg]:size-full ${mode === "blur" ? "blur-md" : ""}`}
-          dangerouslySetInnerHTML={{ __html: qrSvg }}
+          dangerouslySetInnerHTML={{
+            __html: qrSvg,
+          }}
         />
-      )}
+      }
     </div>
   );
 }
