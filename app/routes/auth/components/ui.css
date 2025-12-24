@@ -54,14 +54,10 @@
 
 [data-component="root"] {
   font-family: var(--font-family);
-  background-image: url("/carpark.webp");
-  background-repeat: no-repeat;
-  background-size: cover;
-  /* background-color: var(--color-background); */
+  background: url("/carpark.webp") center / cover no-repeat fixed;
+  min-height: 100vh;
   padding: 1rem;
   color: white;
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;

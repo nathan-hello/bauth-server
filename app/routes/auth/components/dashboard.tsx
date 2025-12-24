@@ -36,7 +36,7 @@ export function Dashboard({ state, loaderData }: DashboardProps) {
   const copy = useCopy();
 
   return (
-    <div className="gap-8 mx-auto p-6 select-text h-full">
+    <div className="gap-8 mx-auto p-6 select-text h-full max-h-screen w-[36rem] bg-black">
       <h1 className="text-2xl font-bold">Account Dashboard</h1>
 
       {/* Global errors */}
@@ -70,13 +70,11 @@ type EmailData = {
 
 function EmailSection({ email }: { email: EmailData }) {
   return (
-    <section className="border rounded-lg p-4">
+    <section className="border rounded-lg p-4 bg-gray-800">
       <h2 className="text-xl font-semibold mb-4">Email</h2>
       <div className="mb-4">
-        <p className="text-sm text-gray-600">Current email: {email.email}</p>
-        <p className="text-sm text-gray-600">
-          Status: {email.verified ? "Verified" : "Not verified"}
-        </p>
+        <p className="text-sm">Current email: {email.email}</p>
+        <p className="text-sm">Status: {email.verified ? "Verified" : "Not verified"}</p>
       </div>
 
       <ChangeEmailForm />
@@ -108,7 +106,7 @@ function ChangeEmailForm() {
 
 function PasswordSection() {
   return (
-    <section className="border rounded-lg p-4">
+    <section className="border rounded-lg p-4 bg-gray-800">
       <h2 className="text-xl font-semibold mb-4">Password</h2>
       <ChangePasswordForm />
     </section>
@@ -174,7 +172,7 @@ type TotpState = {
 
 function TwoFactorSection({ state }: { state?: TotpState }) {
   return (
-    <section className="border rounded-lg p-4">
+    <section className="border rounded-lg p-4 bg-gray-800">
       <h2 className="text-xl font-semibold mb-4">Two-Factor Authentication</h2>
 
       {!state?.enable && <EnableTwoFactorForm />}
@@ -391,7 +389,7 @@ type Session = {
 
 function SessionsSection({ sessions }: { sessions: Session[] }) {
   return (
-    <section className="border rounded-lg p-4">
+    <section className="border rounded-lg p-4 bg-gray-800">
       <h2 className="text-xl font-semibold mb-4">Active Sessions</h2>
 
       {sessions.length > 0 ?

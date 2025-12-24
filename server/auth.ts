@@ -42,6 +42,8 @@ export const auth = betterAuth({
             email: data.user.email,
             token: data.otp,
           });
+          console.log("otp:");
+          console.log(data.otp);
           console.log("Request:");
           console.table(request);
         },
@@ -60,6 +62,8 @@ export const auth = betterAuth({
           type: data.type,
           token: data.otp,
         });
+        console.log("otp:");
+        console.log(data.otp);
         console.log("Request:");
         console.table(request);
       },
@@ -85,6 +89,8 @@ export const auth = betterAuth({
     sendVerificationEmail: async (data, request) => {
       console.log("emailverification.sendverificationemail");
       console.table(data);
+      console.log("url:");
+      console.log(data.url);
       console.log("Request:");
       console.table(request);
     },
