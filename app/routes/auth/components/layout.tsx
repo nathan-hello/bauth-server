@@ -20,12 +20,14 @@ export default function () {
             data-component="logo"
             data-mode="light"
             src="/favicon.ico"
+            className="py-2 cursor-pointer w-full"
           />
           <img
             onClick={() => navigate("/")}
             data-component="logo"
             data-mode="dark"
             src="/favicon.ico"
+            className="py-2 cursor-pointer w-full"
           />
           <Outlet />
         </div>
