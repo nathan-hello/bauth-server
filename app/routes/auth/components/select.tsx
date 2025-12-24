@@ -23,7 +23,7 @@
  * @packageDocumentation
  */
 
-import { ICON_GITHUB, ICON_GOOGLE } from "./icon.js"
+import { ICON_GITHUB, ICON_GOOGLE } from "./icon.js";
 
 export interface SelectProps {
   /**
@@ -48,46 +48,39 @@ export interface SelectProps {
        * Whether to hide the provider from the select UI.
        * @default false
        */
-      hide?: boolean
+      hide?: boolean;
       /**
        * The display name of the provider.
        */
-      display?: string
+      display?: string;
     }
-  >
+  >;
 }
 
 export function Select(props?: SelectProps) {
-  return async (
-    providers: Record<string, string>,
-    _req: Request,
-  ): Promise<Response> => {
+  return async (providers: Record<string, string>, _req: Request): Promise<Response> => {
     const jsx = (
-        <div data-component="form">
-          {Object.entries(providers).map(([key, type]) => {
-            const match = props?.providers?.[key]
-            if (match?.hide) return
-            const icon = ICON[key]
-            return (
-              <a
-                href={`/${key}/authorize`}
-                data-component="button"
-                data-color="ghost"
-              >
-                {icon && <i data-slot="icon">{icon}</i>}
-                Continue with {match?.display || DISPLAY[type] || type}
-              </a>
-            )
-          })}
-        </div>
-    )
+      <div data-component="form">
+        {Object.entries(providers).map(([key, type]) => {
+          const match = props?.providers?.[key];
+          if (match?.hide) return;
+          const icon = ICON[key];
+          return (
+            <a href={`/${key}/authorize`} data-component="button" data-color="ghost">
+              {icon && <i data-slot="icon">{icon}</i>}
+              Continue with {match?.display || DISPLAY[type] || type}
+            </a>
+          );
+        })}
+      </div>
+    );
 
     return new Response(jsx.toString(), {
       headers: {
         "Content-Type": "text/html",
       },
-    })
-  }
+    });
+  };
 }
 
 const DISPLAY: Record<string, string> = {
@@ -99,7 +92,7 @@ const DISPLAY: Record<string, string> = {
   facebook: "Facebook",
   microsoft: "Microsoft",
   slack: "Slack",
-}
+};
 
 const ICON: Record<string, any> = {
   code: (
@@ -116,11 +109,7 @@ const ICON: Record<string, any> = {
     </svg>
   ),
   password: (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
       <path
         fill-rule="evenodd"
         d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
@@ -168,12 +157,7 @@ const ICON: Record<string, any> = {
     </svg>
   ),
   facebook: (
-    <svg
-      role="img"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 36 36"
-      fill="url(#a)"
-    >
+    <svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="url(#a)">
       <defs>
         <linearGradient x1="50%" x2="50%" y1="97.078%" y2="0%" id="a">
           <stop offset="0%" stop-color="#0062E0" />
@@ -214,4 +198,4 @@ const ICON: Record<string, any> = {
       </g>
     </svg>
   ),
-}
+};

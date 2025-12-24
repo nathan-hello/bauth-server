@@ -49,13 +49,15 @@ export function Dashboard({ state, loaderData }: DashboardProps) {
       ))}
 
       {/* Success messages */}
-      {state?.change_password?.success && <FormAlert color="success" message="Password changed successfully" />}
+      {state?.change_password?.success && (
+        <FormAlert color="success" message="Password changed successfully" />
+      )}
 
-      <div className="flex flex-row grid-rows-2 gap-16">
-      <EmailSection email={loaderData.email} />
-      <TwoFactorSection state={state?.totp} />
-      <PasswordSection />
-      <SessionsSection sessions={loaderData.sessions} />
+      <div className="flex flex-col gap-16">
+        <EmailSection email={loaderData.email} />
+        <TwoFactorSection state={state?.totp} />
+        <PasswordSection />
+        <SessionsSection sessions={loaderData.sessions} />
       </div>
     </div>
   );
@@ -72,7 +74,9 @@ function EmailSection({ email }: { email: EmailData }) {
       <h2 className="text-xl font-semibold mb-4">Email</h2>
       <div className="mb-4">
         <p className="text-sm text-gray-600">Current email: {email.email}</p>
-        <p className="text-sm text-gray-600">Status: {email.verified ? "Verified" : "Not verified"}</p>
+        <p className="text-sm text-gray-600">
+          Status: {email.verified ? "Verified" : "Not verified"}
+        </p>
       </div>
 
       <ChangeEmailForm />
@@ -182,7 +186,9 @@ function TwoFactorSection({ state }: { state?: TotpState }) {
         </>
       )}
 
-      {state?.backupCodes && state.backupCodes.length > 0 && <BackupCodesDisplay codes={state.backupCodes} />}
+      {state?.backupCodes && state.backupCodes.length > 0 && (
+        <BackupCodesDisplay codes={state.backupCodes} />
+      )}
 
       {state?.enable && !state?.totpURI && <GetTotpUriForm />}
 
@@ -279,7 +285,8 @@ function BackupCodesDisplay({ codes }: { codes: string[] }) {
         </button>
       </div>
       <p className="text-sm text-gray-600 mb-4">
-        Save these codes in a secure place. Each can be used once if you lose access to your authenticator.
+        Save these codes in a secure place. Each can be used once if you lose access to your
+        authenticator.
       </p>
       <div className="font-mono text-sm grid grid-cols-2 gap-2">
         {codes.map((code, idx) => (
@@ -387,14 +394,12 @@ function SessionsSection({ sessions }: { sessions: Session[] }) {
     <section className="border rounded-lg p-4">
       <h2 className="text-xl font-semibold mb-4">Active Sessions</h2>
 
-      {sessions.length > 0 ? (
+      {sessions.length > 0 ?
         <>
           <SessionsList sessions={sessions} />
           {sessions.length > 1 && <RevokeAllSessionsForm />}
         </>
-      ) : (
-        <p className="text-gray-600 mb-4">No active sessions</p>
-      )}
+      : <p className="text-gray-600 mb-4">No active sessions</p>}
     </section>
   );
 }
@@ -406,7 +411,9 @@ function SessionsList({ sessions }: { sessions: Session[] }) {
         <div key={session.id} className="flex flex-col overflow-scroll">
           <div>
             <p className="font-medium">{session.ipAddress}</p>
-            <p className="text-sm text-gray-600">Last active: {new Date(session.lastLoggedIn).toLocaleString()}</p>
+            <p className="text-sm text-gray-600">
+              Last active: {new Date(session.lastLoggedIn).toLocaleString()}
+            </p>
           </div>
           <RevokeSessionForm sessionId={session.id} />
         </div>

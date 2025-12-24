@@ -7,19 +7,11 @@ export function meta() {
     { title: "Asdf" },
     {
       name: "description",
-      content:
-        "asdf asdf asdf",
+      content: "asdf asdf asdf",
     },
   ];
 }
 
-
 export default function () {
-
-  return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-emerald-50 to-white">
-        asdf
-    </div>
-  );
+  return <div className="min-h-[100dvh] bg-gradient-to-b from-emerald-50 to-white">asdf</div>;
 }
-

@@ -8,9 +8,7 @@ import {
 } from "better-auth/client/plugins";
 
 const url =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:5173"
-    : process.env.PRODUCTION_URL;
+  process.env.NODE_ENV === "development" ? "http://localhost:5173" : process.env.PRODUCTION_URL;
 if (!url) {
   throw Error("process.env.PRODUCTION_URL was undefined");
 }

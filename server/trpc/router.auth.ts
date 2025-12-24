@@ -4,11 +4,17 @@ import { z } from "zod/v4";
 
 export default router({
   getTotpCodeFromSecret: protectedProcedure
-    .input(z.object({ secret: z.string() }))
+    .input(
+      z.object({
+        secret: z.string(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const res = await auth.api.generateTOTP({
         headers: ctx.headers,
-        body: { secret: input.secret },
+        body: {
+          secret: input.secret,
+        },
       });
       return res;
     }),
@@ -16,7 +22,9 @@ export default router({
     .input(z.object({ secret: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return await auth.api.disableTwoFactor({
-        body: { password: input.secret },
+        body: {
+          password: input.secret,
+        },
         headers: ctx.headers,
       });
     }),
@@ -24,7 +32,9 @@ export default router({
     .input(z.object({ secret: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return await auth.api.enableTwoFactor({
-        body: { password: input.secret },
+        body: {
+          password: input.secret,
+        },
         headers: ctx.headers,
       });
     }),
@@ -37,19 +47,30 @@ export default router({
     .mutation(async ({ ctx, input }) => {
       return await auth.api.changeEmail({
         headers: ctx.headers,
-        body: { newEmail: input.newEmail },
+        body: {
+          newEmail: input.newEmail,
+        },
       });
     }),
   resendEmailVerification: protectedProcedure.mutation(async ({ ctx }) => {
     return await auth.api.sendVerificationEmail({
-      body: { email: ctx.user.email, callbackURL: "/" },
+      body: {
+        email: ctx.user.email,
+        callbackURL: "/",
+      },
     });
   }),
   generateBackupCodes: protectedProcedure
-    .input(z.object({ password: z.string() }))
+    .input(
+      z.object({
+        password: z.string(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       return await auth.api.generateBackupCodes({
-        body: { password: input.password },
+        body: {
+          password: input.password,
+        },
         headers: ctx.headers,
       });
     }),
@@ -57,11 +78,17 @@ export default router({
     return await auth.api.revokeOtherSessions({ headers: ctx.headers });
   }),
   viewTotpSecret: protectedProcedure
-    .input(z.object({ password: z.string() }))
+    .input(
+      z.object({
+        password: z.string(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       return await auth.api.getTOTPURI({
         headers: ctx.headers,
-        body: { password: input.password },
+        body: {
+          password: input.password,
+        },
       });
     }),
 });

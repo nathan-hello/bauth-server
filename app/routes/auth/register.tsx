@@ -18,11 +18,16 @@ export default function ({ actionData }: Route.ComponentProps) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await throwRedirectIfSessionExists({ request });
+  await throwRedirectIfSessionExists({
+    request,
+  });
 }
 
 type ActionReturn = {
-  state: { email?: string; errors?: AuthError[] };
+  state: {
+    email?: string;
+    errors?: AuthError[];
+  };
 };
 
 export async function action({
@@ -41,13 +46,25 @@ export async function action({
       return;
     }
     if (action === "register") {
-      const errs = ParseRegister({ username, email, password, repeat });
+      const errs = ParseRegister({
+        username,
+        email,
+        password,
+        repeat,
+      });
       if (errs) {
-        return { state: { email: email, errors: errs } };
+        return {
+          state: {
+            email: email,
+            errors: errs,
+          },
+        };
       }
 
       if (!username || !email || !password || !repeat) {
-        throw new AuthError({ type: "INVALID_EMAIL_OR_PASSWORD" });
+        throw new AuthError({
+          type: "INVALID_EMAIL_OR_PASSWORD",
+        });
       }
 
       const { headers: signUpHeaders } = await auth.api.signUpEmail({
@@ -83,17 +100,25 @@ export async function action({
 function ParseRegister(data: Record<string, string | undefined>): AuthError[] | undefined {
   const errors: AuthError[] = [];
   if (!data.email) {
-    errors.push({ type: "INVALID_EMAIL" });
+    errors.push({
+      type: "INVALID_EMAIL",
+    });
   }
   if (!data.password) {
-    errors.push({ type: "INVALID_PASSWORD" });
+    errors.push({
+      type: "INVALID_PASSWORD",
+    });
   }
   if (!data.username || !validateUsername(data.username)) {
-    errors.push({ type: "INVALID_USERNAME" });
+    errors.push({
+      type: "INVALID_USERNAME",
+    });
   }
 
   if (!data.repeat || data.password !== data.repeat) {
-    errors.push({ type: "password_mismatch" });
+    errors.push({
+      type: "password_mismatch",
+    });
   }
 
   if (errors.length > 0) {

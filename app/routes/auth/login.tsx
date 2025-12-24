@@ -17,8 +17,10 @@ export default function ({ actionData }: Route.ComponentProps) {
   );
 }
 
-export async function loader({request}: Route.LoaderArgs) {
-       await throwRedirectIfSessionExists({request});
+export async function loader({ request }: Route.LoaderArgs) {
+  await throwRedirectIfSessionExists({
+    request,
+  });
 }
 
 export async function action({ request }: Route.ActionArgs): Promise<AuthState> {
@@ -30,7 +32,11 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState> 
   if (!email || !password) {
     return {
       email: email || "",
-      errors: [{ type: "INVALID_EMAIL_OR_PASSWORD" }],
+      errors: [
+        {
+          type: "INVALID_EMAIL_OR_PASSWORD",
+        },
+      ],
     };
   }
 
@@ -38,25 +44,27 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState> 
     // Determine if input is email or username based on @ symbol
     const isEmail = email.includes("@");
 
-    const { headers, response } = await (isEmail
-      ? auth.api.signInEmail({
-          headers: request.headers,
-          body: {
-            email: email,
-            password: password,
-          },
-          returnHeaders: true,
-        })
-      : auth.api.signInUsername({
-          headers: request.headers,
-          body: {
-            username: email,
-            password: password,
-          },
-          returnHeaders: true,
-        }));
+    const { headers, response } = await (isEmail ?
+      auth.api.signInEmail({
+        headers: request.headers,
+        body: {
+          email: email,
+          password: password,
+        },
+        returnHeaders: true,
+      })
+    : auth.api.signInUsername({
+        headers: request.headers,
+        body: {
+          username: email,
+          password: password,
+        },
+        returnHeaders: true,
+      }));
     if (response && "twoFactorRedirect" in response) {
-      throw redirect("/auth/2fa", { headers });
+      throw redirect("/auth/2fa", {
+        headers,
+      });
     }
 
     throw redirect("/", { headers });
@@ -73,4 +81,3 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState> 
     };
   }
 }
-

@@ -4,7 +4,8 @@ import { db } from "./drizzle/db";
 import { username, twoFactor, emailOTP } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 
-const url = process.env.NODE_ENV === "development" ? "http://localhost:5173" : process.env.PRODUCTION_URL;
+const url =
+  process.env.NODE_ENV === "development" ? "http://localhost:5173" : process.env.PRODUCTION_URL;
 if (!url) {
   throw Error("process.env.PRODUCTION_URL was undefined");
 }
@@ -36,8 +37,11 @@ export const auth = betterAuth({
         storeOTP: "plain",
         sendOTP: async (data, request) => {
           console.log("plugins.twofactor.otpoptions.sendotp:");
-          console.log(new Date())
-          console.table({ email: data.user.email, token: data.otp });
+          console.log(new Date());
+          console.table({
+            email: data.user.email,
+            token: data.otp,
+          });
           console.log("Request:");
           console.table(request);
         },
@@ -51,7 +55,11 @@ export const auth = betterAuth({
       overrideDefaultEmailVerification: true,
       sendVerificationOTP: async (data, request) => {
         console.log("plugins.emailotp.sendverificationotp");
-        console.table({ email: data.email, type: data.type, token: data.otp });
+        console.table({
+          email: data.email,
+          type: data.type,
+          token: data.otp,
+        });
         console.log("Request:");
         console.table(request);
       },
@@ -75,12 +83,11 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     expiresIn: 60 * 60 * 24,
     sendVerificationEmail: async (data, request) => {
-        console.log("emailverification.sendverificationemail");
-        console.table(data);
-        console.log("Request:");
-        console.table(request);
+      console.log("emailverification.sendverificationemail");
+      console.table(data);
+      console.log("Request:");
+      console.table(request);
     },
-
   },
   trustedOrigins: [url],
   account: {

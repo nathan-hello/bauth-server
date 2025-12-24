@@ -1,10 +1,5 @@
 {
-  "include": [
-    "**/*",
-    "**/server/**/*",
-    "**/.client/**/*",
-    ".react-router/types/**/*"
-, "server"  ],
+  "include": ["**/*", "**/server/**/*", "**/.client/**/*", ".react-router/types/**/*", "server"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["node", "vite/client"],
@@ -16,8 +11,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["app/*"],
-      "@server/*": ["server/*"],
-
+      "@server/*": ["server/*"]
     },
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,

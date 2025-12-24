@@ -7,7 +7,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return response;
   } catch (error) {
     console.error("Auth loader error:", error);
-    return new Response("Auth error", { status: 500 });
+    return new Response("Auth error", {
+      status: 500,
+    });
   }
 }
 
@@ -17,6 +19,8 @@ export async function action({ request }: ActionFunctionArgs) {
     return response;
   } catch (error) {
     console.error("Auth action error:", error);
-    return new Response("Auth error", { status: 500 });
+    return new Response("Auth error", {
+      status: 500,
+    });
   }
 }

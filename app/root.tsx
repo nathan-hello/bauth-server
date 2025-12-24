@@ -6,9 +6,9 @@ import "./app.css";
 
 export default function App() {
   return (
-      <TRPCProvider>
-        <Outlet />
-      </TRPCProvider>
+    <TRPCProvider>
+      <Outlet />
+    </TRPCProvider>
   );
 }
 
