@@ -20,6 +20,7 @@ export default function ({ actionData }: Route.ComponentProps) {
 export async function loader({ request }: Route.LoaderArgs) {
   await throwRedirectIfSessionExists({
     request,
+    caller: "/auth/register",
   });
 }
 

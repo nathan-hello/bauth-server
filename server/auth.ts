@@ -2,15 +2,14 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./drizzle/db";
 import { username, twoFactor, emailOTP } from "better-auth/plugins";
-import { passkey } from "better-auth/plugins/passkey";
+import { passkey } from "@better-auth/passkey";
 
-const url =
-  process.env.NODE_ENV === "development" ? "http://localhost:5173" : process.env.PRODUCTION_URL;
+const url = process.env.PRODUCTION_URL;
 if (!url) {
   throw Error("process.env.PRODUCTION_URL was undefined");
 }
 
-const secret = process.env.NODE_ENV === "development" ? "secret" : process.env.BETTER_AUTH_SECRET;
+const secret = process.env.BETTER_AUTH_SECRET;
 if (!secret) {
   throw Error("process.env.BETTER_AUTH_SECRET was undefined");
 }
@@ -44,8 +43,6 @@ export const auth = betterAuth({
           });
           console.log("otp:");
           console.log(data.otp);
-          console.log("Request:");
-          console.table(request);
         },
       },
     }),
@@ -64,18 +61,28 @@ export const auth = betterAuth({
         });
         console.log("otp:");
         console.log(data.otp);
-        console.log("Request:");
-        console.table(request);
       },
     }),
   ],
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {},
+      },
+    },
+  },
   database: drizzleAdapter(db, {
     provider: "sqlite",
   }),
   advanced: {
     cookiePrefix: BA_COOKIE_PREFIX,
   },
-  onAPIError: {},
+  onAPIError: {
+    onError: (error, ctx) => {
+      console.log("[onAPIError]: API got error:");
+      console.log(error);
+    },
+  },
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
@@ -91,11 +98,9 @@ export const auth = betterAuth({
       console.table(data);
       console.log("url:");
       console.log(data.url);
-      console.log("Request:");
-      console.table(request);
     },
   },
-  trustedOrigins: [url],
+  trustedOrigins: [url, "https://localhost:5173", "http://localhost:5173"],
   account: {
     accountLinking: {
       enabled: true,

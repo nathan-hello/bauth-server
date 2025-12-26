@@ -10,6 +10,7 @@ export default [
       route("logout", "./routes/auth/logout.tsx"),
       route("forgot", "./routes/auth/forgot.tsx"),
       route("dashboard", "./routes/auth/dashboard.tsx"),
+      route("2fa", "./routes/auth/2fa.tsx"),
     ]),
   ]),
 

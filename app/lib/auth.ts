@@ -1,11 +1,11 @@
 import { createAuthClient } from "better-auth/react";
 import {
-  passkeyClient,
   usernameClient,
   twoFactorClient,
   oneTimeTokenClient,
   emailOTPClient,
 } from "better-auth/client/plugins";
+import { passkeyClient } from "@better-auth/passkey/client";
 
 const url =
   process.env.NODE_ENV === "development" ? "http://localhost:5173" : process.env.PRODUCTION_URL;

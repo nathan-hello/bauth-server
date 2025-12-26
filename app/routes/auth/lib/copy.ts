@@ -51,7 +51,7 @@ export const ERROR_COPY: Record<AuthError["type"], string> = {
   FAILED_TO_UPDATE_PASSKEY: "",
   FAILED_TO_VERIFY_REGISTRATION: "",
   INVALID_BACKUP_CODE: "",
-  INVALID_CODE: "",
+  INVALID_CODE: "Two factor code is invalid.",
   INVALID_DISPLAY_USERNAME: "",
   INVALID_TWO_FACTOR_COOKIE: "",
   INVALID_USERNAME_OR_PASSWORD: "",
