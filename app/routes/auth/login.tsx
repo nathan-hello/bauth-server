@@ -20,6 +20,7 @@ export default function ({ actionData }: Route.ComponentProps) {
 export async function loader({ request }: Route.LoaderArgs) {
   await throwRedirectIfSessionExists({
     request,
+    caller: "/auth/login",
   });
 }
 
@@ -61,7 +62,12 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState> 
         },
         returnHeaders: true,
       }));
-    if (response && "twoFactorRedirect" in response) {
+
+    if (!response) {
+      throw { type: "generic_error", message: "Unknown error 18583" };
+    }
+
+    if ("twoFactorRedirect" in response) {
       throw redirect("/auth/2fa", {
         headers,
       });

@@ -1,13 +1,11 @@
 import { auth } from "@server/auth";
 import type { Route } from "./+types/dashboard";
 import { Dashboard } from "./components/dashboard";
-import { useCopy } from "./lib/copy";
 import { data, redirect } from "react-router";
 import { AuthError, getAuthError } from "./errors/auth-error";
 
 export default function ({ loaderData, actionData }: Route.ComponentProps) {
-  const copy = useCopy();
-  return <Dashboard state={actionData} loaderData={loaderData} />;
+  return <Dashboard actionData={actionData} loaderData={loaderData} />;
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -15,26 +13,41 @@ export async function loader({ request }: Route.LoaderArgs) {
     headers: request.headers,
   });
   if (!session) {
+    console.log("[/dashboard loader]: Redirecting to /auth/login (null session)");
+    console.log("[/dashboard loader]: headers:");
+    console.table(request.headers);
     throw redirect("/auth/login");
   }
 
   const allSessions = await auth.api.listSessions({
     headers: request.headers,
   });
+
   const s = allSessions
     .filter((s) => typeof s.ipAddress === "string")
     .map((s) => ({
       id: s.token,
-      ipAddress: s.ipAddress as string,
+      ipAddress: s.ipAddress ?? "Unknown IP address",
       lastLoggedIn: s.updatedAt,
     }));
 
+  console.log("twoFactorEnabled: ", session.user.twoFactorEnabled);
   return {
     email: {
       email: session.user.email,
       verified: session.user.emailVerified,
     },
-    sessions: s,
+    sessions: {
+      entries: s,
+      current: {
+        id: session.session.token,
+        ipAddress: session.session.ipAddress ?? "Unknown IP address",
+        lastLoggedIn: session.session.updatedAt,
+      },
+    },
+    totp: {
+      userEnabled: session.user.twoFactorEnabled ?? false,
+    },
   };
 }
 
@@ -97,16 +110,34 @@ async function totpVerify(form: FormData, request: Request) {
     return;
   }
 
-  await auth.api.verifyTOTP({
-    body: { code: code },
-    headers: request.headers,
-  });
+  try {
+    const result = await auth.api.verifyTOTP({
+      body: { code: code },
+      headers: request.headers,
+      returnHeaders: true,
+    });
+    return data(
+      {
+        totp: {
+          enable: true,
+        },
+      },
+      { headers: result.headers },
+    );
+  } catch (error) {
+    if (error instanceof Response) {
+      throw error;
+    }
 
-  return {
-    totp: {
-      enable: true,
-    },
-  };
+    const aerr = getAuthError(error);
+
+    return data({
+      totp: {
+        enable: true,
+        errors: aerr,
+      },
+    });
+  }
 }
 
 async function twoFactorDisable(form: FormData, request: Request) {
@@ -115,15 +146,20 @@ async function twoFactorDisable(form: FormData, request: Request) {
     return;
   }
 
-  const asdf = await auth.api.disableTwoFactor({
+  const result = await auth.api.disableTwoFactor({
     body: { password: password },
     headers: request.headers,
+    returnHeaders: true,
   });
-  return {
-    totp: {
-      enable: false,
+
+  return data(
+    {
+      totp: {
+        enable: false,
+      },
     },
-  };
+    { headers: result.headers },
+  );
 }
 
 async function twoFactorEnable(form: FormData, request: Request) {
@@ -132,16 +168,21 @@ async function twoFactorEnable(form: FormData, request: Request) {
     return;
   }
 
-  const asdf = await auth.api.enableTwoFactor({
+  const result = await auth.api.enableTwoFactor({
     body: { password: password },
     headers: request.headers,
+    returnHeaders: true,
   });
-  return {
-    totp: {
-      totpURI: asdf.totpURI,
-      backupCodes: asdf.backupCodes,
+  return data(
+    {
+      totp: {
+        enable: true,
+        totpURI: result.response.totpURI,
+        backupCodes: result.response.backupCodes,
+      },
     },
-  };
+    { headers: result.headers },
+  );
 }
 
 async function rerollBackupCodes(form: FormData, request: Request) {
@@ -157,15 +198,19 @@ async function rerollBackupCodes(form: FormData, request: Request) {
     return;
   }
 
-  const asdf = await auth.api.generateBackupCodes({
+  const result = await auth.api.generateBackupCodes({
     body: { password: password },
     headers: request.headers,
+    returnHeaders: true,
   });
-  return {
-    totp: {
-      backupCodes: asdf.backupCodes,
+  return data(
+    {
+      totp: {
+        backupCodes: result.response.backupCodes,
+      },
     },
-  };
+    { headers: result.headers },
+  );
 }
 
 async function totpGetUri(form: FormData, request: Request) {
@@ -181,15 +226,19 @@ async function totpGetUri(form: FormData, request: Request) {
     return;
   }
 
-  const asdf = await auth.api.getTOTPURI({
+  const result = await auth.api.getTOTPURI({
     body: { password: password },
     headers: request.headers,
+    returnHeaders: true,
   });
-  return {
-    totp: {
-      totpURI: asdf.totpURI,
+  return data(
+    {
+      totp: {
+        totpURI: result.response.totpURI,
+      },
     },
-  };
+    { headers: result.headers },
+  );
 }
 
 async function changeEmail(form: FormData, request: Request) {
@@ -199,11 +248,12 @@ async function changeEmail(form: FormData, request: Request) {
     return;
   }
 
-  await auth.api.changeEmail({
+  const result = await auth.api.changeEmail({
     body: { newEmail: newEmail },
     headers: request.headers,
+    returnHeaders: true,
   });
-  return;
+  return data({ emailChangeSuccess: result.response.status }, { headers: result.headers });
 }
 
 async function revokeSessions(form: FormData, request: Request) {
@@ -212,17 +262,19 @@ async function revokeSessions(form: FormData, request: Request) {
     return;
   }
   if (which === "all") {
-    await auth.api.revokeOtherSessions({
+    const result = await auth.api.revokeOtherSessions({
       headers: request.headers,
+      returnHeaders: true,
     });
-    return;
+    return data({}, { headers: result.headers });
   }
 
-  await auth.api.revokeSession({
+  const result = await auth.api.revokeSession({
     body: { token: which },
     headers: request.headers,
+    returnHeaders: true,
   });
-  return;
+  return data({}, { headers: result.headers });
 }
 
 async function changePassword(form: FormData, request: Request) {
@@ -245,7 +297,7 @@ async function changePassword(form: FormData, request: Request) {
   if (errors.length > 0) {
   }
 
-  const asdf = await auth.api.changePassword({
+  const result = await auth.api.changePassword({
     body: {
       currentPassword: current,
       newPassword: newPass,
@@ -262,14 +314,6 @@ async function changePassword(form: FormData, request: Request) {
         success: true,
       },
     },
-    { headers: asdf.headers },
+    { headers: result.headers },
   );
-}
-
-function hasAnyHeaders(headers: Headers): boolean {
-  return [...headers].length > 0;
-}
-
-export function headers({ actionHeaders, loaderHeaders }: Route.HeadersArgs) {
-  return hasAnyHeaders(actionHeaders) ? actionHeaders : loaderHeaders;
 }

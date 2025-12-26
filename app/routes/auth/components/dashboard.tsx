@@ -3,44 +3,52 @@ import { useCopy } from "../lib/copy";
 import type { AuthError } from "../errors/auth-error";
 import { Form } from "react-router";
 import { QRCode } from "@/components/qr";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export type DashboardState = {
+export type DashboardActionData = {
   errors?: AuthError[];
   change_password?: {
     success: boolean;
   };
   totp?: {
-    enable?: boolean;
-    totpURI?: string;
+    errors?: AuthError[];
+    enable: boolean;
     backupCodes?: string[];
+    totpUri?: string;
+    userEnabled?: boolean;
+  };
+};
+
+type DashboardLoaderData = {
+  email: {
+    email: string;
+    verified: boolean;
+  };
+  sessions: {
+    entries: Session[];
+    current: Session;
+  };
+  totp: {
+    userEnabled: boolean;
   };
 };
 
 type DashboardProps = {
-  state?: DashboardState;
-  loaderData: {
-    email: {
-      email: string;
-      verified: boolean;
-    };
-    sessions: Array<{
-      id: string;
-      ipAddress: string;
-      lastLoggedIn: Date;
-    }>;
-  };
+  actionData?: DashboardActionData;
+  loaderData: DashboardLoaderData;
 };
 
-export function Dashboard({ state, loaderData }: DashboardProps) {
+export function Dashboard({ actionData, loaderData }: DashboardProps) {
   const copy = useCopy();
 
+  console.log("errors: ", actionData?.errors);
+
   return (
-    <div className="gap-8 mx-auto p-6 select-text h-full max-h-screen w-[36rem] bg-black">
+    <div className="gap-8 mx-auto p-6 select-text h-full w-[36rem] bg-black">
       <h1 className="text-2xl font-bold">Account Dashboard</h1>
 
       {/* Global errors */}
-      {state?.errors?.map((error) => (
+      {actionData?.errors?.map((error) => (
         <FormAlert
           key={error.type}
           message={error.type ? copy.error[error.type] : undefined}
@@ -49,15 +57,18 @@ export function Dashboard({ state, loaderData }: DashboardProps) {
       ))}
 
       {/* Success messages */}
-      {state?.change_password?.success && (
+      {actionData?.change_password?.success && (
         <FormAlert color="success" message="Password changed successfully" />
       )}
 
       <div className="flex flex-col gap-16">
         <EmailSection email={loaderData.email} />
-        <TwoFactorSection state={state?.totp} />
+        <TwoFactorSection state={{ ...loaderData.totp, ...actionData?.totp }} />
         <PasswordSection />
-        <SessionsSection sessions={loaderData.sessions} />
+        <SessionsSection
+          sessions={loaderData.sessions.entries}
+          current={loaderData.sessions.current}
+        />
       </div>
     </div>
   );
@@ -168,27 +179,63 @@ type TotpState = {
   enable?: boolean;
   totpURI?: string;
   backupCodes?: string[];
+  userEnabled: boolean;
+  errors?: AuthError[];
 };
 
 function TwoFactorSection({ state }: { state?: TotpState }) {
+  const [totpURI, setTotpURI] = useState<string | undefined>(state?.totpURI);
+  const [backupCodes, setBackupCodes] = useState<string[] | undefined>(state?.backupCodes);
+  const copy = useCopy();
+
+  useEffect(() => {
+    if (state?.totpURI) {
+      setTotpURI(state.totpURI);
+    }
+    if (state?.backupCodes) {
+      setBackupCodes(state.backupCodes);
+    }
+    if (state?.userEnabled) {
+      setTotpURI(undefined);
+      setBackupCodes(undefined);
+    }
+    if (state?.enable === false) {
+      setTotpURI(undefined);
+      setBackupCodes(undefined);
+    }
+  }, [state?.totpURI, state?.backupCodes, state?.userEnabled, state?.enable]);
+
   return (
     <section className="border rounded-lg p-4 bg-gray-800">
       <h2 className="text-xl font-semibold mb-4">Two-Factor Authentication</h2>
 
+      {!state?.enable && (
+        <div className="flex flex-col gap-2 py-2">
+          <h1>
+            When you enable 2FA, you will use an authenticator app (TOTP) or receive a code by
+            email.
+          </h1>
+          <h1>
+            To turn on email 2FA, you must first set up and verify TOTP using the QR code secret.
+          </h1>
+        </div>
+      )}
+
       {!state?.enable && <EnableTwoFactorForm />}
 
-      {state?.totpURI && (
+      {state?.enable && state.userEnabled && <h1>Two factor is enabled.</h1>}
+      {state?.enable && !state.userEnabled && <h1>Verify using the QR code to enable 2FA</h1>}
+
+      {totpURI && (
         <>
-          <TotpQRCodeDisplay totpURI={state.totpURI} />
-          <VerifyTotpForm />
+          <TotpQRCodeDisplay totpURI={totpURI} />
+          <VerifyTotpForm errors={state?.errors} />
         </>
       )}
 
-      {state?.backupCodes && state.backupCodes.length > 0 && (
-        <BackupCodesDisplay codes={state.backupCodes} />
-      )}
+      {backupCodes && backupCodes.length > 0 && <BackupCodesDisplay codes={backupCodes} />}
 
-      {state?.enable && !state?.totpURI && <GetTotpUriForm />}
+      {state?.enable && !totpURI && <GetTotpUriForm />}
 
       {state?.enable && <RegenerateBackupCodesForm />}
 
@@ -200,13 +247,8 @@ function TwoFactorSection({ state }: { state?: TotpState }) {
 function EnableTwoFactorForm() {
   return (
     <div className="mb-6">
-      <h3 className="text-lg font-medium mb-2">Enable 2FA</h3>
       <Form method="post" className="flex flex-col gap-2">
         <input type="hidden" name="action" value="2fa_enable" />
-
-        <label htmlFor="password_2fa_enable" className="text-sm font-medium">
-          Confirm your password
-        </label>
         <input
           data-component="input"
           type="password"
@@ -227,9 +269,10 @@ function EnableTwoFactorForm() {
 
 function TotpQRCodeDisplay({ totpURI }: { totpURI: string }) {
   return (
-    <div className="mb-6">
-      <h3 className="text-lg font-medium mb-2">Set up your authenticator</h3>
-      <p className="text-sm text-gray-600 mb-4">Scan this QR code with your authenticator app</p>
+    <div className="">
+      <p className="text-sm py-6">
+        Scan this QR code with your authenticator app. Click to show the secret in text.
+      </p>
       <div className="flex justify-center mb-4">
         <QRCode className="w-[200px] h-[200px]" data={totpURI} />
       </div>
@@ -237,7 +280,8 @@ function TotpQRCodeDisplay({ totpURI }: { totpURI: string }) {
   );
 }
 
-function VerifyTotpForm() {
+function VerifyTotpForm({ errors }: { errors?: AuthError[] }) {
+  const copy = useCopy();
   return (
     <Form method="post" className="flex flex-col gap-2 mb-6">
       <input type="hidden" name="action" value="2fa_totp_verify" />
@@ -245,6 +289,15 @@ function VerifyTotpForm() {
       <label htmlFor="totp_code" className="text-sm font-medium">
         Verify with a code from your app
       </label>
+      {errors?.map((error) => {
+        return (
+          <FormAlert
+            key={error.type}
+            message={error.type ? copy.error[error.type] : undefined}
+            submessage={error.type === "generic_error" ? error.message : ""}
+          />
+        );
+      })}
       <input
         data-component="input"
         type="text"
@@ -266,6 +319,7 @@ function VerifyTotpForm() {
 
 function BackupCodesDisplay({ codes }: { codes: string[] }) {
   const [copied, setCopied] = useState(false);
+  const [open, setOpen] = useState(false);
   return (
     <div className="mb-6 p-4">
       <div className="flex flex-row justify-between">
@@ -286,13 +340,18 @@ function BackupCodesDisplay({ codes }: { codes: string[] }) {
         Save these codes in a secure place. Each can be used once if you lose access to your
         authenticator.
       </p>
-      <div className="font-mono text-sm grid grid-cols-2 gap-2">
-        {codes.map((code, idx) => (
-          <span key={idx} className="p-2 rounded border text-white ">
-            {code}
-          </span>
-        ))}
-      </div>
+      <button className="w-full mb-2" data-component="button" onClick={() => setOpen(!open)}>
+        {open ? "Hide backup codes" : "Show backup codes"}
+      </button>
+      {open && (
+        <div className="font-mono text-sm grid grid-cols-2 gap-2">
+          {codes.map((code, idx) => (
+            <span key={idx} className="p-2 rounded border text-white ">
+              {code}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -304,9 +363,6 @@ function GetTotpUriForm() {
       <Form method="post" className="flex flex-col gap-2">
         <input type="hidden" name="action" value="get_totp_uri" />
 
-        <label htmlFor="password_get_uri" className="text-sm font-medium">
-          Enter your password
-        </label>
         <input
           data-component="input"
           type="password"
@@ -329,12 +385,10 @@ function RegenerateBackupCodesForm() {
   return (
     <div className="mb-6">
       <h3 className="text-lg font-medium mb-2">Regenerate Backup Codes</h3>
+      <h1 className="text-sm font-medium mb-2">This will invalidate your previous backup codes.</h1>
       <Form method="post" className="flex flex-col gap-2">
         <input type="hidden" name="action" value="get_backup_codes" />
 
-        <label htmlFor="password_backup" className="text-sm font-medium">
-          Enter your password
-        </label>
         <input
           data-component="input"
           type="password"
@@ -356,13 +410,13 @@ function RegenerateBackupCodesForm() {
 function DisableTwoFactorForm() {
   return (
     <div className="mb-6">
-      <h3 className="text-lg font-medium mb-2">Disable 2FA</h3>
+      <h3 className="text-lg font-medium mb-2">Disable two factor authentication.</h3>
+      <h1 className="text-xs font-medium mb-2">
+        Consider using a Passkey before disabling two factor authentication.
+      </h1>
       <Form method="post" className="flex flex-col gap-2">
         <input type="hidden" name="action" value="2fa_disable" />
 
-        <label htmlFor="password_2fa_disable" className="text-sm font-medium">
-          Enter your password
-        </label>
         <input
           data-component="input"
           type="password"
@@ -387,14 +441,14 @@ type Session = {
   lastLoggedIn: Date;
 };
 
-function SessionsSection({ sessions }: { sessions: Session[] }) {
+function SessionsSection({ sessions, current }: { sessions: Session[]; current: Session }) {
   return (
     <section className="border rounded-lg p-4 bg-gray-800">
       <h2 className="text-xl font-semibold mb-4">Active Sessions</h2>
 
       {sessions.length > 0 ?
         <>
-          <SessionsList sessions={sessions} />
+          <SessionsList sessions={sessions} current={current} />
           {sessions.length > 1 && <RevokeAllSessionsForm />}
         </>
       : <p className="text-gray-600 mb-4">No active sessions</p>}
@@ -402,13 +456,14 @@ function SessionsSection({ sessions }: { sessions: Session[] }) {
   );
 }
 
-function SessionsList({ sessions }: { sessions: Session[] }) {
+function SessionsList({ sessions, current }: { sessions: Session[]; current: Session }) {
   return (
     <div className="flex flex-col gap-4 mb-6">
       {sessions.map((session) => (
         <div key={session.id} className="flex flex-col overflow-scroll">
           <div>
             <p className="font-medium">{session.ipAddress}</p>
+            {session.id === current.id && <p>Current session</p>}
             <p className="text-sm text-gray-600">
               Last active: {new Date(session.lastLoggedIn).toLocaleString()}
             </p>
