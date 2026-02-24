@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./drizzle/db";
 import { username, twoFactor, emailOTP } from "better-auth/plugins";
@@ -115,4 +115,5 @@ export const auth = betterAuth({
     origin: [url],
     credentials: true,
   },
+  telemetry: { enabled: false },
 });
