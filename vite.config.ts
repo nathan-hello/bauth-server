@@ -10,7 +10,6 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./app"),
       "@server": path.resolve(__dirname, "./server"),
-      "react-dom/server": "react-dom/server.node",
     },
   },
 });
