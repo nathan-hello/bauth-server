@@ -1,6 +1,6 @@
 import type { AuthError } from "../errors/auth-error";
 
-export const ERROR_COPY: Record<AuthError["type"], string> = {
+export const ERROR_COPY: Partial<Record<AuthError["type"], string>> = {
   password_mismatch: "Passwords do not match.",
   totp_uri_not_found: "",
   // TODO(nate): whenever generic_error is true,

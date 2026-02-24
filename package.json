@@ -7,9 +7,9 @@
     "dev": "vite",
     "start": "react-router start",
     "typegen:rr": "react-router typegen && tsc",
-    "typegen:ba": "cli generate --config ./server/auth.ts --output ./server/drizzle/schema.auth.ts -y",
+    "typegen:ba": "bunx @better-auth/cli generate --config ./server/auth.ts --output ./server/drizzle/schema.auth.ts -y",
     "typegen:db": "drizzle-kit generate --config ./server/drizzle/config.ts",
-    "typegen": "typegen:rr && bun run typegen:ba && bun run typegen:db",
+    "typegen": "bun run typegen:rr && bun run typegen:ba && bun run typegen:db",
     "db:migrate": "drizzle-kit migrate --config ./server/drizzle/config.ts",
     "db:push": "drizzle-kit push --config ./server/drizzle/config.ts",
     "db:studio": "drizzle-kit studio --config ./server/drizzle/config.ts"
@@ -18,11 +18,7 @@
     "@better-auth/passkey": "^1.4.10",
     "@react-router/node": "^7.11.0",
     "@react-router/serve": "^7.11.0",
-    "@tanstack/react-query": "^5.90.16",
-    "@trpc/client": "^11.8.1",
-    "@trpc/server": "^11.8.1",
-    "@trpc/tanstack-react-query": "^11.8.1",
-    "better-auth": "^1.4.10",
+    "better-auth": "^1.4.19",
     "better-sqlite3": "^12.5.0",
     "drizzle-orm": "^0.45.1",
     "isbot": "^5",
@@ -33,7 +29,7 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@better-auth/cli": "^1.4.10",
+    "@better-auth/cli": "^1.4.19",
     "@react-router/dev": "^7.11.0",
     "@tailwindcss/vite": "^4.1.18",
     "@types/qrcode": "^1.5.6",
