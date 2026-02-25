@@ -7,6 +7,7 @@ import { Input, Button, FormFooter, TextLink } from "./ui.js";
 
 export type AuthState = {
   email?: string;
+  code?: string;
   errors?: AuthError[];
 };
 
@@ -31,7 +32,7 @@ export function PasswordLoginForm({ state }: LoginFormProps) {
   const copy = useCopy();
   const link = useAuthLinks();
   return (
-    <Form className="max-w-full flex flex-col gap-4 m-0" method="post">
+    <Form className="max-w-full flex flex-col gap-4" method="post">
       {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
@@ -93,12 +94,7 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
   return (
     <Form method="post" className="flex flex-col gap-y-4">
       <input type="hidden" name="action" value="register" />
-      <Input
-        type="text"
-        name="username"
-        required
-        placeholder={copy.input_username}
-      />
+      <Input type="text" name="username" required placeholder={copy.input_username} />
       <Input
         type="text"
         name="email"
@@ -185,19 +181,15 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
       {step === "start" && (
         <>
           <input type="hidden" name="step" value="start" />
-          <Input
-            autoFocus
-            type="email"
-            name="email"
-            required
-            placeholder={copy.input_email}
-          />
+          <p className="text-fg-primary">Enter your email to reset your password.</p>
+          <Input autoFocus type="email" name="email" required placeholder={copy.input_email} />
         </>
       )}
 
       {step === "code" && (
         <>
           <input type="hidden" name="step" value="code" />
+          <p className="text-fg-primary">Enter the code sent to your email.</p>
           <input type="hidden" name="email" defaultValue={state?.email} />
           <Input
             autoFocus
@@ -217,6 +209,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
         <>
           <input type="hidden" name="step" value="update" />
           <input type="hidden" name="email" defaultValue={state?.email} />
+          <input type="hidden" name="code" defaultValue={state?.code} />
           <Input
             autoFocus
             type="password"

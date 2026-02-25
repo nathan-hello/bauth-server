@@ -11,10 +11,12 @@ export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
 
   return (
-    <Card>
+    <>
       <title>{copy.meta.login.title}</title>
-      <PasswordLoginForm state={actionData} />
-    </Card>
+      <Card>
+        <PasswordLoginForm state={actionData} />
+      </Card>
+    </>
   );
 }
 

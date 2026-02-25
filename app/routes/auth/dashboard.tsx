@@ -145,6 +145,7 @@ async function totpVerify(form: FormData, request: Request) {
       {
         totp: {
           enable: true,
+          verified: true,
         },
       },
       { headers: result.headers },
@@ -243,11 +244,13 @@ async function totpGetUri(form: FormData, request: Request) {
     headers: request.headers,
   });
   if (!session || !session.user.twoFactorEnabled) {
+    console.log("dashboard: totpGetUri: session or twofactorenabled is false", JSON.stringify(session));
     return;
   }
 
   const password = form.get("password")?.toString();
   if (!password) {
+    console.log("dashboard: password was falsey: length: ", password?.length);
     return;
   }
 
@@ -256,6 +259,9 @@ async function totpGetUri(form: FormData, request: Request) {
     headers: request.headers,
     returnHeaders: true,
   });
+
+  console.log("dashbaord: totpGetUri: got result: ", JSON.stringify(result));
+
   return data(
     {
       totp: {

@@ -13,7 +13,7 @@ export default function ({ actionData }: Route.ComponentProps) {
   return (
     <Card>
       <title>{copy.meta.forgot.title}</title>
-      <PasswordForgotForm state={actionData?.state} step={actionData?.step ?? "start"} />;
+      <PasswordForgotForm state={actionData?.state} step={actionData?.step ?? "start"} />
     </Card>
   );
 }
@@ -113,13 +113,22 @@ async function stepStart({
   if (!email) {
     return { step: "start", state: {} };
   }
-  const ok = await auth.api.forgetPasswordEmailOTP({
-    body: { email: email },
-    headers: request.headers,
-  });
-  if (!ok) {
-    throw Error("Server was not able to send verification email.");
+
+  try {
+    await auth.api.forgetPasswordEmailOTP({
+      body: { email: email },
+      headers: request.headers,
+    });
+  } catch (e) {
+    console.log("/auth/forgot: auth.api.forgetPasswordEmailOTP exception manually caught", {
+      email,
+      exception: e,
+    });
   }
+
+  // We respond with the fact that the code sent no matter what because
+  // otherwise an attacker could guess and check email addresses that
+  // might be signed up.
   return {
     step: "code",
     state: { email: email },
@@ -155,7 +164,7 @@ async function stepCode({
   }
   return {
     step: "update",
-    state: { email },
+    state: { email, code },
   };
 }
 
@@ -177,6 +186,7 @@ async function stepUpdatePassword({
     throw Error("password_mismatch");
   }
   if (!email || !code) {
+    console.error("forgot: stepUpdatePassword: email or code was undefined", {email, code});
     throw Error("generic_error");
   }
 
@@ -190,6 +200,7 @@ async function stepUpdatePassword({
     returnHeaders: true,
   });
   if (!response.success) {
+    console.error("forgot: got success false from resetPasswordEmailOTP");
     throw Error("generic_error");
   }
 

@@ -58,12 +58,11 @@ type CardProps = ComponentProps<"div"> & {
   size?: "default" | "small";
 };
 
-export function Card({ size = "default", ...props }: CardProps) {
-  const width = size === "small" ? "w-[300px]" : "w-[600px]";
+export function Card({ ...props }: CardProps) {
   return (
     <div
       {...props}
-      className={`${width} flex flex-col gap-6 p-4 bg-surface opacity-95 ${props.className ?? ""}`}
+      className={`lg:w-lg xl:w-xl flex flex-col gap-6 p-4 bg-surface opacity-95 ${props.className ?? ""}`}
     />
   );
 }
@@ -72,10 +71,7 @@ export function FormLayout(props: ComponentProps<"div"> | ComponentProps<"form">
   const Tag = "method" in props ? "form" : "div";
   return (
     // @ts-expect-error polymorphic tag
-    <Tag
-      {...props}
-      className={`max-w-full flex flex-col gap-4 m-0 ${props.className ?? ""}`}
-    />
+    <Tag {...props} className={`max-w-full flex flex-col gap-4 m-0 ${props.className ?? ""}`} />
   );
 }
 

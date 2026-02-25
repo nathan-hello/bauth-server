@@ -3,7 +3,7 @@ import { useCopy } from "../lib/copy";
 import type { AuthError } from "../errors/auth-error";
 import { Form } from "react-router";
 import { QRCode } from "@/components/qr";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input, Button } from "./ui";
 
 export type DashboardActionData = {
@@ -235,88 +235,140 @@ type TotpState = {
   totpURI?: string;
   backupCodes?: string[];
   userEnabled: boolean;
+  verified?: boolean;
   errors?: AuthError[];
 };
 
 function TwoFactorSection({ state }: { state?: TotpState }) {
-  const [totpURI, setTotpURI] = useState<string | undefined>(state?.totpURI);
-  const [backupCodes, setBackupCodes] = useState<string[] | undefined>(state?.backupCodes);
+  const badge =
+    state?.intermediateEnable !== undefined ?
+      <Badge color={state.intermediateEnable ? "green" : "gray"}>
+        {state.intermediateEnable ? "Enabled" : "Disabled"}
+      </Badge>
+    : undefined;
 
-  useEffect(() => {
-    if (state?.totpURI) setTotpURI(state.totpURI);
-    if (state?.backupCodes) setBackupCodes(state.backupCodes);
-    if (state?.userEnabled) {
-      setTotpURI(undefined);
-      setBackupCodes(undefined);
-    }
-    if (state?.intermediateEnable === false) {
-      setTotpURI(undefined);
-      setBackupCodes(undefined);
-    }
-  }, [state?.totpURI, state?.backupCodes, state?.userEnabled, state?.intermediateEnable]);
+  if (state?.userEnabled) {
+    return (
+      <TwoFactorEnabled
+        badge={badge}
+        totpURI={state.totpURI}
+        backupCodes={state.backupCodes}
+        verified={state.verified}
+        errors={state.errors}
+      />
+    );
+  }
 
+  if (state?.intermediateEnable) {
+    return (
+      <TwoFactorSetup
+        badge={badge}
+        totpURI={state.totpURI}
+        backupCodes={state.backupCodes}
+        errors={state.errors}
+      />
+    );
+  }
+
+  return <TwoFactorDisabled />;
+}
+
+/* ─── 2FA: Disabled ─── */
+
+function TwoFactorDisabled() {
   return (
     <section className="px-6 py-5">
-      <SectionHeading
-        right={
-          state?.intermediateEnable !== undefined ?
-            <Badge color={state.intermediateEnable ? "green" : "gray"}>
-              {state.intermediateEnable ? "Enabled" : "Disabled"}
-            </Badge>
-          : undefined
-        }
-      >
-        Two-Factor Authentication
-      </SectionHeading>
+      <SectionHeading>Two-Factor Authentication</SectionHeading>
+      <p className="text-sm text-fg-muted mb-4">
+        Use an authenticator app (TOTP) or email codes as a second factor. TOTP must be set up first
+        before email 2FA can be used.
+      </p>
+      <Form method="post" className="flex flex-col gap-2 max-w-sm">
+        <input type="hidden" name="action" value="2fa_enable" />
+        <Input
+          type="password"
+          name="password"
+          id="password_2fa_enable"
+          placeholder="Password"
+          required
+          autoComplete="current-password"
+        />
+        <Button type="submit">Enable 2FA</Button>
+      </Form>
+    </section>
+  );
+}
 
-      {!state?.userEnabled && !state?.intermediateEnable && (
-        <>
-          <p className="text-sm text-fg-muted mb-4">
-            Use an authenticator app (TOTP) or email codes as a second factor. TOTP must be set up
-            first before email 2FA can be used.
-          </p>
-          <Form method="post" className="flex flex-col gap-2 max-w-sm">
-            <input type="hidden" name="action" value="2fa_enable" />
-            <Input
-              type="password"
-              name="password"
-              id="password_2fa_enable"
-              placeholder="Password"
-              required
-              autoComplete="current-password"
-            />
-            <Button type="submit">Enable 2FA</Button>
-          </Form>
-        </>
-      )}
+/* ─── 2FA: Setup in progress ─── */
 
-      {state?.userEnabled && (
-        <p className="text-sm text-success mb-4">Two-factor authentication is active.</p>
-      )}
-      {state?.intermediateEnable && !state.userEnabled && (
-        <p className="text-sm text-warning mb-4">Verify using the QR code to complete setup.</p>
-      )}
+function TwoFactorSetup({
+  badge,
+  totpURI,
+  backupCodes,
+  errors,
+}: {
+  badge?: React.ReactNode;
+  totpURI?: string;
+  backupCodes?: string[];
+  errors?: AuthError[];
+}) {
+  return (
+    <section className="px-6 py-5">
+      <SectionHeading right={badge}>Two-Factor Authentication</SectionHeading>
+      <p className="text-sm text-warning mb-4">Verify using the QR code to complete setup.</p>
 
       {totpURI && (
         <div className="mb-5">
-          <p className="text-sm text-fg-muted mb-3">
-            Scan this QR code with your authenticator app.
-          </p>
           <div className="inline-flex px-8 py-2 w-fit h-full bg-surface-raised mb-4">
             <QRCode className="w-64 h-80" data={totpURI} />
           </div>
-          <VerifyTotpForm errors={state?.errors} />
+          <VerifyTotpForm errors={errors} />
         </div>
       )}
 
       {backupCodes && backupCodes.length > 0 && <BackupCodesDisplay codes={backupCodes} />}
+    </section>
+  );
+}
 
-      {state?.userEnabled && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 pt-5 border-t border-border-muted">
-          {!totpURI && (
-            <Form method="post" className="flex flex-col gap-2">
+/* ─── 2FA: Enabled ─── */
+
+const summaryClass =
+  "cursor-pointer list-none text-sm font-medium py-2 px-3 border border-border text-fg [&::-webkit-details-marker]:hidden";
+
+function TwoFactorEnabled({
+  badge,
+  totpURI,
+  backupCodes,
+  verified,
+  errors,
+}: {
+  badge?: React.ReactNode;
+  totpURI?: string;
+  backupCodes?: string[];
+  verified?: boolean;
+  errors?: AuthError[];
+}) {
+  return (
+    <section className="px-6 py-5">
+      <SectionHeading right={badge}>Two-Factor Authentication</SectionHeading>
+      <p className="text-sm text-success mb-4">Two-factor authentication is active.</p>
+
+      <div className="flex flex-col gap-2 mt-5 pt-5 border-t border-border-muted max-w-sm">
+        {totpURI ?
+          <div className="mb-5">
+            <div className="inline-flex px-8 py-2 w-fit h-full bg-surface-raised mb-4">
+              <QRCode className="w-64 h-80" data={totpURI} />
+            </div>
+            {verified ?
+              <p className="text-sm text-success">Success!</p>
+            : <VerifyTotpForm errors={errors} optionalCopy={true} />
+            }
+          </div>
+        : <details name="2fa-action">
+            <summary className={summaryClass}>Show QR Code</summary>
+            <Form method="post" className="flex flex-col gap-2 pt-2">
               <input type="hidden" name="action" value="get_totp_uri" />
-              <p className="text-xs text-fg-muted mb-1">Show QR Code</p>
               <Input
                 type="password"
                 name="password"
@@ -327,25 +379,32 @@ function TwoFactorSection({ state }: { state?: TotpState }) {
               />
               <Button type="submit">Show QR Code</Button>
             </Form>
-          )}
+          </details>
+        }
 
-          <Form method="post" className="flex flex-col gap-2">
-            <input type="hidden" name="action" value="get_backup_codes" />
-            <p className="text-xs text-fg-muted mb-1">Regenerate Codes</p>
-            <Input
-              type="password"
-              name="password"
-              id="password_backup"
-              placeholder="Password"
-              required
-              autoComplete="current-password"
-            />
-            <Button type="submit">New Backup Codes</Button>
-          </Form>
+        {backupCodes && backupCodes.length > 0 ?
+          <BackupCodesDisplay codes={backupCodes} />
+        : <details name="2fa-action">
+            <summary className={summaryClass}>New Backup Codes</summary>
+            <Form method="post" className="flex flex-col gap-2 pt-2">
+              <input type="hidden" name="action" value="get_backup_codes" />
+              <Input
+                type="password"
+                name="password"
+                id="password_backup"
+                placeholder="Password"
+                required
+                autoComplete="current-password"
+              />
+              <Button type="submit">New Backup Codes</Button>
+            </Form>
+          </details>
+        }
 
-          <Form method="post" className="flex flex-col gap-2">
+        <details name="2fa-action">
+          <summary className={summaryClass}>Disable 2FA</summary>
+          <Form method="post" className="flex flex-col gap-2 pt-2">
             <input type="hidden" name="action" value="2fa_disable" />
-            <p className="text-xs text-fg-muted mb-1">Disable 2FA</p>
             <Input
               type="password"
               name="password"
@@ -356,20 +415,28 @@ function TwoFactorSection({ state }: { state?: TotpState }) {
             />
             <Button type="submit">Disable 2FA</Button>
           </Form>
-        </div>
-      )}
+        </details>
+      </div>
     </section>
   );
 }
 
-function VerifyTotpForm({ errors }: { errors?: AuthError[] }) {
+function VerifyTotpForm({
+  errors,
+  optionalCopy,
+}: {
+  errors?: AuthError[];
+  optionalCopy?: boolean;
+}) {
   const copy = useCopy();
   return (
     <Form method="post" className="flex flex-col gap-2 max-w-sm">
       <input type="hidden" name="action" value="2fa_totp_verify" />
 
       <label htmlFor="totp_code" className="text-xs text-fg-muted">
-        Verify with a code from your app
+        {optionalCopy ?
+          "2FA is enabled, meaning no further action is necessary. Use the box below to test to make sure it works."
+        : "Verify with a code from your app."}
       </label>
       {errors?.map((error) => (
         <FormAlert

@@ -7,12 +7,12 @@ export type QRCodeProps = HTMLAttributes<HTMLDivElement> & {
   data: string;
 };
 
-const tabs = ["QR", "Manual", "Link"] as const;
+const tabs = ["Link", "QR", "Manual"] as const;
 type Tab = (typeof tabs)[number];
 
 export function QRCode({ data, ...props }: QRCodeProps) {
   const [qrSvg, setQrSvg] = useState("");
-  const [tab, setTab] = useState<Tab>("QR");
+  const [tab, setTab] = useState<Tab>("Link");
   const copy = useCopy();
   const manual = useMemo(() => parseOtpauthUri(data), [data]);
 
