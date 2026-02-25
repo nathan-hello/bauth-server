@@ -32,7 +32,7 @@ export function TwoFactorVerification({ state }: TwoFactorProps) {
         ))}
 
         {state?.resentEmail && (
-          <FormAlert color="success" message="Verification code resent to your email" />
+          <FormAlert color="success" message={copy.twofa_resent_email} />
         )}
 
         {verificationType === "email" && <EmailVerificationForm />}
@@ -111,6 +111,7 @@ function VerificationTypeSwitcher({
 }: {
   currentType: TwoFactorState["verificationType"];
 }) {
+  const copy = useCopy();
   return (
     <div className="mt-4">
       <Form method="post">
@@ -118,7 +119,7 @@ function VerificationTypeSwitcher({
           <>
             <input type="hidden" name="action" value="switch-totp" />
             <TextLink type="submit" className="text-sm">
-              Use authenticator app instead
+              {copy.twofa_switch_totp}
             </TextLink>
           </>
         )}
@@ -126,7 +127,7 @@ function VerificationTypeSwitcher({
           <>
             <input type="hidden" name="action" value="switch-email" />
             <TextLink type="submit" className="text-sm">
-              Use email verification instead
+              {copy.twofa_switch_email}
             </TextLink>
           </>
         )}

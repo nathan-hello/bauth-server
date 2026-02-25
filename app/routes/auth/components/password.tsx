@@ -181,7 +181,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
       {step === "start" && (
         <>
           <input type="hidden" name="step" value="start" />
-          <p className="text-fg-primary">Enter your email to reset your password.</p>
+          <p className="text-fg-primary">{copy.forgot_email_prompt}</p>
           <Input autoFocus type="email" name="email" required placeholder={copy.input_email} />
         </>
       )}
@@ -189,7 +189,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
       {step === "code" && (
         <>
           <input type="hidden" name="step" value="code" />
-          <p className="text-fg-primary">Enter the code sent to your email.</p>
+          <p className="text-fg-primary">{copy.forgot_code_prompt}</p>
           <input type="hidden" name="email" defaultValue={state?.email} />
           <Input
             autoFocus

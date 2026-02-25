@@ -118,6 +118,73 @@ const english = {
   totp_manual_period: "Period:",
   totp_manual_period_seconds: "seconds",
   totp_manual_digits: "Digits:",
+
+  // Forgot password flow
+  forgot_email_prompt: "Enter your email to reset your password.",
+  forgot_code_prompt: "Enter the code sent to your email.",
+
+  // Two-factor verification (login flow)
+  twofa_resent_email: "Verification code resent to your email",
+  twofa_switch_totp: "Use authenticator app instead",
+  twofa_switch_email: "Use email verification instead",
+
+  // Dashboard
+  dashboard_title: "Account Settings",
+  dashboard_password_changed: "Password changed successfully",
+
+  // Dashboard: Email
+  dashboard_email_heading: "Email",
+  dashboard_email_verified_badge: "Verified",
+  dashboard_email_unverified_badge: "Unverified",
+  dashboard_email_change: "Change Email",
+  dashboard_email_new_placeholder: "New email address",
+  dashboard_email_verification_sent: "Email verification sent.",
+  dashboard_email_unverified_prompt: "Email unverified.",
+  dashboard_email_resend_verification: "Resend Email Verification",
+
+  // Dashboard: Password
+  dashboard_password_heading: "Password",
+  dashboard_password_current_label: "Current Password",
+  dashboard_password_current_placeholder: "Current password",
+  dashboard_password_new_label: "New Password",
+  dashboard_password_new_placeholder: "New password",
+  dashboard_password_repeat_label: "Repeat New Password",
+  dashboard_password_repeat_placeholder: "Repeat new password",
+  dashboard_password_change: "Change Password",
+
+  // Dashboard: Two-Factor Authentication
+  dashboard_2fa_heading: "Two-Factor Authentication",
+  dashboard_2fa_description:
+    "Use an authenticator app (TOTP) or email codes as a second factor. TOTP must be set up first before email 2FA can be used.",
+  dashboard_2fa_enable: "Enable 2FA",
+  dashboard_2fa_enabled_badge: "Enabled",
+  dashboard_2fa_disabled_badge: "Disabled",
+  dashboard_2fa_setup_prompt: "Verify using the QR code to complete setup.",
+  dashboard_2fa_active: "Two-factor authentication is active.",
+  dashboard_2fa_success: "Success!",
+  dashboard_2fa_show_qr: "Show QR Code",
+  dashboard_2fa_new_backup_codes: "New Backup Codes",
+  dashboard_2fa_disable: "Disable 2FA",
+  dashboard_2fa_optional_verify:
+    "2FA is enabled, meaning no further action is necessary. Use the box below to test.",
+  dashboard_2fa_verify_prompt: "Verify with a code from your app.",
+  dashboard_2fa_code_placeholder: "6-digit code",
+  dashboard_2fa_verify_button: "Verify Code",
+
+  // Dashboard: Backup Codes
+  dashboard_backup_codes_title: "Backup Codes",
+  dashboard_backup_codes_copied: "Copied",
+  dashboard_backup_codes_copy_all: "Copy All",
+  dashboard_backup_codes_save: "Save these somewhere safe. Each code works once.",
+  dashboard_backup_codes_hide: "Hide backup codes",
+  dashboard_backup_codes_show: "Show backup codes",
+
+  // Dashboard: Sessions
+  dashboard_sessions_heading: "Sessions",
+  dashboard_session_current: "Current",
+  dashboard_session_revoke: "Revoke",
+  dashboard_session_revoke_all: "Revoke All Other Sessions",
+  dashboard_sessions_empty: "No active sessions",
 };
 
 export function useCopy() {

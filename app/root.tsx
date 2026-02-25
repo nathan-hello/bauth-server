@@ -3,6 +3,10 @@ import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { Route } from "./+types/root";
 import "./app.css";
 
+export const links: Route.LinksFunction = () => [
+  { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+];
+
 export default function App() {
   return <Outlet />;
 }

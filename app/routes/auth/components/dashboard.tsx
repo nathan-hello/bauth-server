@@ -43,7 +43,7 @@ export function Dashboard({ actionData, loaderData }: DashboardProps) {
     <div className="w-full max-w-3xl mx-auto select-text py-6 px-4">
       <div className="bg-surface text-fg">
         <header className="px-6 pt-6 pb-5 border-b border-border">
-          <p className="uppercase tracking-[0.3em] mb-1">Account Settings</p>
+          <p className="uppercase tracking-[0.3em] mb-1">{copy.dashboard_title}</p>
         </header>
 
         <div className="px-6 py-4 flex flex-col gap-2">
@@ -55,7 +55,7 @@ export function Dashboard({ actionData, loaderData }: DashboardProps) {
             />
           ))}
           {actionData?.change_password?.success && (
-            <FormAlert color="success" message="Password changed successfully" />
+            <FormAlert color="success" message={copy.dashboard_password_changed} />
           )}
         </div>
 
@@ -133,16 +133,17 @@ function EmailSection({
   email: EmailData;
   verificationSent?: boolean;
 }) {
+  const copy = useCopy();
   return (
     <section className="px-6 py-5">
       <SectionHeading
         right={
           <Badge color={email.verified ? "green" : "yellow"}>
-            {email.verified ? "Verified" : "Unverified"}
+            {email.verified ? copy.dashboard_email_verified_badge : copy.dashboard_email_unverified_badge}
           </Badge>
         }
       >
-        Email
+        {copy.dashboard_email_heading}
       </SectionHeading>
 
       <p className="text-sm mb-5">{email.email}</p>
@@ -151,26 +152,26 @@ function EmailSection({
         <Form method="post" className="flex flex-col gap-2">
           <input type="hidden" name="action" value="email_change" />
           <label htmlFor="new_email" className="text-xs text-fg-muted">
-            Change Email
+            {copy.dashboard_email_change}
           </label>
           <Input
             type="email"
             name="new_email"
             id="new_email"
-            placeholder="New email address"
+            placeholder={copy.dashboard_email_new_placeholder}
             required
           />
-          <Button type="submit">Change Email</Button>
+          <Button type="submit">{copy.dashboard_email_change}</Button>
         </Form>
 
         {!email.verified && (
           <Form method="post" className="flex flex-col gap-2">
             <input type="hidden" name="action" value="email_resend_verification" />
             <label htmlFor="new_email" className="text-xs text-fg-muted">
-              {verificationSent ? "Email verification sent." : "Email unverified."}
+              {verificationSent ? copy.dashboard_email_verification_sent : copy.dashboard_email_unverified_prompt}
             </label>
             <Button disabled={verificationSent} type="submit">
-              Resend Email Verification
+              {copy.dashboard_email_resend_verification}
             </Button>
           </Form>
         )}
@@ -182,49 +183,50 @@ function EmailSection({
 /* ─── Password ─── */
 
 function PasswordSection() {
+  const copy = useCopy();
   return (
     <section className="px-6 py-5">
-      <SectionHeading>Password</SectionHeading>
+      <SectionHeading>{copy.dashboard_password_heading}</SectionHeading>
       <Form method="post" className="flex flex-col gap-2 max-w-sm">
         <input type="hidden" name="action" value="change_password" />
 
         <label htmlFor="current" className="text-xs text-fg-muted">
-          Current Password
+          {copy.dashboard_password_current_label}
         </label>
         <Input
           type="password"
           name="current"
           id="current"
-          placeholder="Current password"
+          placeholder={copy.dashboard_password_current_placeholder}
           required
           autoComplete="current-password"
         />
 
         <label htmlFor="new_password" className="text-xs text-fg-muted">
-          New Password
+          {copy.dashboard_password_new_label}
         </label>
         <Input
           type="password"
           name="new_password"
           id="new_password"
-          placeholder="New password"
+          placeholder={copy.dashboard_password_new_placeholder}
           required
           autoComplete="new-password"
         />
 
         <label htmlFor="new_password_repeat" className="text-xs text-fg-muted">
-          Repeat New Password
+          {copy.dashboard_password_repeat_label}
         </label>
         <Input
           type="password"
           name="new_password_repeat"
           id="new_password_repeat"
-          placeholder="Repeat new password"
+          placeholder={copy.dashboard_password_repeat_placeholder}
           required
           autoComplete="new-password"
         />
 
-        <Button type="submit">Change Password</Button>
+        <Button type="submit">{copy.dashboard_password_change}</Button>
       </Form>
     </section>
   );
@@ -240,10 +242,11 @@ type TotpState = {
 };
 
 function TwoFactorSection({ state }: { state?: TotpState }) {
+  const copy = useCopy();
   const badge =
     state?.intermediateEnable !== undefined ?
       <Badge color={state.intermediateEnable ? "green" : "gray"}>
-        {state.intermediateEnable ? "Enabled" : "Disabled"}
+        {state.intermediateEnable ? copy.dashboard_2fa_enabled_badge : copy.dashboard_2fa_disabled_badge}
       </Badge>
     : undefined;
 
@@ -276,12 +279,12 @@ function TwoFactorSection({ state }: { state?: TotpState }) {
 /* ─── 2FA: Disabled ─── */
 
 function TwoFactorDisabled() {
+  const copy = useCopy();
   return (
     <section className="px-6 py-5">
-      <SectionHeading>Two-Factor Authentication</SectionHeading>
+      <SectionHeading>{copy.dashboard_2fa_heading}</SectionHeading>
       <p className="text-sm text-fg-muted mb-4">
-        Use an authenticator app (TOTP) or email codes as a second factor. TOTP must be set up first
-        before email 2FA can be used.
+        {copy.dashboard_2fa_description}
       </p>
       <Form method="post" className="flex flex-col gap-2 max-w-sm">
         <input type="hidden" name="action" value="2fa_enable" />
@@ -289,11 +292,11 @@ function TwoFactorDisabled() {
           type="password"
           name="password"
           id="password_2fa_enable"
-          placeholder="Password"
+          placeholder={copy.input_password}
           required
           autoComplete="current-password"
         />
-        <Button type="submit">Enable 2FA</Button>
+        <Button type="submit">{copy.dashboard_2fa_enable}</Button>
       </Form>
     </section>
   );
@@ -312,10 +315,11 @@ function TwoFactorSetup({
   backupCodes?: string[];
   errors?: AuthError[];
 }) {
+  const copy = useCopy();
   return (
     <section className="px-6 py-5">
-      <SectionHeading right={badge}>Two-Factor Authentication</SectionHeading>
-      <p className="text-sm text-warning mb-4">Verify using the QR code to complete setup.</p>
+      <SectionHeading right={badge}>{copy.dashboard_2fa_heading}</SectionHeading>
+      <p className="text-sm text-warning mb-4">{copy.dashboard_2fa_setup_prompt}</p>
 
       {totpURI && (
         <div className="mb-5">
@@ -349,10 +353,11 @@ function TwoFactorEnabled({
   verified?: boolean;
   errors?: AuthError[];
 }) {
+  const copy = useCopy();
   return (
     <section className="px-6 py-5">
-      <SectionHeading right={badge}>Two-Factor Authentication</SectionHeading>
-      <p className="text-sm text-success mb-4">Two-factor authentication is active.</p>
+      <SectionHeading right={badge}>{copy.dashboard_2fa_heading}</SectionHeading>
+      <p className="text-sm text-success mb-4">{copy.dashboard_2fa_active}</p>
 
       <div className="flex flex-col gap-2 mt-5 pt-5 border-t border-border-muted max-w-sm">
         {totpURI ?
@@ -361,23 +366,23 @@ function TwoFactorEnabled({
               <QRCode className="w-64 h-80" data={totpURI} />
             </div>
             {verified ?
-              <p className="text-sm text-success">Success!</p>
+              <p className="text-sm text-success">{copy.dashboard_2fa_success}</p>
             : <VerifyTotpForm errors={errors} optionalCopy={true} />
             }
           </div>
         : <details name="2fa-action">
-            <summary className={summaryClass}>Show QR Code</summary>
+            <summary className={summaryClass}>{copy.dashboard_2fa_show_qr}</summary>
             <Form method="post" className="flex flex-col gap-2 pt-2">
               <input type="hidden" name="action" value="get_totp_uri" />
               <Input
                 type="password"
                 name="password"
                 id="password_get_uri"
-                placeholder="Password"
+                placeholder={copy.input_password}
                 required
                 autoComplete="current-password"
               />
-              <Button type="submit">Show QR Code</Button>
+              <Button type="submit">{copy.dashboard_2fa_show_qr}</Button>
             </Form>
           </details>
         }
@@ -385,35 +390,35 @@ function TwoFactorEnabled({
         {backupCodes && backupCodes.length > 0 ?
           <BackupCodesDisplay codes={backupCodes} />
         : <details name="2fa-action">
-            <summary className={summaryClass}>New Backup Codes</summary>
+            <summary className={summaryClass}>{copy.dashboard_2fa_new_backup_codes}</summary>
             <Form method="post" className="flex flex-col gap-2 pt-2">
               <input type="hidden" name="action" value="get_backup_codes" />
               <Input
                 type="password"
                 name="password"
                 id="password_backup"
-                placeholder="Password"
+                placeholder={copy.input_password}
                 required
                 autoComplete="current-password"
               />
-              <Button type="submit">New Backup Codes</Button>
+              <Button type="submit">{copy.dashboard_2fa_new_backup_codes}</Button>
             </Form>
           </details>
         }
 
         <details name="2fa-action">
-          <summary className={summaryClass}>Disable 2FA</summary>
+          <summary className={summaryClass}>{copy.dashboard_2fa_disable}</summary>
           <Form method="post" className="flex flex-col gap-2 pt-2">
             <input type="hidden" name="action" value="2fa_disable" />
             <Input
               type="password"
               name="password"
               id="password_2fa_disable"
-              placeholder="Password"
+              placeholder={copy.input_password}
               required
               autoComplete="current-password"
             />
-            <Button type="submit">Disable 2FA</Button>
+            <Button type="submit">{copy.dashboard_2fa_disable}</Button>
           </Form>
         </details>
       </div>
@@ -435,8 +440,8 @@ function VerifyTotpForm({
 
       <label htmlFor="totp_code" className="text-xs text-fg-muted">
         {optionalCopy ?
-          "2FA is enabled, meaning no further action is necessary. Use the box below to test to make sure it works."
-        : "Verify with a code from your app."}
+          copy.dashboard_2fa_optional_verify
+        : copy.dashboard_2fa_verify_prompt}
       </label>
       {errors?.map((error) => (
         <FormAlert
@@ -449,18 +454,19 @@ function VerifyTotpForm({
         type="text"
         name="totp_code"
         id="totp_code"
-        placeholder="6-digit code"
+        placeholder={copy.dashboard_2fa_code_placeholder}
         minLength={6}
         maxLength={6}
         required
         autoComplete="one-time-code"
       />
-      <Button type="submit">Verify Code</Button>
+      <Button type="submit">{copy.dashboard_2fa_verify_button}</Button>
     </Form>
   );
 }
 
 function BackupCodesDisplay({ codes }: { codes: string[] }) {
+  const copy = useCopy();
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -468,7 +474,7 @@ function BackupCodesDisplay({ codes }: { codes: string[] }) {
     <div className="bg-surface-raised p-4 mb-4">
       <div className="flex items-center justify-between mb-2">
         <p className="text-xs font-semibold text-fg-faint uppercase tracking-[0.1em]">
-          Backup Codes
+          {copy.dashboard_backup_codes_title}
         </p>
         <Button
           variant="ghost"
@@ -479,12 +485,12 @@ function BackupCodesDisplay({ codes }: { codes: string[] }) {
             });
           }}
         >
-          {copied ? "Copied" : "Copy All"}
+          {copied ? copy.dashboard_backup_codes_copied : copy.dashboard_backup_codes_copy_all}
         </Button>
       </div>
-      <p className="text-xs text-fg-muted mb-3">Save these somewhere safe. Each code works once.</p>
+      <p className="text-xs text-fg-muted mb-3">{copy.dashboard_backup_codes_save}</p>
       <Button variant="ghost" className="w-full mb-2" onClick={() => setOpen(!open)}>
-        {open ? "Hide backup codes" : "Show backup codes"}
+        {open ? copy.dashboard_backup_codes_hide : copy.dashboard_backup_codes_show}
       </Button>
       {open && (
         <div className="font-mono text-xs grid grid-cols-2 gap-1">
@@ -508,9 +514,10 @@ type Session = {
 };
 
 function SessionsSection({ sessions, current }: { sessions: Session[]; current: Session }) {
+  const copy = useCopy();
   return (
     <section className="px-6 py-5">
-      <SectionHeading>Sessions</SectionHeading>
+      <SectionHeading>{copy.dashboard_sessions_heading}</SectionHeading>
 
       {sessions.length > 0 ?
         <>
@@ -523,7 +530,7 @@ function SessionsSection({ sessions, current }: { sessions: Session[]; current: 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm truncate">{session.ipAddress}</p>
-                    {session.id === current.id && <Badge color="blue">Current</Badge>}
+                    {session.id === current.id && <Badge color="blue">{copy.dashboard_session_current}</Badge>}
                   </div>
                   <p className="text-xs text-fg-muted mt-0.5">
                     {new Date(session.lastLoggedIn).toLocaleString()}
@@ -533,7 +540,7 @@ function SessionsSection({ sessions, current }: { sessions: Session[]; current: 
                   <input type="hidden" name="action" value="revoke_session" />
                   <input type="hidden" name="session" value={session.id} />
                   <Button variant="ghost" type="submit" className="text-xs px-3">
-                    Revoke
+                    {copy.dashboard_session_revoke}
                   </Button>
                 </Form>
               </div>
@@ -544,12 +551,12 @@ function SessionsSection({ sessions, current }: { sessions: Session[]; current: 
               <input type="hidden" name="action" value="revoke_session" />
               <input type="hidden" name="session" value="all" />
               <Button variant="ghost" type="submit">
-                Revoke All Other Sessions
+                {copy.dashboard_session_revoke_all}
               </Button>
             </Form>
           )}
         </>
-      : <p className="text-sm text-fg-muted">No active sessions</p>}
+      : <p className="text-sm text-fg-muted">{copy.dashboard_sessions_empty}</p>}
     </section>
   );
 }

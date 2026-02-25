@@ -1,10 +1,4 @@
 import { createAuthClient } from "better-auth/react";
-import {
-  usernameClient,
-  twoFactorClient,
-  oneTimeTokenClient,
-  emailOTPClient,
-} from "better-auth/client/plugins";
 import { passkeyClient } from "@better-auth/passkey/client";
 
 const url =
@@ -17,9 +11,5 @@ export const authClient = createAuthClient({
   baseURL: url,
   plugins: [
     passkeyClient(),
-    usernameClient(),
-    emailOTPClient(),
-    twoFactorClient(),
-    oneTimeTokenClient(),
   ],
 });
