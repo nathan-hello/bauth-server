@@ -3,10 +3,9 @@ import type { AuthError } from "../errors/auth-error";
 export const ERROR_COPY: Partial<Record<AuthError["type"], string>> = {
   password_mismatch: "Passwords do not match.",
   totp_uri_not_found: "",
-  // TODO(nate): whenever generic_error is true,
-  // we are currently sending that error to client.
-  // This is good for dev but not prod.
   generic_error: "Something wrong happened.",
+  otp_failed: "Verification failed.",
+  code_invalid: "Invalid verification code.",
 
   // better auth errors
   INVALID_USERNAME: "Username is invalid.",

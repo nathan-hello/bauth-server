@@ -51,7 +51,6 @@ export function Dashboard({ actionData, loaderData }: DashboardProps) {
             <FormAlert
               key={error.type}
               message={error.type ? copy.error[error.type] : undefined}
-              submessage={error.type === "generic_error" ? error.message : ""}
             />
           ))}
           {actionData?.change_password?.success && (
@@ -447,7 +446,6 @@ function VerifyTotpForm({
         <FormAlert
           key={error.type}
           message={error.type ? copy.error[error.type] : undefined}
-          submessage={error.type === "generic_error" ? error.message : ""}
         />
       ))}
       <Input

@@ -37,7 +37,6 @@ export function PasswordLoginForm({ state }: LoginFormProps) {
         <FormAlert
           key={error.type}
           message={error.type ? copy.error[error.type] : undefined}
-          submessage={error.type === "generic_error" ? error.message : ""}
         />
       ))}
       <Input
@@ -79,7 +78,6 @@ export function PasswordRegisterForm(props: RegisterFormProps) {
         <FormAlert
           key={error.type}
           message={error.type ? copy.error[error.type] : undefined}
-          submessage={error.type === "generic_error" ? error.message : ""}
         />
       ))}
       <PasswordRegisterStartForm {...props} />
@@ -168,13 +166,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
       {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
-          message={
-            error?.type ?
-              error.type === "generic_error" ?
-                (error.message ?? copy.error[error.type])
-              : copy.error[error.type]
-            : undefined
-          }
+          message={error.type ? copy.error[error.type] : undefined}
         />
       ))}
 
@@ -257,13 +249,7 @@ export function PasswordSignOut({ state }: { state?: AuthState }) {
       {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
-          message={
-            error?.type ?
-              error.type === "generic_error" ?
-                (error.message ?? copy.error[error.type])
-              : copy.error[error.type]
-            : undefined
-          }
+          message={error.type ? copy.error[error.type] : undefined}
         />
       ))}
       <Button type="submit">{copy.button_continue}</Button>

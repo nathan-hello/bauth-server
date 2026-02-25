@@ -2,7 +2,7 @@ import { auth } from "@server/auth";
 import type { Route } from "./+types/login";
 import { PasswordLoginForm, type AuthState } from "./components/password";
 import { redirect } from "react-router";
-import { getAuthError } from "./errors/auth-error";
+import { AppError, getAuthError } from "./errors/auth-error";
 import { useCopy } from "./lib/copy";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { Card } from "./components/ui";
@@ -67,7 +67,7 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState> 
       }));
 
     if (!response) {
-      throw { type: "generic_error", message: "Unknown error 18583" };
+      throw new AppError("generic_error");
     }
 
     if ("twoFactorRedirect" in response) {

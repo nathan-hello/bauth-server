@@ -1,7 +1,7 @@
 import { auth } from "@server/auth";
 import type { Route } from "./+types/forgot";
 import { PasswordForgotForm, type ForgotPasswordFormProps } from "./components/password";
-import { getAuthError } from "./errors/auth-error";
+import { AppError, getAuthError } from "./errors/auth-error";
 import { redirect } from "react-router";
 import { APIError } from "better-auth";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
@@ -146,10 +146,10 @@ async function stepCode({
   code,
 }: StepCodeArgs): Promise<ForgotPasswordFormProps | undefined> {
   if (!email) {
-    throw Error("otp_failed");
+    throw new AppError("otp_failed");
   }
   if (!code) {
-    throw Error("code_invalid");
+    throw new AppError("code_invalid");
   }
   const ok = await auth.api.checkVerificationOTP({
     body: {
@@ -160,7 +160,7 @@ async function stepCode({
     headers: request.headers,
   });
   if (!ok) {
-    throw Error("otp_failed");
+    throw new AppError("otp_failed");
   }
   return {
     step: "update",
@@ -183,11 +183,10 @@ async function stepUpdatePassword({
   code,
 }: StepUpdateArgs): Promise<Headers | undefined> {
   if (!password || !repeat || password !== repeat) {
-    throw Error("password_mismatch");
+    throw new AppError("password_mismatch");
   }
   if (!email || !code) {
-    console.error("forgot: stepUpdatePassword: email or code was undefined", {email, code});
-    throw Error("generic_error");
+    throw new AppError("generic_error", "stepUpdatePassword: missing email or code");
   }
 
   const { headers, response } = await auth.api.resetPasswordEmailOTP({
@@ -200,8 +199,7 @@ async function stepUpdatePassword({
     returnHeaders: true,
   });
   if (!response.success) {
-    console.error("forgot: got success false from resetPasswordEmailOTP");
-    throw Error("generic_error");
+    throw new AppError("generic_error", "resetPasswordEmailOTP returned success=false");
   }
 
   return headers;

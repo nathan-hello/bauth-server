@@ -1,5 +1,5 @@
 import { PasswordRegisterForm } from "./components/password";
-import { getAuthError, AuthError } from "./errors/auth-error";
+import { AppError, getAuthError, type AuthError } from "./errors/auth-error";
 import type { Route } from "./+types/register";
 import { auth, validateUsername } from "@server/auth";
 import { useCopy } from "./lib/copy";
@@ -64,9 +64,7 @@ export async function action({
       }
 
       if (!username || !email || !password || !repeat) {
-        throw new AuthError({
-          type: "INVALID_EMAIL_OR_PASSWORD",
-        });
+        throw new AppError("INVALID_EMAIL_OR_PASSWORD");
       }
 
       const { headers: signUpHeaders } = await auth.api.signUpEmail({

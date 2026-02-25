@@ -2,7 +2,7 @@ import { auth } from "@server/auth";
 import type { Route } from "./+types/dashboard";
 import { Dashboard } from "./components/dashboard";
 import { data, redirect } from "react-router";
-import { AuthError, getAuthError } from "./errors/auth-error";
+import { AppError, getAuthError } from "./errors/auth-error";
 
 export default function ({ loaderData, actionData }: Route.ComponentProps) {
   return <Dashboard actionData={actionData} loaderData={loaderData} />;
@@ -313,19 +313,14 @@ async function changePassword(form: FormData, request: Request) {
   const newPass = form.get("new_password")?.toString();
   const repeat = form.get("new_password_repeat")?.toString();
 
-  const errors: AuthError[] = [];
   if (!current) {
-    throw new AuthError("INVALID_PASSWORD");
+    throw new AppError("INVALID_PASSWORD");
   }
   if (!newPass) {
-    throw new AuthError("password_mismatch");
+    throw new AppError("password_mismatch");
   }
-
   if (newPass && newPass !== repeat) {
-    throw new AuthError("password_mismatch");
-  }
-
-  if (errors.length > 0) {
+    throw new AppError("password_mismatch");
   }
 
   const result = await auth.api.changePassword({

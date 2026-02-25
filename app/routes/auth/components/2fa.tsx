@@ -27,7 +27,6 @@ export function TwoFactorVerification({ state }: TwoFactorProps) {
           <FormAlert
             key={error.type}
             message={error.type ? copy.error[error.type] : undefined}
-            submessage={error.type === "generic_error" ? error.message : ""}
           />
         ))}
 
