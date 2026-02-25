@@ -3,7 +3,7 @@ import { useCopy } from "../lib/copy.js";
 import type { AuthError } from "../errors/auth-error.js";
 import { Form } from "react-router";
 import { useAuthLinks } from "../hooks/use-redirect.js";
-import { QRCode } from "@/components/qr.js";
+import { Input, Button, FormFooter, TextLink } from "./ui.js";
 
 export type AuthState = {
   email?: string;
@@ -31,7 +31,7 @@ export function PasswordLoginForm({ state }: LoginFormProps) {
   const copy = useCopy();
   const link = useAuthLinks();
   return (
-    <Form data-component="form" method="post">
+    <Form className="max-w-full flex flex-col gap-4 m-0" method="post">
       {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
@@ -39,36 +39,32 @@ export function PasswordLoginForm({ state }: LoginFormProps) {
           submessage={error.type === "generic_error" ? error.message : ""}
         />
       ))}
-      <input
-        data-component="input"
+      <Input
         type="text"
         name="email"
         required
         placeholder={copy.input_email_or_username}
         autoFocus={!state?.errors}
       />
-      <input
-        data-component="input"
+      <Input
         required
         type="password"
         name="password"
         placeholder={copy.input_password}
         autoComplete="current-password"
       />
-      <button data-component="button" type="submit">
-        {copy.button_continue}
-      </button>
-      <div data-component="form-footer">
+      <Button type="submit">{copy.button_continue}</Button>
+      <FormFooter>
         <span>
           {copy.register_prompt}{" "}
-          <button type="button" data-component="link" onClick={link.register}>
+          <TextLink type="button" onClick={link.register}>
             {copy.register}
-          </button>
+          </TextLink>
         </span>
-        <button type="button" data-component="link" onClick={link.forgot}>
+        <TextLink type="button" onClick={link.forgot}>
           {copy.change_prompt}
-        </button>
-      </div>
+        </TextLink>
+      </FormFooter>
     </Form>
   );
 }
@@ -77,7 +73,7 @@ export function PasswordRegisterForm(props: RegisterFormProps) {
   const copy = useCopy();
 
   return (
-    <div data-component="form">
+    <div className="max-w-full flex flex-col gap-4 m-0">
       {props.state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
@@ -97,23 +93,20 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
   return (
     <Form method="post" className="flex flex-col gap-y-4">
       <input type="hidden" name="action" value="register" />
-      <input
-        data-component="input"
+      <Input
         type="text"
         name="username"
         required
         placeholder={copy.input_username}
       />
-      <input
-        data-component="input"
+      <Input
         type="text"
         name="email"
         defaultValue={state?.email}
         required
         placeholder={copy.input_email}
       />
-      <input
-        data-component="input"
+      <Input
         type="password"
         name="password"
         placeholder={copy.input_password}
@@ -121,8 +114,7 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
         defaultValue={""}
         autoComplete="new-password"
       />
-      <input
-        data-component="input"
+      <Input
         type="password"
         name="repeat"
         required
@@ -130,17 +122,15 @@ function PasswordRegisterStartForm({ state }: RegisterFormProps) {
         placeholder={copy.input_repeat}
         autoComplete="new-password"
       />
-      <button data-component="button" type="submit">
-        {copy.button_continue}
-      </button>
-      <div data-component="form-footer">
+      <Button type="submit">{copy.button_continue}</Button>
+      <FormFooter>
         <span>
           {copy.login_prompt}{" "}
-          <button type="button" data-component="link" onClick={link.login}>
+          <TextLink type="button" onClick={link.login}>
             {copy.login}
-          </button>
+          </TextLink>
         </span>
-      </div>
+      </FormFooter>
     </Form>
   );
 }
@@ -149,13 +139,12 @@ export function PasswordLoginTwoFactorForm({ state }: TwoFactorFormProps) {
   const copy = useCopy();
 
   return (
-    <Form data-component="form" method="post">
+    <Form className="max-w-full flex flex-col gap-4 m-0" method="post">
       {state?.errors?.map((error) => (
         <FormAlert key={error.type} message={error?.type ? copy.error[error.type] : undefined} />
       ))}
       <input type="hidden" name="action" value="verify" />
-      <input
-        data-component="input"
+      <Input
         autoFocus
         name="code"
         minLength={6}
@@ -164,14 +153,12 @@ export function PasswordLoginTwoFactorForm({ state }: TwoFactorFormProps) {
         placeholder={copy.input_code}
         autoComplete="one-time-code"
       />
-      <button data-component="button" type="submit">
-        {copy.button_continue}
-      </button>
-      <div data-component="form-footer">
-        <button type="submit" data-component="link" name="resend" value="true">
+      <Button type="submit">{copy.button_continue}</Button>
+      <FormFooter>
+        <TextLink type="submit" name="resend" value="true">
           {copy.code_resend}
-        </button>
-      </div>
+        </TextLink>
+      </FormFooter>
     </Form>
   );
 }
@@ -181,7 +168,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
   const link = useAuthLinks();
 
   return (
-    <Form data-component="form" method="post">
+    <Form className="max-w-full flex flex-col gap-4 m-0" method="post">
       {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
@@ -198,8 +185,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
       {step === "start" && (
         <>
           <input type="hidden" name="step" value="start" />
-          <input
-            data-component="input"
+          <Input
             autoFocus
             type="email"
             name="email"
@@ -213,8 +199,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
         <>
           <input type="hidden" name="step" value="code" />
           <input type="hidden" name="email" defaultValue={state?.email} />
-          <input
-            data-component="input"
+          <Input
             autoFocus
             name="code"
             minLength={6}
@@ -232,8 +217,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
         <>
           <input type="hidden" name="step" value="update" />
           <input type="hidden" name="email" defaultValue={state?.email} />
-          <input
-            data-component="input"
+          <Input
             autoFocus
             type="password"
             name="password"
@@ -242,8 +226,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
             defaultValue={""}
             autoComplete="new-password"
           />
-          <input
-            data-component="input"
+          <Input
             type="password"
             name="repeat"
             required
@@ -254,22 +237,20 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
         </>
       )}
 
-      <button data-component="button" type="submit">
-        {copy.button_continue}
-      </button>
-      <div data-component="form-footer">
+      <Button type="submit">{copy.button_continue}</Button>
+      <FormFooter>
         <span>
           {copy.code_return}{" "}
-          <button type="button" data-component="link" onClick={link.login}>
+          <TextLink type="button" onClick={link.login}>
             {copy.login.toLowerCase()}
-          </button>
+          </TextLink>
         </span>
         {step === "code" && (
-          <button type="submit" data-component="link" name="resend" value="true">
+          <TextLink type="submit" name="resend" value="true">
             {copy.code_resend}
-          </button>
+          </TextLink>
         )}
-      </div>
+      </FormFooter>
     </Form>
   );
 }
@@ -279,7 +260,7 @@ export function PasswordSignOut({ state }: { state?: AuthState }) {
   const link = useAuthLinks();
 
   return (
-    <Form data-component="form" method="post">
+    <Form className="max-w-full flex flex-col gap-4 m-0" method="post">
       {state?.errors?.map((error) => (
         <FormAlert
           key={error.type}
@@ -292,17 +273,15 @@ export function PasswordSignOut({ state }: { state?: AuthState }) {
           }
         />
       ))}
-      <button data-component="button" type="submit">
-        {copy.button_continue}
-      </button>
-      <div data-component="form-footer">
+      <Button type="submit">{copy.button_continue}</Button>
+      <FormFooter>
         <span>
           {copy.code_return}{" "}
-          <button type="button" data-component="link" onClick={link.login}>
+          <TextLink type="button" onClick={link.login}>
             {copy.login.toLowerCase()}
-          </button>
+          </TextLink>
         </span>
-      </div>
+      </FormFooter>
     </Form>
   );
 }

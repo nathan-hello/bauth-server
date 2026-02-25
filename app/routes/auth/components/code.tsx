@@ -23,6 +23,7 @@
  * @packageDocumentation
  */
 import { FormAlert } from "./form.js";
+import { Input, Button, TextLink } from "./ui.js";
 
 const DEFAULT_COPY = {
   /**
@@ -115,11 +116,10 @@ export function CodeUI(props: CodeUIOptions) {
   if (state.type === "start") {
     return (
       <div>
-        <form data-component="form" method="post">
+        <form className="max-w-full flex flex-col gap-4 m-0" method="post">
           {error?.type === "invalid_claim" && <FormAlert message={copy.email_invalid} />}
           <input type="hidden" name="action" value="request" />
-          <input
-            data-component="input"
+          <Input
             autoFocus
             type={mode === "email" ? "email" : "tel"}
             name={mode === "email" ? "email" : "phone"}
@@ -127,9 +127,9 @@ export function CodeUI(props: CodeUIOptions) {
             required
             placeholder={copy.email_placeholder}
           />
-          <button data-component="button">{copy.button_continue}</button>
+          <Button type="submit">{copy.button_continue}</Button>
         </form>
-        <p data-component="form-footer">{copy.code_info}</p>
+        <p className="flex gap-4 text-xs items-center justify-center">{copy.code_info}</p>
       </div>
     );
   }
@@ -137,7 +137,7 @@ export function CodeUI(props: CodeUIOptions) {
   if (state.type === "code") {
     return (
       <div>
-        <form data-component="form" method="post">
+        <form className="max-w-full flex flex-col gap-4 m-0" method="post">
           {error?.type === "invalid_code" && <FormAlert message={copy.code_invalid} />}
           {state.type === "code" && (
             <FormAlert
@@ -146,8 +146,7 @@ export function CodeUI(props: CodeUIOptions) {
             />
           )}
           <input type="hidden" name="action" value="verify" />
-          <input
-            data-component="input"
+          <Input
             autoFocus
             minLength={6}
             maxLength={6}
@@ -158,16 +157,16 @@ export function CodeUI(props: CodeUIOptions) {
             autoComplete="one-time-code"
             placeholder={copy.code_placeholder}
           />
-          <button data-component="button">{copy.button_continue}</button>
+          <Button type="submit">{copy.button_continue}</Button>
         </form>
         <form method="post">
           {Object.entries(state.claims).map(([key, value]) => (
             <input key={key} type="hidden" name={key} value={String(value)} className="hidden" />
           ))}
           <input type="hidden" name="action" value="request" />
-          <div data-component="form-footer">
+          <div className="flex gap-4 text-xs items-center justify-center">
             <span>
-              {copy.code_didnt_get} <button data-component="link">{copy.code_resend}</button>
+              {copy.code_didnt_get} <TextLink type="submit">{copy.code_resend}</TextLink>
             </span>
           </div>
         </form>

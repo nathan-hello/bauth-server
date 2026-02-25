@@ -5,15 +5,16 @@ import { auth, validateUsername } from "@server/auth";
 import { useCopy } from "./lib/copy";
 import { data, redirect } from "react-router";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
+import { Card } from "./components/ui";
 
 export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
 
   return (
-    <div data-component="center">
+    <Card>
       <title>{copy.meta.register.title}</title>
       <PasswordRegisterForm state={actionData?.state} />
-    </div>
+    </Card>
   );
 }
 

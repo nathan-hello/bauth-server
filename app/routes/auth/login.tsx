@@ -5,15 +5,16 @@ import { redirect } from "react-router";
 import { getAuthError } from "./errors/auth-error";
 import { useCopy } from "./lib/copy";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
+import { Card } from "./components/ui";
 
 export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
 
   return (
-    <div data-component="center">
+    <Card>
       <title>{copy.meta.login.title}</title>
       <PasswordLoginForm state={actionData} />
-    </div>
+    </Card>
   );
 }
 

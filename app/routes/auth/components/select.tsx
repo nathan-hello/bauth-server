@@ -24,6 +24,7 @@
  */
 
 import { ICON_GITHUB, ICON_GOOGLE } from "./icon.js";
+import { ButtonLink } from "./ui.js";
 
 export interface SelectProps {
   /**
@@ -60,16 +61,16 @@ export interface SelectProps {
 export function Select(props?: SelectProps) {
   return async (providers: Record<string, string>, _req: Request): Promise<Response> => {
     const jsx = (
-      <div data-component="form">
+      <div className="max-w-full flex flex-col gap-4 m-0">
         {Object.entries(providers).map(([key, type]) => {
           const match = props?.providers?.[key];
           if (match?.hide) return;
           const icon = ICON[key];
           return (
-            <a href={`/${key}/authorize`} data-component="button" data-color="ghost">
-              {icon && <i data-slot="icon">{icon}</i>}
+            <ButtonLink key={key} href={`/${key}/authorize`} variant="ghost">
+              {icon && <i className="w-4 h-4 [&>svg]:w-full [&>svg]:h-full">{icon}</i>}
               Continue with {match?.display || DISPLAY[type] || type}
-            </a>
+            </ButtonLink>
           );
         })}
       </div>
@@ -104,16 +105,16 @@ const ICON: Record<string, any> = {
     >
       <path
         d="M8.55,36.91A6.55,6.55,0,1,1,2,43.45,6.54,6.54,0,0,1,8.55,36.91Zm17.45,0a6.55,6.55,0,1,1-6.55,6.54A6.55,6.55,0,0,1,26,36.91Zm17.45,0a6.55,6.55,0,1,1-6.54,6.54A6.54,6.54,0,0,1,43.45,36.91ZM8.55,19.45A6.55,6.55,0,1,1,2,26,6.55,6.55,0,0,1,8.55,19.45Zm17.45,0A6.55,6.55,0,1,1,19.45,26,6.56,6.56,0,0,1,26,19.45Zm17.45,0A6.55,6.55,0,1,1,36.91,26,6.55,6.55,0,0,1,43.45,19.45ZM8.55,2A6.55,6.55,0,1,1,2,8.55,6.54,6.54,0,0,1,8.55,2ZM26,2a6.55,6.55,0,1,1-6.55,6.55A6.55,6.55,0,0,1,26,2ZM43.45,2a6.55,6.55,0,1,1-6.54,6.55A6.55,6.55,0,0,1,43.45,2Z"
-        fill-rule="evenodd"
+        fillRule="evenodd"
       />
     </svg>
   ),
   password: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
       <path
-        fill-rule="evenodd"
+        fillRule="evenodd"
         d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
-        clip-rule="evenodd"
+        clipRule="evenodd"
       />
     </svg>
   ),
@@ -160,8 +161,8 @@ const ICON: Record<string, any> = {
     <svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="url(#a)">
       <defs>
         <linearGradient x1="50%" x2="50%" y1="97.078%" y2="0%" id="a">
-          <stop offset="0%" stop-color="#0062E0" />
-          <stop offset="100%" stop-color="#19AFFF" />
+          <stop offset="0%" stopColor="#0062E0" />
+          <stop offset="100%" stopColor="#19AFFF" />
         </linearGradient>
       </defs>
       <path d="M15 35.8C6.5 34.3 0 26.9 0 18 0 8.1 8.1 0 18 0s18 8.1 18 18c0 8.9-6.5 16.3-15 17.8l-1-.8h-4l-1 .8z" />
@@ -174,11 +175,11 @@ const ICON: Record<string, any> = {
   slack: (
     <svg
       role="img"
-      enable-background="new 0 0 2447.6 2452.5"
+      enableBackground="new 0 0 2447.6 2452.5"
       viewBox="0 0 2447.6 2452.5"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-rule="evenodd" fill-rule="evenodd">
+      <g clipRule="evenodd" fillRule="evenodd">
         <path
           d="m897.4 0c-135.3.1-244.8 109.9-244.7 245.2-.1 135.3 109.5 245.1 244.8 245.2h244.8v-245.1c.1-135.3-109.5-245.1-244.9-245.3.1 0 .1 0 0 0m0 654h-652.6c-135.3.1-244.9 109.9-244.8 245.2-.2 135.3 109.4 245.1 244.7 245.3h652.7c135.3-.1 244.9-109.9 244.8-245.2.1-135.4-109.5-245.2-244.8-245.3z"
           fill="#36c5f0"

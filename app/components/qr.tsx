@@ -1,3 +1,4 @@
+import { Button, ButtonLink } from "@/routes/auth/components/ui";
 import { useCopy } from "@/routes/auth/lib/copy";
 import QR from "qrcode";
 import { useEffect, useMemo, useState, type HTMLAttributes } from "react";
@@ -6,13 +7,13 @@ export type QRCodeProps = HTMLAttributes<HTMLDivElement> & {
   data: string;
 };
 
+const tabs = ["QR", "Manual", "Link"] as const;
+type Tab = (typeof tabs)[number];
+
 export function QRCode({ data, ...props }: QRCodeProps) {
   const [qrSvg, setQrSvg] = useState("");
-  const [mode, setMode] = useState<"blur" | "qr" | "text">("blur");
-  const foreground = "#111";
-  const background = "#eee";
-  const robustness = "M";
-
+  const [tab, setTab] = useState<Tab>("QR");
+  const copy = useCopy();
   const manual = useMemo(() => parseOtpauthUri(data), [data]);
 
   useEffect(() => {
@@ -20,50 +21,63 @@ export function QRCode({ data, ...props }: QRCodeProps) {
       data,
       {
         type: "svg",
-        color: {
-          dark: foreground,
-          light: background,
-        },
+        color: { dark: "#111", light: "#eee" },
         width: 200,
-        errorCorrectionLevel: robustness,
+        errorCorrectionLevel: "M",
       },
       (error, svg) => {
-        if (error) {
-          console.error("QR code could not be rendered", error);
-        }
+        if (error) console.error("QR code could not be rendered", error);
         setQrSvg(svg);
       },
     );
-  }, []);
+  }, [data]);
 
-  const copy = useCopy();
   return (
-    <div className="size-full cursor-pointer" {...props}>
-      {mode === "text" ?
-        <div className="size-full  flex flex-col justify-around overflow-auto text-xs select-text break-all">
-          <strong>Secret:</strong> <span className="font-mono">{manual.secret} </span>
-          <strong>Algorithm:</strong> <span className="font-mono">{manual.algorithm}</span>
-          <strong>Period:</strong> <span className="font-mono">{manual.period} </span>
-          <strong>Digits:</strong> <span className="font-mono">{manual.digits} </span>
-          <div data-component="button" className="cursor-pointer" onClick={() => setMode("qr")}>
-            {copy.totp_show_qr}
-          </div>
-        </div>
-      : <div
-          onClick={() => {
-            if (mode === "blur") {
-              setMode("qr");
-            }
-            if (mode === "qr") {
-              setMode("text");
-            }
-          }}
-          className={`size-full [&_svg]:size-full ${mode === "blur" ? "blur-md" : ""}`}
-          dangerouslySetInnerHTML={{
-            __html: qrSvg,
-          }}
+    <div className="flex flex-col text-xl" {...props}>
+      <div className="flex border border-border py-1 my-2 gap-x-4">
+        {tabs.map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className={`flex-1 px-3 py-1.5 font-medium cursor-pointer border-0 ${
+              tab === t
+                ? "bg-surface-raised text-fg"
+                : "bg-transparent text-fg-muted"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {tab === "QR" && (
+        <div
+          className="[&_svg]:size-full"
+          dangerouslySetInnerHTML={{ __html: qrSvg }}
         />
-      }
+      )}
+
+      {tab === "Manual" && (
+        <div className="flex flex-col gap-2 select-text break-all">
+          <div><strong>{copy.totp_manual_secret}</strong> <br/> <span className="font-mono">{manual.secret}</span></div>
+          <div><strong>{copy.totp_manual_alg}</strong>    <br/> <span className="font-mono">{manual.algorithm}</span></div>
+          <div><strong>{copy.totp_manual_period}</strong> <br/> <span className="font-mono">{manual.period}{copy.totp_manual_period_seconds}</span></div>
+          <div><strong>{copy.totp_manual_digits}</strong> <br/> <span className="font-mono">{manual.digits}</span></div>
+        </div>
+      )}
+
+      {tab === "Link" && (
+        <div className="flex items-center justify-center">
+          <ButtonLink
+            href={data}
+            variant="primary" 
+            className="mt-8"
+          >
+            Open in authenticator app
+          </ButtonLink>
+        </div>
+      )}
     </div>
   );
 }
@@ -88,10 +102,5 @@ export function parseOtpauthUri(uri: string) {
   const period = params.period ? Number(params.period) : 30;
   const algorithm = "SHA1";
 
-  return {
-    digits,
-    period,
-    algorithm,
-    secret: params.secret,
-  };
+  return { digits, period, algorithm, secret: params.secret };
 }

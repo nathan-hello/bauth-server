@@ -69,7 +69,7 @@ export async function action({ request }: Route.ActionArgs) {
       return await revokeSessions(form, request);
     }
 
-    if (action === "change_email") {
+    if (action === "email_change") {
       return await changeEmail(form, request);
     }
 
@@ -79,6 +79,10 @@ export async function action({ request }: Route.ActionArgs) {
 
     if (action === "get_backup_codes") {
       return await rerollBackupCodes(form, request);
+    }
+
+    if (action === "email_resend_verification") {
+      return await emailResendVerification(form, request);
     }
 
     if (action === "2fa_enable") {
@@ -102,6 +106,27 @@ export async function action({ request }: Route.ActionArgs) {
       errors: aerr,
     };
   }
+}
+
+async function emailResendVerification(_: FormData, request: Request) {
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+  if (!session) {
+    return;
+  }
+
+  await auth.api.sendVerificationEmail({
+    body: {
+      email: session.user.email,
+    },
+  });
+
+  return data({
+    email_verify: {
+      sent: true,
+    },
+  });
 }
 
 async function totpVerify(form: FormData, request: Request) {

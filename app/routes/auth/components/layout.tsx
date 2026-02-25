@@ -1,5 +1,4 @@
 import { Outlet, useNavigate } from "react-router";
-import css from "./ui.css?raw";
 import { useCopy } from "../lib/copy";
 
 export default function () {
@@ -8,30 +7,14 @@ export default function () {
   return (
     <div>
       <title>{copy.meta.auth.title}</title>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: css,
-        }}
-      />
-      <body>
-        <div data-component="root">
-          <img
-            onClick={() => navigate("/")}
-            data-component="logo"
-            data-mode="light"
-            src="/favicon.ico"
-            className="py-2 cursor-pointer w-full"
-          />
-          <img
-            onClick={() => navigate("/")}
-            data-component="logo"
-            data-mode="dark"
-            src="/favicon.ico"
-            className="py-2 cursor-pointer w-full"
-          />
-          <Outlet />
-        </div>
-      </body>
+      <div className="font-sans bg-[url('/carpark.webp')] bg-center bg-cover bg-fixed min-h-screen p-4 flex items-center justify-start flex-col select-none text-fg">
+        <img
+          onClick={() => navigate("/")}
+          src="/favicon.ico"
+          className="py-2 cursor-pointer mx-auto h-10 w-auto"
+        />
+        <Outlet />
+      </div>
     </div>
   );
 }

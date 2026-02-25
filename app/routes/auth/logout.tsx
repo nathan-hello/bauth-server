@@ -5,12 +5,13 @@ import { auth } from "@server/auth";
 import { getAuthError, type AuthError } from "./errors/auth-error";
 import { APIError } from "better-auth";
 import { PasswordSignOut } from "./components/password";
+import { Card } from "./components/ui";
 
 export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
 
   return (
-    <div data-component="center">
+    <Card>
       <title>{copy.meta.login.title}</title>
       <PasswordSignOut
         state={{
@@ -18,7 +19,7 @@ export default function ({ actionData }: Route.ComponentProps) {
           errors: actionData,
         }}
       />
-    </div>
+    </Card>
   );
 }
 

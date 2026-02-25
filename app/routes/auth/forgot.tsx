@@ -6,14 +6,15 @@ import { redirect } from "react-router";
 import { APIError } from "better-auth";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { useCopy } from "./lib/copy";
+import { Card } from "./components/ui";
 
 export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
   return (
-    <div data-component="center">
+    <Card>
       <title>{copy.meta.forgot.title}</title>
       <PasswordForgotForm state={actionData?.state} step={actionData?.step ?? "start"} />;
-    </div>
+    </Card>
   );
 }
 

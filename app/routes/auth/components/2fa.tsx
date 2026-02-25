@@ -3,6 +3,7 @@ import { useCopy } from "../lib/copy";
 import type { AuthError } from "../errors/auth-error";
 import { Form } from "react-router";
 import { useAuthLinks } from "../hooks/use-redirect";
+import { Input, Button, Card, FormFooter, TextLink } from "./ui";
 
 export type TwoFactorState = {
   errors?: AuthError[];
@@ -19,9 +20,9 @@ export function TwoFactorVerification({ state }: TwoFactorProps) {
   const verificationType = state?.verificationType || "totp";
 
   return (
-    <div data-component="center">
+    <Card>
       <title>{copy.meta.login.title}</title>
-      <div data-component="form">
+      <div className="max-w-full flex flex-col gap-4 m-0">
         {state?.errors?.map((error) => (
           <FormAlert
             key={error.type}
@@ -39,7 +40,7 @@ export function TwoFactorVerification({ state }: TwoFactorProps) {
 
         <VerificationTypeSwitcher currentType={verificationType} />
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -51,8 +52,7 @@ function EmailVerificationForm() {
     <>
       <Form method="post" className="flex flex-col gap-y-4">
         <input type="hidden" name="action" value="verify-email" />
-        <input
-          data-component="input"
+        <Input
           autoFocus
           name="code"
           minLength={6}
@@ -61,22 +61,18 @@ function EmailVerificationForm() {
           placeholder={copy.input_code}
           autoComplete="one-time-code"
         />
-        <button data-component="button" type="submit">
-          {copy.button_continue}
-        </button>
+        <Button type="submit">{copy.button_continue}</Button>
       </Form>
 
-      <div data-component="form-footer">
+      <FormFooter>
         <Form method="post">
           <input type="hidden" name="action" value="resend-email" />
-          <button type="submit" data-component="link">
-            {copy.code_resend}
-          </button>
+          <TextLink type="submit">{copy.code_resend}</TextLink>
         </Form>
-        <button type="button" data-component="link" onClick={link.login}>
+        <TextLink type="button" onClick={link.login}>
           {copy.code_return} {copy.login.toLowerCase()}
-        </button>
-      </div>
+        </TextLink>
+      </FormFooter>
     </>
   );
 }
@@ -89,8 +85,7 @@ function TotpVerificationForm() {
     <>
       <Form method="post" className="flex flex-col gap-y-4">
         <input type="hidden" name="action" value="verify-totp" />
-        <input
-          data-component="input"
+        <Input
           autoFocus
           name="code"
           minLength={6}
@@ -99,16 +94,14 @@ function TotpVerificationForm() {
           placeholder={copy.input_code}
           autoComplete="one-time-code"
         />
-        <button data-component="button" type="submit">
-          {copy.button_continue}
-        </button>
+        <Button type="submit">{copy.button_continue}</Button>
       </Form>
 
-      <div data-component="form-footer">
-        <button type="button" data-component="link" onClick={link.login}>
+      <FormFooter>
+        <TextLink type="button" onClick={link.login}>
           {copy.code_return} {copy.login.toLowerCase()}
-        </button>
-      </div>
+        </TextLink>
+      </FormFooter>
     </>
   );
 }
@@ -124,17 +117,17 @@ function VerificationTypeSwitcher({
         {currentType === "email" && (
           <>
             <input type="hidden" name="action" value="switch-totp" />
-            <button type="submit" data-component="link" className="text-sm">
+            <TextLink type="submit" className="text-sm">
               Use authenticator app instead
-            </button>
+            </TextLink>
           </>
         )}
         {currentType === "totp" && (
           <>
             <input type="hidden" name="action" value="switch-email" />
-            <button type="submit" data-component="link" className="text-sm">
+            <TextLink type="submit" className="text-sm">
               Use email verification instead
-            </button>
+            </TextLink>
           </>
         )}
       </Form>
