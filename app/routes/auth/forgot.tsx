@@ -5,7 +5,7 @@ import { AppError, getAuthError, errorAttrs } from "./errors/auth-error";
 import { redirect } from "react-router";
 import { APIError } from "better-auth";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
-import { useCopy } from "./lib/copy";
+import { useCopy } from "@/lib/copy";
 import { Card } from "./components/ui";
 import { Telemetry, safeRequestAttrs } from "@server/telemetry";
 
@@ -15,7 +15,7 @@ export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
   return (
     <Card>
-      <title>{copy.meta.forgot.title}</title>
+      <title>{copy.routes.forgot.title}</title>
       <PasswordForgotForm state={actionData?.state} step={actionData?.step ?? "start"} />
     </Card>
   );

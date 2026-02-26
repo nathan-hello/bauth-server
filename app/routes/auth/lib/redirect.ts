@@ -20,7 +20,12 @@ export async function throwRedirectIfSessionExists({
     }
   } catch (error) {
     if (error instanceof Response) {
-      tel.info("REDIRECT", { reason: "session_exists", caller, "req.url": request.url, "redirect.url": error.url });
+      tel.info("REDIRECT", {
+        reason: "session_exists",
+        caller,
+        "req.url": request.url,
+        "redirect.url": error.url,
+      });
       throw error;
     }
     return;

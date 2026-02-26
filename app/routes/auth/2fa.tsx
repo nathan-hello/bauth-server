@@ -1,4 +1,5 @@
-import { auth, BA_COOKIE_PREFIX } from "@server/auth";
+import { auth } from "@server/auth";
+import { dotenv } from "@server/env";
 import type { Route } from "./+types/2fa";
 import { getAuthError, errorAttrs } from "./errors/auth-error";
 import { redirect } from "react-router";
@@ -26,10 +27,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw redirect("/auth/login");
   }
   const parsed = parse(cookies);
-  const cookieKey = BA_COOKIE_PREFIX + ".two_factor";
+  const cookieKey = dotenv.COOKIE_PREFIX + ".two_factor";
 
   if (!parsed[cookieKey]) {
-    tel.info("REDIRECT", { reason: "missing_2fa_cookie", cookie: cookieKey, ...safeRequestAttrs(request) });
+    tel.info("REDIRECT", {
+      reason: "missing_2fa_cookie",
+      cookie: cookieKey,
+      ...safeRequestAttrs(request),
+    });
     throw redirect("/auth/login");
   }
 }

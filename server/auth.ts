@@ -1,4 +1,5 @@
 import { EmailOtp, Email2fa, EmailVerification } from "@/components/email";
+import { copy } from "@/lib/copy";
 import { Resend } from "resend";
 import { Telemetry } from "./telemetry";
 import { betterAuth } from "better-auth/minimal";
@@ -9,12 +10,9 @@ import { passkey } from "@better-auth/passkey";
 import { username, twoFactor, emailOTP } from "better-auth/plugins";
 
 const resend = new Resend(dotenv.RESEND_ACCESS_TOKEN);
-const fromEmail = "Nat/e <accounts@support.reluekiss.com>";
 
 const tel = new Telemetry("auth.hooks");
 const baTel = new Telemetry("better-auth");
-
-export const BA_COOKIE_PREFIX = "reluekiss";
 
 export function validateUsername(username: string) {
   if (username === "admin") {
@@ -45,9 +43,9 @@ export const auth = betterAuth({
             channel: "email-otp",
           });
           const response = await resend.emails.send({
-            from: fromEmail,
+            from: dotenv.FROM_EMAIL,
             to: data.user.email,
-            subject: "One time passcode",
+            subject: copy.email_2fa_subject,
             react: Email2fa({ email: data.user.email, url: dotenv.PRODUCTION_URL, otp: data.otp }),
           });
           if (response.error) {
@@ -72,9 +70,9 @@ export const auth = betterAuth({
           channel: "email-signin",
         });
         const response = await resend.emails.send({
-          from: fromEmail,
+          from: dotenv.FROM_EMAIL,
           to: data.email,
-          subject: "One time passcode",
+          subject: copy.email_otp_subject,
           react: EmailOtp({ email: data.email, url: dotenv.PRODUCTION_URL, otp: data.otp }),
         });
         if (response.error) {
@@ -103,7 +101,7 @@ export const auth = betterAuth({
   }),
 
   advanced: {
-    cookiePrefix: BA_COOKIE_PREFIX,
+    cookiePrefix: dotenv.COOKIE_PREFIX,
   },
 
   onAPIError: {
@@ -136,9 +134,9 @@ export const auth = betterAuth({
         "user.id": data.user.id,
       });
       const response = await resend.emails.send({
-        from: fromEmail,
+        from: dotenv.FROM_EMAIL,
         to: data.user.email,
-        subject: "Email verification",
+        subject: copy.email_verification_subject,
         react: EmailVerification({
           email: data.user.email,
           url: dotenv.PRODUCTION_URL,

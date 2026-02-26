@@ -3,7 +3,7 @@ import type { Route } from "./+types/login";
 import { PasswordLoginForm, type AuthState } from "./components/password";
 import { redirect } from "react-router";
 import { AppError, getAuthError, errorAttrs } from "./errors/auth-error";
-import { useCopy } from "./lib/copy";
+import { useCopy } from "@/lib/copy";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { Card } from "./components/ui";
 import { Telemetry, safeRequestAttrs } from "@server/telemetry";
@@ -15,7 +15,7 @@ export default function ({ actionData }: Route.ComponentProps) {
 
   return (
     <>
-      <title>{copy.meta.login.title}</title>
+      <title>{copy.routes.login.title}</title>
       <Card>
         <PasswordLoginForm state={actionData} />
       </Card>

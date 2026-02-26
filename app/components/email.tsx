@@ -1,4 +1,5 @@
 import { Body, Container, Hr, Img, Link, Section, Text } from "@react-email/components";
+import { copy } from "@/lib/copy";
 
 function Layout({ url, children }: { url: string; children: React.ReactNode }) {
   return (
@@ -28,16 +29,15 @@ function Layout({ url, children }: { url: string; children: React.ReactNode }) {
         <Text
           style={{ color: "#666", fontSize: 13, textAlign: "center" as const, lineHeight: "1.5" }}
         >
-          If you did not initiate this request, you can safely ignore this email. If you believe
-          your account has been compromised,{" "}
+          {copy.email_footer_prefix}{" "}
           <Link href={`${url}/auth/forgot`} style={{ color: "#2563eb" }}>
-            reset your password
+            {copy.email_footer_reset}
           </Link>{" "}
-          or go to your{" "}
+          {copy.email_footer_middle}{" "}
           <Link href={`${url}/auth/dashboard`} style={{ color: "#2563eb" }}>
-            dashboard
+            {copy.email_footer_dashboard}
           </Link>{" "}
-          to review your account.
+          {copy.email_footer_suffix}
         </Text>
       </Container>
     </Body>
@@ -48,14 +48,12 @@ export function EmailOtp({ email, otp, url }: { email: string; otp: string; url:
   return (
     <Layout url={url}>
       <Text style={{ fontSize: 15, margin: 0 }}>
-        Your one-time login code for <strong>{email}</strong>:
+        {copy.email_otp_body} <strong>{email}</strong>:
       </Text>
       <Text style={{ fontSize: 32, fontWeight: "bold", letterSpacing: "0.15em", margin: "16px 0" }}>
         {otp}
       </Text>
-      <Text style={{ fontSize: 14, color: "#666", margin: 0 }}>
-        This code expires in 15 minutes. Do not share it with anyone.
-      </Text>
+      <Text style={{ fontSize: 14, color: "#666", margin: 0 }}>{copy.email_otp_expiry}</Text>
     </Layout>
   );
 }
@@ -64,14 +62,12 @@ export function Email2fa({ email, otp, url }: { email: string; otp: string; url:
   return (
     <Layout url={url}>
       <Text style={{ fontSize: 15, margin: 0 }}>
-        Your two-factor authentication code for <strong>{email}</strong>:
+        {copy.email_2fa_body} <strong>{email}</strong>:
       </Text>
       <Text style={{ fontSize: 32, fontWeight: "bold", letterSpacing: "0.15em", margin: "16px 0" }}>
         {otp}
       </Text>
-      <Text style={{ fontSize: 14, color: "#666", margin: 0 }}>
-        This code expires shortly. Do not share it with anyone.
-      </Text>
+      <Text style={{ fontSize: 14, color: "#666", margin: 0 }}>{copy.email_2fa_expiry}</Text>
     </Layout>
   );
 }
@@ -88,7 +84,7 @@ export function EmailVerification({
   return (
     <Layout url={url}>
       <Text style={{ fontSize: 15, margin: "0 0 16px" }}>
-        Click the link below to verify the email address <strong>{email}</strong>:
+        {copy.email_verify_body} <strong>{email}</strong>:
       </Text>
       <Link href={url + verificationLink} style={{ color: "#2563eb", fontSize: 14 }}>
         {url + verificationLink}

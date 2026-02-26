@@ -1,5 +1,5 @@
 import { Button, ButtonLink } from "@/routes/auth/components/ui";
-import { useCopy } from "@/routes/auth/lib/copy";
+import { useCopy } from "@/lib/copy";
 import QR from "qrcode";
 import { useEffect, useMemo, useState, type HTMLAttributes } from "react";
 
@@ -7,8 +7,7 @@ export type QRCodeProps = HTMLAttributes<HTMLDivElement> & {
   data: string;
 };
 
-const tabs = ["Link", "QR", "Manual"] as const;
-type Tab = (typeof tabs)[number];
+type Tab = "Link" | "QR" | "Manual";
 
 export function QRCode({ data, ...props }: QRCodeProps) {
   const [qrSvg, setQrSvg] = useState("");
@@ -35,46 +34,57 @@ export function QRCode({ data, ...props }: QRCodeProps) {
   return (
     <div className="flex flex-col text-xl" {...props}>
       <div className="flex border border-border py-1 my-2 gap-x-4">
-        {tabs.map((t) => (
+        {(
+          [
+            ["Link", copy.totp_tab_link],
+            ["QR", copy.totp_tab_qr],
+            ["Manual", copy.totp_tab_manual],
+          ] as const
+        ).map(([key, label]) => (
           <button
-            key={t}
+            key={key}
             type="button"
-            onClick={() => setTab(t)}
+            onClick={() => setTab(key)}
             className={`flex-1 px-3 py-1.5 font-medium cursor-pointer border-0 ${
-              tab === t
-                ? "bg-surface-raised text-fg"
-                : "bg-transparent text-fg-muted"
+              tab === key ? "bg-surface-raised text-fg" : "bg-transparent text-fg-muted"
             }`}
           >
-            {t}
+            {label}
           </button>
         ))}
       </div>
 
       {tab === "QR" && (
-        <div
-          className="[&_svg]:size-full"
-          dangerouslySetInnerHTML={{ __html: qrSvg }}
-        />
+        <div className="[&_svg]:size-full" dangerouslySetInnerHTML={{ __html: qrSvg }} />
       )}
 
       {tab === "Manual" && (
         <div className="flex flex-col gap-2 select-text break-all">
-          <div><strong>{copy.totp_manual_secret}</strong> <br/> <span className="font-mono">{manual.secret}</span></div>
-          <div><strong>{copy.totp_manual_alg}</strong>    <br/> <span className="font-mono">{manual.algorithm}</span></div>
-          <div><strong>{copy.totp_manual_period}</strong> <br/> <span className="font-mono">{manual.period}{" "}{copy.totp_manual_period_seconds}</span></div>
-          <div><strong>{copy.totp_manual_digits}</strong> <br/> <span className="font-mono">{manual.digits}</span></div>
+          <div>
+            <strong>{copy.totp_manual_secret}</strong> <br />{" "}
+            <span className="font-mono">{manual.secret}</span>
+          </div>
+          <div>
+            <strong>{copy.totp_manual_alg}</strong> <br />{" "}
+            <span className="font-mono">{manual.algorithm}</span>
+          </div>
+          <div>
+            <strong>{copy.totp_manual_period}</strong> <br />{" "}
+            <span className="font-mono">
+              {manual.period} {copy.totp_manual_period_seconds}
+            </span>
+          </div>
+          <div>
+            <strong>{copy.totp_manual_digits}</strong> <br />{" "}
+            <span className="font-mono">{manual.digits}</span>
+          </div>
         </div>
       )}
 
       {tab === "Link" && (
         <div className="flex items-center justify-center">
-          <ButtonLink
-            href={data}
-            variant="primary" 
-            className="mt-8"
-          >
-            Open in authenticator app
+          <ButtonLink href={data} variant="primary" className="mt-8">
+            {copy.totp_open_app}
           </ButtonLink>
         </div>
       )}

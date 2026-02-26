@@ -11,7 +11,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { useCopy } from "./routes/auth/lib/copy";
+import { useCopy } from "@/lib/copy";
 
 export const links: Route.LinksFunction = () => [
   { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -27,7 +27,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <title>{copy.meta.auth.title}</title>
+        <title>{copy.routes.default.title}</title>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
@@ -49,8 +49,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export function ErrorBoundary() {
   const error = useRouteError();
+  const copy = useCopy();
   let status = 500;
-  let message = "An unexpected error occurred.";
+  let message = copy.error_default;
 
   if (isRouteErrorResponse(error)) {
     status = error.status;
@@ -65,7 +66,7 @@ export function ErrorBoundary() {
         <h1 className="text-4xl font-bold">{status}</h1>
         <p className="mt-4 text-lg text-gray-600">{message}</p>
         <a href="/" className="mt-6 inline-block text-blue-600 hover:underline">
-          Go home
+          {copy.error_go_home}
         </a>
       </div>
     </div>

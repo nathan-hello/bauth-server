@@ -1,5 +1,5 @@
 import { FormAlert } from "./form";
-import { useCopy } from "../lib/copy";
+import { useCopy } from "@/lib/copy";
 import type { AuthError } from "../errors/auth-error";
 import { Form } from "react-router";
 import { useAuthLinks } from "../hooks/use-redirect";
@@ -21,18 +21,13 @@ export function TwoFactorVerification({ state }: TwoFactorProps) {
 
   return (
     <Card>
-      <title>{copy.meta.login.title}</title>
+      <title>{copy.routes["2fa"].title}</title>
       <div className="max-w-full flex flex-col gap-4 m-0">
         {state?.errors?.map((error) => (
-          <FormAlert
-            key={error.type}
-            message={error.type ? copy.error[error.type] : undefined}
-          />
+          <FormAlert key={error.type} message={error.type ? copy.error[error.type] : undefined} />
         ))}
 
-        {state?.resentEmail && (
-          <FormAlert color="success" message={copy.twofa_resent_email} />
-        )}
+        {state?.resentEmail && <FormAlert color="success" message={copy.twofa_resent_email} />}
 
         {verificationType === "email" && <EmailVerificationForm />}
         {verificationType === "totp" && <TotpVerificationForm />}

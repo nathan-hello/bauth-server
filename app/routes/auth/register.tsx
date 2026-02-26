@@ -2,7 +2,7 @@ import { PasswordRegisterForm } from "./components/password";
 import { AppError, getAuthError, errorAttrs, type AuthError } from "./errors/auth-error";
 import type { Route } from "./+types/register";
 import { auth, validateUsername } from "@server/auth";
-import { useCopy } from "./lib/copy";
+import { useCopy } from "@/lib/copy";
 import { data, redirect } from "react-router";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { Card } from "./components/ui";
@@ -15,7 +15,7 @@ export default function ({ actionData }: Route.ComponentProps) {
 
   return (
     <Card>
-      <title>{copy.meta.register.title}</title>
+      <title>{copy.routes.register.title}</title>
       <PasswordRegisterForm state={actionData?.state} />
     </Card>
   );

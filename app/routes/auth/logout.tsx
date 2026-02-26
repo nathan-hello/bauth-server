@@ -1,5 +1,5 @@
 import { redirect } from "react-router";
-import { useCopy } from "./lib/copy";
+import { useCopy } from "@/lib/copy";
 import type { Route } from "./+types/logout";
 import { auth } from "@server/auth";
 import { AppError, getAuthError, errorAttrs, type AuthError } from "./errors/auth-error";
@@ -15,7 +15,7 @@ export default function ({ actionData }: Route.ComponentProps) {
 
   return (
     <Card>
-      <title>{copy.meta.login.title}</title>
+      <title>{copy.routes.logout.title}</title>
       <PasswordSignOut
         state={{
           email: "",

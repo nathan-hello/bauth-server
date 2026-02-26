@@ -141,7 +141,12 @@ export class Telemetry<T extends TelemetryLogSchema = TelemetryLogSchema> {
     this.log(body, SeverityNumber.ERROR, "ERROR", attributes);
   }
 
-  private log(body: string, severityNumber: SeverityNumber, severityText: string, attributes?: Attrs) {
+  private log(
+    body: string,
+    severityNumber: SeverityNumber,
+    severityText: string,
+    attributes?: Attrs,
+  ) {
     if (typeof attributes === "function") {
       const result = attributes();
       if (result instanceof Promise) {

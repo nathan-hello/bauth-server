@@ -13,13 +13,18 @@ export function getLoggerProvider(): LoggerProvider {
   return loggerProvider;
 }
 
-export function StartLogging(exporters: MultiLogExporter) {
+type LoggingConfig = {
+  tracesUrl: string;
+  exporters: MultiLogExporter;
+};
+
+export function StartLogging(config: LoggingConfig) {
   loggerProvider = new LoggerProvider({
-    processors: [new SimpleLogRecordProcessor(exporters)],
+    processors: [new SimpleLogRecordProcessor(config.exporters)],
   });
 
   new NodeSDK({
-    traceExporter: new OTLPTraceExporter({ url: "http://localhost:4318/v1/traces" }),
+    traceExporter: new OTLPTraceExporter({ url: config.tracesUrl }),
     instrumentations: [new PinoInstrumentation()],
   }).start();
 }

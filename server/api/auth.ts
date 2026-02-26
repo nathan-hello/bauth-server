@@ -79,7 +79,7 @@ export async function action({ request }: ActionFunctionArgs) {
       return {
         status: clone.status,
         "http.url": request.clone().url,
-         responseText: await clone.text(),
+        responseText: await clone.text(),
       };
     } else {
       return {

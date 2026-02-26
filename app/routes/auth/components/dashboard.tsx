@@ -1,5 +1,5 @@
 import { FormAlert } from "./form";
-import { useCopy } from "../lib/copy";
+import { useCopy } from "@/lib/copy";
 import type { AuthError } from "../errors/auth-error";
 import { Form } from "react-router";
 import { QRCode } from "@/components/qr";

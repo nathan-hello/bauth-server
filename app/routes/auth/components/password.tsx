@@ -1,5 +1,5 @@
 import { FormAlert } from "./form.js";
-import { useCopy } from "../lib/copy.js";
+import { useCopy } from "@/lib/copy";
 import type { AuthError } from "../errors/auth-error.js";
 import { Form } from "react-router";
 import { useAuthLinks } from "../hooks/use-redirect.js";
@@ -34,10 +34,7 @@ export function PasswordLoginForm({ state }: LoginFormProps) {
   return (
     <Form className="max-w-full flex flex-col gap-4" method="post">
       {state?.errors?.map((error) => (
-        <FormAlert
-          key={error.type}
-          message={error.type ? copy.error[error.type] : undefined}
-        />
+        <FormAlert key={error.type} message={error.type ? copy.error[error.type] : undefined} />
       ))}
       <Input
         type="text"
@@ -75,10 +72,7 @@ export function PasswordRegisterForm(props: RegisterFormProps) {
   return (
     <div className="max-w-full flex flex-col gap-4 m-0">
       {props.state?.errors?.map((error) => (
-        <FormAlert
-          key={error.type}
-          message={error.type ? copy.error[error.type] : undefined}
-        />
+        <FormAlert key={error.type} message={error.type ? copy.error[error.type] : undefined} />
       ))}
       <PasswordRegisterStartForm {...props} />
     </div>
@@ -164,10 +158,7 @@ export function PasswordForgotForm({ state, step }: ForgotPasswordFormProps) {
   return (
     <Form className="max-w-full flex flex-col gap-4 m-0" method="post">
       {state?.errors?.map((error) => (
-        <FormAlert
-          key={error.type}
-          message={error.type ? copy.error[error.type] : undefined}
-        />
+        <FormAlert key={error.type} message={error.type ? copy.error[error.type] : undefined} />
       ))}
 
       {step === "start" && (
@@ -247,10 +238,7 @@ export function PasswordSignOut({ state }: { state?: AuthState }) {
   return (
     <Form className="max-w-full flex flex-col gap-4 m-0" method="post">
       {state?.errors?.map((error) => (
-        <FormAlert
-          key={error.type}
-          message={error.type ? copy.error[error.type] : undefined}
-        />
+        <FormAlert key={error.type} message={error.type ? copy.error[error.type] : undefined} />
       ))}
       <Button type="submit">{copy.button_continue}</Button>
       <FormFooter>

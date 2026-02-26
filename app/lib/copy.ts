@@ -1,4 +1,4 @@
-import type { AuthError } from "../errors/auth-error";
+import type { AuthError } from "@/routes/auth/errors/auth-error";
 
 export const ERROR_COPY: Partial<Record<AuthError["type"], string>> = {
   password_mismatch: "Passwords do not match.",
@@ -65,20 +65,44 @@ export const ERROR_COPY: Partial<Record<AuthError["type"], string>> = {
   YOU_ARE_NOT_ALLOWED_TO_REGISTER_THIS_PASSKEY: "",
 };
 
-const META_COPY = {
-  auth: { title: "Authenticate" },
+// ------------------------------------------------------------------
+// Route titles — typesafe, every route key must have a title entry.
+// Add new keys here when adding new routes.
+// ------------------------------------------------------------------
+
+type RouteKey =
+  | "default"
+  | "home"
+  | "login"
+  | "register"
+  | "forgot"
+  | "dashboard"
+  | "2fa"
+  | "logout";
+type RouteMeta = { title: string };
+
+const routes: Record<RouteKey, RouteMeta> = {
+  default: { title: "Authenticate" },
+  home: { title: "Home" },
   login: { title: "Login" },
   register: { title: "Register" },
   forgot: { title: "Forgot Password" },
-  factor: { title: "2fa" },
-  register_2fa: { title: "Register" },
+  dashboard: { title: "Dashboard" },
+  "2fa": { title: "Two-Factor Authentication" },
+  logout: { title: "Logout" },
 };
 
 const english = {
-  // Error messages
   error: { ...ERROR_COPY },
-  meta: { ...META_COPY },
-  // Page titles and descriptions
+  routes,
+
+  // Home page
+  home_signed_in_as: "Signed in as",
+  home_not_signed_in: "Not signed in",
+  home_debug: "Debug",
+  home_loading: "Loading...",
+
+  // Auth form titles and descriptions
   register_title: "Welcome to the app",
   register_description: "Sign in with your email",
   login_title: "Welcome to the app",
@@ -117,6 +141,10 @@ const english = {
   totp_manual_period: "Period:",
   totp_manual_period_seconds: "seconds",
   totp_manual_digits: "Digits:",
+  totp_open_app: "Open in authenticator app",
+  totp_tab_link: "Link",
+  totp_tab_qr: "QR",
+  totp_tab_manual: "Manual",
 
   // Forgot password flow
   forgot_email_prompt: "Enter your email to reset your password.",
@@ -130,6 +158,7 @@ const english = {
   // Dashboard
   dashboard_title: "Account Settings",
   dashboard_password_changed: "Password changed successfully",
+  dashboard_unknown_ip: "Unknown IP address",
 
   // Dashboard: Email
   dashboard_email_heading: "Email",
@@ -182,7 +211,31 @@ const english = {
   dashboard_session_revoke: "Revoke",
   dashboard_session_revoke_all: "Revoke All Other Sessions",
   dashboard_sessions_empty: "No active sessions",
+
+  // Email templates
+  email_otp_subject: "One time passcode",
+  email_2fa_subject: "One time passcode",
+  email_verification_subject: "Email verification",
+  email_otp_body: "Your one-time login code for",
+  email_otp_expiry: "This code expires in 15 minutes. Do not share it with anyone.",
+  email_2fa_body: "Your two-factor authentication code for",
+  email_2fa_expiry: "This code expires shortly. Do not share it with anyone.",
+  email_verify_body: "Click the link below to verify the email address",
+  email_footer_prefix:
+    "If you did not initiate this request, you can safely ignore this email. If you believe your account has been compromised,",
+  email_footer_reset: "reset your password",
+  email_footer_middle: "or go to your",
+  email_footer_dashboard: "dashboard",
+  email_footer_suffix: "to review your account.",
+
+  // Error boundary
+  error_default: "An unexpected error occurred.",
+  error_go_home: "Go home",
 };
+
+export type Copy = typeof english;
+
+export const copy = english;
 
 export function useCopy() {
   return english;

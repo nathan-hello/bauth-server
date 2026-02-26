@@ -3,12 +3,19 @@ import type { Route } from "./+types/dashboard";
 import { Dashboard } from "./components/dashboard";
 import { data, redirect } from "react-router";
 import { AppError, getAuthError, errorAttrs } from "./errors/auth-error";
+import { copy, useCopy } from "@/lib/copy";
 import { Telemetry, safeRequestAttrs } from "@server/telemetry";
 
 const tel = new Telemetry("route.dashboard");
 
 export default function ({ loaderData, actionData }: Route.ComponentProps) {
-  return <Dashboard actionData={actionData} loaderData={loaderData} />;
+  const c = useCopy();
+  return (
+    <>
+      <title>{c.routes.dashboard.title}</title>
+      <Dashboard actionData={actionData} loaderData={loaderData} />
+    </>
+  );
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -30,7 +37,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     .filter((s) => typeof s.ipAddress === "string")
     .map((s) => ({
       id: s.token,
-      ipAddress: s.ipAddress ?? "Unknown IP address",
+      ipAddress: s.ipAddress ?? copy.dashboard_unknown_ip,
       lastLoggedIn: s.updatedAt,
     }));
 
@@ -43,7 +50,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       entries: s,
       current: {
         id: session.session.token,
-        ipAddress: session.session.ipAddress ?? "Unknown IP address",
+        ipAddress: session.session.ipAddress ?? copy.dashboard_unknown_ip,
         lastLoggedIn: session.session.updatedAt,
       },
     },

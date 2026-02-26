@@ -14,4 +14,9 @@ export const dotenv = loadEnv(
   "RESEND_ACCESS_TOKEN",
   "POLAR_ACCESS_TOKEN",
   "POLAR_SUCCESS_URL",
+  "COOKIE_PREFIX",
+  "FROM_EMAIL",
+  "OTEL_LOGS_URL",
+  "OTEL_TRACES_URL",
+  "LOG_FILE_PATH",
 );
