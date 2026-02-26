@@ -8,7 +8,7 @@ let loggerProvider: LoggerProvider | null = null;
 
 export function getLoggerProvider(): LoggerProvider {
   if (!loggerProvider) {
-    throw new Error("LoggerProvider not initialized. Call StartLogging first.");
+    loggerProvider = new LoggerProvider();
   }
   return loggerProvider;
 }

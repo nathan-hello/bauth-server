@@ -11,8 +11,8 @@ export type TelemetryLogSchema = {
 
 // Define a standardized Result type
 export type TaskResult<R> =
-  | { ok: true; data: R }
-  | { ok: false; error: Error };
+  | { ok: true; traceId: string; data: R }
+  | { ok: false; traceId: string; error: Error };
 
 const SENSITIVE_KEYS = new Set([
   "password",
@@ -72,12 +72,16 @@ export class Telemetry<T extends TelemetryLogSchema = TelemetryLogSchema> {
             .then((data): TaskResult<R> => {
               // sync success
               span.setStatus({ code: SpanStatusCode.OK });
-              return { ok: true as const, data };
+              return { ok: true as const, data, traceId: span.spanContext().traceId };
             })
             .catch((err): TaskResult<R> => {
               // async failure
               this.handleError(span, name, err);
-              return { ok: false as const, error: err instanceof Error ? err : new Error(String(err)) };
+              return {
+                ok: false as const,
+                error: err instanceof Error ? err : new Error(String(err)),
+                traceId: span.spanContext().traceId,
+              };
             })
             .finally(() => span.end());
         }
@@ -85,12 +89,16 @@ export class Telemetry<T extends TelemetryLogSchema = TelemetryLogSchema> {
         // Sync Success
         span.setStatus({ code: SpanStatusCode.OK });
         span.end();
-        return { ok: true as const, data: result };
+        return { ok: true as const, data: result, traceId: span.spanContext().traceId };
       } catch (err) {
         // Sync Failure
         this.handleError(span, name, err);
         span.end();
-        return { ok: false as const, error: err instanceof Error ? err : new Error(String(err)) };
+        return {
+          ok: false as const,
+          error: err instanceof Error ? err : new Error(String(err)),
+          traceId: span.spanContext().traceId,
+        };
       }
     });
   }

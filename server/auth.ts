@@ -3,7 +3,7 @@ import { Resend } from "resend";
 import { Telemetry } from "./telemetry";
 import { betterAuth } from "better-auth/minimal";
 import { db } from "./drizzle/db";
-import { dotenv } from ".";
+import { dotenv } from "./env";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { passkey } from "@better-auth/passkey";
 import { username, twoFactor, emailOTP } from "better-auth/plugins";
@@ -12,10 +12,8 @@ const resend = new Resend(dotenv.RESEND_ACCESS_TOKEN);
 const fromEmail = "Nat/e <accounts@support.reluekiss.com>";
 
 const tel = new Telemetry("auth.hooks");
-const url = dotenv.PRODUCTION_URL;
-const secret = dotenv.BETTER_AUTH_SECRET;
 
-export const BA_COOKIE_PREFIX = "asdf";
+export const BA_COOKIE_PREFIX = "reluekiss";
 
 export function validateUsername(username: string) {
   if (username === "admin") {
@@ -25,9 +23,10 @@ export function validateUsername(username: string) {
 }
 
 export const auth = betterAuth({
-  secret: secret,
+  baseURL: dotenv.PRODUCTION_URL,
+  secret: dotenv.BETTER_AUTH_SECRET,
   plugins: [
-    passkey({ rpID: url, rpName: url }),
+    passkey({ rpID: dotenv.PRODUCTION_URL, rpName: dotenv.PRODUCTION_URL }),
 
     username({
       usernameValidator: validateUsername,
@@ -35,6 +34,7 @@ export const auth = betterAuth({
     }),
 
     twoFactor({
+      issuer: dotenv.PRODUCTION_URL,
       otpOptions: {
         storeOTP: "plain",
         sendOTP: async (data, _request) => {
@@ -141,7 +141,7 @@ export const auth = betterAuth({
     },
   },
 
-  trustedOrigins: [url, "https://localhost:5173", "http://localhost:5173"],
+  trustedOrigins: [dotenv.PRODUCTION_URL, "https://localhost:5173", "http://localhost:5173"],
 
   account: {
     accountLinking: {
@@ -153,7 +153,7 @@ export const auth = betterAuth({
   },
 
   cors: {
-    origin: [url],
+    origin: [dotenv.PRODUCTION_URL],
     credentials: true,
   },
 

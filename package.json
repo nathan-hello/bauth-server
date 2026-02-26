@@ -6,13 +6,13 @@
     "build": "bunx --bun react-router build",
     "dev": "bunx --bun vite",
     "start": "bun --env-file=.env ./build/server/index.js",
-    "typegen:rr": "react-router typegen && tsc",
-    "typegen:ba": "bunx @better-auth/cli generate --config ./server/auth.ts --output ./server/drizzle/schema.auth.ts -y",
-    "typegen:db": "drizzle-kit generate --config ./server/drizzle/config.ts",
+    "typegen:rr": "bunx --bun react-router typegen && tsc",
+    "typegen:ba": "bunx --bun @better-auth/cli generate --config ./server/auth.ts --output ./server/drizzle/schema.auth.ts -y",
+    "typegen:db": "bunx --bun drizzle-kit generate --config ./server/drizzle/config.ts",
     "typegen": "bun run typegen:rr && bun run typegen:ba && bun run typegen:db",
-    "db:migrate": "drizzle-kit migrate --config ./server/drizzle/config.ts",
-    "db:push": "drizzle-kit push --config ./server/drizzle/config.ts",
-    "db:studio": "drizzle-kit studio --config ./server/drizzle/config.ts"
+    "db:migrate": "bunx --bun drizzle-kit migrate --config ./server/drizzle/config.ts",
+    "db:push": "bunx --bun drizzle-kit push --config ./server/drizzle/config.ts",
+    "db:studio": "bunx --bun drizzle-kit studio --config ./server/drizzle/config.ts"
   },
   "dependencies": {
     "@better-auth/passkey": "^1.4.10",
