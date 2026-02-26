@@ -50,12 +50,28 @@ export class AppError extends Error {
   }
 }
 
+/** Extracts structured, loggable attributes from any error. */
+export function errorAttrs(error: unknown): Record<string, string> {
+  if (error instanceof AppError) {
+    return { type: "AppError", code: error.code, message: error.message };
+  }
+  if (error instanceof APIError) {
+    return {
+      type: "APIError",
+      code: error.body?.code ?? "unknown",
+      status: String(error.status),
+      message: error.message,
+    };
+  }
+  if (error instanceof Error) {
+    return { type: error.name, message: error.message };
+  }
+  return { type: "unknown", message: String(error) };
+}
+
 /** Converts any caught error into serializable AuthError[] for the client. */
 export function getAuthError(e: unknown): AuthError[] {
   if (e instanceof AppError) {
-    if (e.code === "generic_error") {
-      console.error("[auth]", e.message);
-    }
     return [{ type: e.code }];
   }
 
@@ -64,10 +80,8 @@ export function getAuthError(e: unknown): AuthError[] {
     if (typeof code === "string" && code in ERROR_COPY) {
       return [{ type: code as TErrorCodes }];
     }
-    console.error("[auth] Unrecognized APIError:", code, e.message);
     return [{ type: "generic_error" }];
   }
 
-  console.error("[auth] Unexpected error:", e);
   return [{ type: "generic_error" }];
 }

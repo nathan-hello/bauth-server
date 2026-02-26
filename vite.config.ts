@@ -24,6 +24,9 @@ export default defineConfig({
       "@server": path.resolve(__dirname, "./server"),
     },
   },
+  define: {
+    CLIENT_PRODUCTION_URL: JSON.stringify(process.env.PRODUCTION_URL),
+  },
   server: {
     watch: {
       ignored: ["**/logs/**"],

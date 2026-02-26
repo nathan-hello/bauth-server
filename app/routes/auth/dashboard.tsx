@@ -2,7 +2,7 @@ import { auth } from "@server/auth";
 import type { Route } from "./+types/dashboard";
 import { Dashboard } from "./components/dashboard";
 import { data, redirect } from "react-router";
-import { AppError, getAuthError } from "./errors/auth-error";
+import { AppError, getAuthError, errorAttrs } from "./errors/auth-error";
 import { Telemetry, safeRequestAttrs } from "@server/telemetry";
 
 const tel = new Telemetry("route.dashboard");
@@ -105,6 +105,7 @@ export async function action({ request }: Route.ActionArgs) {
       throw error;
     }
 
+    tel.error("ACTION_ERROR", errorAttrs(error));
     const aerr = getAuthError(error);
 
     return {
@@ -164,6 +165,7 @@ async function totpVerify(form: FormData, request: Request) {
       throw error;
     }
 
+    tel.error("TOTP_VERIFY_ERROR", errorAttrs(error));
     const aerr = getAuthError(error);
     const backupCodes = backupCodesRaw ? JSON.parse(backupCodesRaw) : undefined;
 

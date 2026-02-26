@@ -1,5 +1,5 @@
 import { PasswordRegisterForm } from "./components/password";
-import { AppError, getAuthError, type AuthError } from "./errors/auth-error";
+import { AppError, getAuthError, errorAttrs, type AuthError } from "./errors/auth-error";
 import type { Route } from "./+types/register";
 import { auth, validateUsername } from "@server/auth";
 import { useCopy } from "./lib/copy";
@@ -91,6 +91,7 @@ export async function action({
       throw error;
     }
 
+    tel.error("ACTION_ERROR", errorAttrs(error));
     const aerr = getAuthError(error);
 
     return {

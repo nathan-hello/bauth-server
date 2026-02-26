@@ -12,6 +12,7 @@ const resend = new Resend(dotenv.RESEND_ACCESS_TOKEN);
 const fromEmail = "Nat/e <accounts@support.reluekiss.com>";
 
 const tel = new Telemetry("auth.hooks");
+const baTel = new Telemetry("better-auth");
 
 export const BA_COOKIE_PREFIX = "reluekiss";
 
@@ -41,7 +42,7 @@ export const auth = betterAuth({
           tel.info("SEND_OTP", {
             "user.email": data.user.email,
             "user.id": data.user.id,
-            channel: "totp",
+            channel: "email-otp",
           });
           const response = await resend.emails.send({
             from: fromEmail,
@@ -65,7 +66,11 @@ export const auth = betterAuth({
       expiresIn: 60 * 15,
       overrideDefaultEmailVerification: true,
       sendVerificationOTP: async (data, _request) => {
-        tel.info("SEND_OTP", { "user.email": data.email, type: data.type, channel: "email" });
+        tel.info("SEND_OTP", {
+          "user.email": data.email,
+          type: data.type,
+          channel: "email-signin",
+        });
         const response = await resend.emails.send({
           from: fromEmail,
           to: data.email,
@@ -88,8 +93,8 @@ export const auth = betterAuth({
     customRules: {
       "/send-verification-email": { window: 300, max: 1 },
       "/email-otp/send-verification-otp": { window: 300, max: 1 },
-      "/sign-in/email-otp": { window: 300, max: 1 },
-      "/two-factor/*": { window: 300, max: 1 },
+      "/sign-in/email-otp": { window: 300, max: 5 },
+      "/two-factor/*": { window: 300, max: 5 },
     },
   },
 
@@ -102,8 +107,15 @@ export const auth = betterAuth({
   },
 
   onAPIError: {
-    onError: (error, _ctx) => {
-      tel.error("API_ERROR", { error: error instanceof Error ? error.message : String(error) });
+    onError: (error, ctx) => {
+      const message = error instanceof Error ? error.message : String(error);
+      const name = error instanceof Error ? error.name : "UnknownError";
+      tel.error("API_ERROR", {
+        error: name,
+        message,
+        session: ctx.session?.session,
+        user: ctx.session?.user,
+      });
     },
   },
 
@@ -155,6 +167,27 @@ export const auth = betterAuth({
   cors: {
     origin: [dotenv.PRODUCTION_URL],
     credentials: true,
+  },
+
+  logger: {
+    level: "error",
+    log: (level, message, ...args) => {
+      const attrs: Record<string, string> = {};
+      for (const arg of args) {
+        if (arg && typeof arg === "object") {
+          for (const [k, v] of Object.entries(arg)) {
+            attrs[k] = String(v);
+          }
+        }
+      }
+      if (level === "error") {
+        baTel.error(String(message), attrs);
+      } else if (level === "warn") {
+        baTel.warn(String(message), attrs);
+      } else {
+        baTel.info(String(message), attrs);
+      }
+    },
   },
 
   telemetry: { enabled: false },

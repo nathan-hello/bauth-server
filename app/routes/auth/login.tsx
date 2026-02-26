@@ -2,7 +2,7 @@ import { auth } from "@server/auth";
 import type { Route } from "./+types/login";
 import { PasswordLoginForm, type AuthState } from "./components/password";
 import { redirect } from "react-router";
-import { AppError, getAuthError } from "./errors/auth-error";
+import { AppError, getAuthError, errorAttrs } from "./errors/auth-error";
 import { useCopy } from "./lib/copy";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { Card } from "./components/ui";
@@ -87,6 +87,7 @@ export async function action({ request }: Route.ActionArgs): Promise<AuthState> 
       throw error;
     }
 
+    tel.error("ACTION_ERROR", errorAttrs(error));
     const aerr = getAuthError(error);
 
     return {

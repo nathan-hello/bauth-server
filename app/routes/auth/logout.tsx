@@ -2,7 +2,7 @@ import { redirect } from "react-router";
 import { useCopy } from "./lib/copy";
 import type { Route } from "./+types/logout";
 import { auth } from "@server/auth";
-import { AppError, getAuthError, type AuthError } from "./errors/auth-error";
+import { AppError, getAuthError, errorAttrs, type AuthError } from "./errors/auth-error";
 import { APIError } from "better-auth";
 import { PasswordSignOut } from "./components/password";
 import { Card } from "./components/ui";
@@ -48,6 +48,7 @@ export async function loader({ request }: Route.LoaderArgs): Promise<AuthError[]
       }
     }
 
+    tel.error("LOGOUT_ERROR", errorAttrs(error));
     const errors = getAuthError(error);
     return errors;
   }

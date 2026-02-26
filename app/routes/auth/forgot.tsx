@@ -1,7 +1,7 @@
 import { auth } from "@server/auth";
 import type { Route } from "./+types/forgot";
 import { PasswordForgotForm, type ForgotPasswordFormProps } from "./components/password";
-import { AppError, getAuthError } from "./errors/auth-error";
+import { AppError, getAuthError, errorAttrs } from "./errors/auth-error";
 import { redirect } from "react-router";
 import { APIError } from "better-auth";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
@@ -97,6 +97,7 @@ export async function action({
         },
       };
     } else {
+      tel.error("ACTION_ERROR", errorAttrs(error));
       const errors = getAuthError(error);
       return {
         step,

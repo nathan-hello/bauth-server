@@ -1,6 +1,6 @@
 import { auth, BA_COOKIE_PREFIX } from "@server/auth";
 import type { Route } from "./+types/2fa";
-import { getAuthError } from "./errors/auth-error";
+import { getAuthError, errorAttrs } from "./errors/auth-error";
 import { redirect } from "react-router";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { TwoFactorVerification } from "./components/2fa";
@@ -96,8 +96,7 @@ async function verifyTotp(form: FormData, request: Request) {
     if (error instanceof Response) {
       throw error;
     }
-    tel.error("VERIFY_TOTP_FAILED", { error: error instanceof Error ? error.message : String(error) });
-
+    tel.error("VERIFY_TOTP_FAILED", errorAttrs(error));
     const aerr = getAuthError(error);
     return {
       verificationType: "totp" as const,
@@ -124,6 +123,7 @@ async function verifyEmail(form: FormData, request: Request) {
       throw error;
     }
 
+    tel.error("VERIFY_EMAIL_FAILED", errorAttrs(error));
     const aerr = getAuthError(error);
     return {
       verificationType: "email" as const,

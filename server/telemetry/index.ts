@@ -41,6 +41,8 @@ export function safeRequestAttrs(request: Request, form?: FormData) {
   return attrs;
 }
 
+type Attrs<T = Record<string, AnyValue>> = T | (() => T | Promise<T>);
+
 export class Telemetry<T extends TelemetryLogSchema = TelemetryLogSchema> {
   private tracer;
   private namespace: string;
@@ -105,29 +107,51 @@ export class Telemetry<T extends TelemetryLogSchema = TelemetryLogSchema> {
 
   private handleError(span: Span, name: string, error: unknown): string {
     const message = error instanceof Error ? error.message : String(error);
+    const errorName = error instanceof Error ? error.name : "UnknownError";
+    const attrs: Record<string, string> = { error: errorName, message };
+
+    // Capture code if present (e.g., AppError, APIError)
+    if (
+      error != null &&
+      typeof error === "object" &&
+      "code" in error &&
+      typeof (error as Record<string, unknown>).code === "string"
+    ) {
+      attrs.code = (error as Record<string, unknown>).code as string;
+    }
+
     span.setStatus({ code: SpanStatusCode.ERROR, message });
-    this.emit(`Task Error: ${name}`, SeverityNumber.ERROR, "ERROR", { error: message });
+    this.emit(`Task Error: ${name}`, SeverityNumber.ERROR, "ERROR", attrs);
     return message;
   }
 
-  debug(body: T["debug"][0], attributes?: T["debug"][1] | (() => T["debug"][1])) {
-    const attr = typeof attributes === "function" ? attributes() : attributes;
-    this.emit(body, SeverityNumber.DEBUG, "DEBUG", attr);
+  debug(body: T["debug"][0], attributes?: Attrs<T["debug"][1]>) {
+    this.log(body, SeverityNumber.DEBUG, "DEBUG", attributes);
   }
 
-  warn(body: T["warn"][0], attributes?: T["warn"][1] | (() => T["warn"][1])) {
-    const attr = typeof attributes === "function" ? attributes() : attributes;
-    this.emit(body, SeverityNumber.WARN, "WARN", attr);
+  warn(body: T["warn"][0], attributes?: Attrs<T["warn"][1]>) {
+    this.log(body, SeverityNumber.WARN, "WARN", attributes);
   }
 
-  info(body: T["info"][0], attributes?: T["info"][1] | (() => T["info"][1])) {
-    const attr = typeof attributes === "function" ? attributes() : attributes;
-    this.emit(body, SeverityNumber.INFO, "INFO", attr);
+  info(body: T["info"][0], attributes?: Attrs<T["info"][1]>) {
+    this.log(body, SeverityNumber.INFO, "INFO", attributes);
   }
 
-  error(body: T["error"][0], attributes?: T["error"][1] | (() => T["error"][1])) {
-    const attr = typeof attributes === "function" ? attributes() : attributes;
-    this.emit(body, SeverityNumber.ERROR, "ERROR", attr);
+  error(body: T["error"][0], attributes?: Attrs<T["error"][1]>) {
+    this.log(body, SeverityNumber.ERROR, "ERROR", attributes);
+  }
+
+  private log(body: string, severityNumber: SeverityNumber, severityText: string, attributes?: Attrs) {
+    if (typeof attributes === "function") {
+      const result = attributes();
+      if (result instanceof Promise) {
+        result.then((resolved) => this.emit(body, severityNumber, severityText, resolved));
+        return;
+      }
+      this.emit(body, severityNumber, severityText, result);
+      return;
+    }
+    this.emit(body, severityNumber, severityText, attributes);
   }
 
   private emit(

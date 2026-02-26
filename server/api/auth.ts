@@ -39,33 +39,61 @@ function errorPage(traceId: string): Response {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  tel.info("GOT_LOADER", safeRequestAttrs(request));
   const result = await tel.task("LOADER_HANDLE", async () => {
-    throw new Error("asdf");
     return await auth.handler(request);
+  });
+
+  tel.info("GET: /api/auth", async () => {
+    if (result.ok) {
+      const clone = result.data.clone();
+      return {
+        responseText: await clone.text(),
+        status: clone.status,
+        url: request.clone().url,
+      };
+    } else {
+      return {
+        "http.url": request.clone().url,
+        errorName: result.error.name,
+        errorMessage: result.error.message,
+        errorStack: result.error.stack,
+      };
+    }
   });
 
   if (result.ok) {
     return result.data;
   }
-
-  tel.error("ERROR", { error: result.error.name, message: result.error.name });
 
   throw errorPage(result.traceId);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  tel.info("GOT_ACTION", safeRequestAttrs(request));
-  const result = await tel.task("LOADER_HANDLE", async () => {
-    throw new Error("asdf");
+  const result = await tel.task("ACTION_HANDLE", async () => {
     return await auth.handler(request);
+  });
+
+  tel.info("POST: /api/auth", async () => {
+    if (result.ok) {
+      const clone = result.data.clone();
+      return {
+        status: clone.status,
+        "http.url": request.clone().url,
+         responseText: await clone.text(),
+      };
+    } else {
+      return {
+        "http.url": request.clone().url,
+        errorName: result.error.name,
+        errorMessage: result.error.message,
+        errorStack: result.error.stack,
+      };
+    }
   });
 
   if (result.ok) {
     return result.data;
   }
-
-  tel.error("ERROR", { error: result.error.name, message: result.error.name });
 
   throw errorPage(result.traceId);
 }
