@@ -1,13 +1,9 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/bun-sqlite";
+import Database from "bun:sqlite";
 import * as schema from "./schema";
+import { dotenv } from "..";
 
-const location = process.env.DB_FILE_NAME;
-if (!location) {
-  throw Error(".env: `DB_FILE_NAME` is required");
-}
-
-const sqlite = new Database(location);
+const sqlite = new Database(dotenv.DB_FILE_NAME);
 export const db = drizzle(sqlite, {
   schema,
 });

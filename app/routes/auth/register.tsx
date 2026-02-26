@@ -6,6 +6,9 @@ import { useCopy } from "./lib/copy";
 import { data, redirect } from "react-router";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { Card } from "./components/ui";
+import { Telemetry, safeRequestAttrs } from "@server/telemetry";
+
+const tel = new Telemetry("route.register");
 
 export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
@@ -19,6 +22,7 @@ export default function ({ actionData }: Route.ComponentProps) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  tel.info("GOT_LOADER", safeRequestAttrs(request));
   await throwRedirectIfSessionExists({
     request,
     caller: "/auth/register",
@@ -36,6 +40,7 @@ export async function action({
   request,
 }: Route.ActionArgs): Promise<ActionReturn | ReturnType<typeof data<ActionReturn>> | undefined> {
   const form = await request.formData();
+  tel.info("GOT_ACTION", safeRequestAttrs(request, form));
 
   const username = form.get("username")?.toString();
   const email = form.get("email")?.toString();

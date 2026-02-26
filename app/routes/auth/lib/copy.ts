@@ -175,8 +175,6 @@ const english = {
   dashboard_backup_codes_copied: "Copied",
   dashboard_backup_codes_copy_all: "Copy All",
   dashboard_backup_codes_save: "Save these somewhere safe. Each code works once.",
-  dashboard_backup_codes_hide: "Hide backup codes",
-  dashboard_backup_codes_show: "Show backup codes",
 
   // Dashboard: Sessions
   dashboard_sessions_heading: "Sessions",

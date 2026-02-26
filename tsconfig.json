@@ -2,8 +2,8 @@
   "include": ["**/*", "**/server/**/*", "**/.client/**/*", ".react-router/types/**/*", "server"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["node", "vite/client"],
-    "target": "ES2022",
+    "types": ["bun", "vite/client"],
+    "target": "ESNext",
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",

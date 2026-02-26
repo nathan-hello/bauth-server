@@ -5,12 +5,16 @@ import { redirect } from "react-router";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { TwoFactorVerification } from "./components/2fa";
 import { parse } from "cookie";
+import { Telemetry, safeRequestAttrs } from "@server/telemetry";
+
+const tel = new Telemetry("route.2fa");
 
 export default function ({ actionData }: Route.ComponentProps) {
   return <TwoFactorVerification state={actionData} />;
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  tel.info("GOT_LOADER", safeRequestAttrs(request));
   await throwRedirectIfSessionExists({
     request,
     caller: "/auth/2fa",
@@ -18,24 +22,21 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const cookies = request.headers.get("cookie");
   if (!cookies) {
-    console.log("[/auth/2fa]: redirecting to /auth/login because cookies was empty");
-    console.table(request.headers);
+    tel.info("REDIRECT", { reason: "no_cookies", ...safeRequestAttrs(request) });
     throw redirect("/auth/login");
   }
   const parsed = parse(cookies);
   const cookieKey = BA_COOKIE_PREFIX + ".two_factor";
 
   if (!parsed[cookieKey]) {
-    console.log(
-      `[/auth/2fa]: redirecting to /auth/login because ${cookieKey} was not found in cookies`,
-    );
-    console.table(request.headers);
+    tel.info("REDIRECT", { reason: "missing_2fa_cookie", cookie: cookieKey, ...safeRequestAttrs(request) });
     throw redirect("/auth/login");
   }
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const form = await request.formData();
+  tel.info("GOT_ACTION", safeRequestAttrs(request, form));
 
   const action = form.get("action")?.toString();
 
@@ -64,7 +65,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-async function resendEmail(form: FormData, request: Request) {
+async function resendEmail(_form: FormData, request: Request) {
   try {
     const { status } = await auth.api.sendTwoFactorOTP({
       body: { trustDevice: true },
@@ -95,10 +96,11 @@ async function verifyTotp(form: FormData, request: Request) {
     if (error instanceof Response) {
       throw error;
     }
-    console.log("[/auth/2fa]: verifyTotp got error: ", error);
+    tel.error("VERIFY_TOTP_FAILED", { error: error instanceof Error ? error.message : String(error) });
 
     const aerr = getAuthError(error);
     return {
+      verificationType: "totp" as const,
       errors: aerr,
     };
   }
@@ -124,6 +126,7 @@ async function verifyEmail(form: FormData, request: Request) {
 
     const aerr = getAuthError(error);
     return {
+      verificationType: "email" as const,
       errors: aerr,
     };
   }

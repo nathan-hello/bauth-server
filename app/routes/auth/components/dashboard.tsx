@@ -48,10 +48,7 @@ export function Dashboard({ actionData, loaderData }: DashboardProps) {
 
         <div className="px-6 py-4 flex flex-col gap-2">
           {actionData?.errors?.map((error) => (
-            <FormAlert
-              key={error.type}
-              message={error.type ? copy.error[error.type] : undefined}
-            />
+            <FormAlert key={error.type} message={error.type ? copy.error[error.type] : undefined} />
           ))}
           {actionData?.change_password?.success && (
             <FormAlert color="success" message={copy.dashboard_password_changed} />
@@ -75,8 +72,6 @@ export function Dashboard({ actionData, loaderData }: DashboardProps) {
   );
 }
 
-/* ─── Section heading ─── */
-
 function SectionHeading({
   children,
   right,
@@ -93,8 +88,6 @@ function SectionHeading({
     </div>
   );
 }
-
-/* ─── Status badge ─── */
 
 function Badge({
   children,
@@ -118,8 +111,6 @@ function Badge({
   );
 }
 
-/* ─── Email ─── */
-
 type EmailData = {
   email: string;
   verified: boolean;
@@ -127,9 +118,11 @@ type EmailData = {
 
 function EmailSection({
   email,
+  showChangeEmail,
   verificationSent,
 }: {
   email: EmailData;
+  showChangeEmail?: boolean;
   verificationSent?: boolean;
 }) {
   const copy = useCopy();
@@ -138,7 +131,9 @@ function EmailSection({
       <SectionHeading
         right={
           <Badge color={email.verified ? "green" : "yellow"}>
-            {email.verified ? copy.dashboard_email_verified_badge : copy.dashboard_email_unverified_badge}
+            {email.verified ?
+              copy.dashboard_email_verified_badge
+            : copy.dashboard_email_unverified_badge}
           </Badge>
         }
       >
@@ -148,26 +143,30 @@ function EmailSection({
       <p className="text-sm mb-5">{email.email}</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Form method="post" className="flex flex-col gap-2">
-          <input type="hidden" name="action" value="email_change" />
-          <label htmlFor="new_email" className="text-xs text-fg-muted">
-            {copy.dashboard_email_change}
-          </label>
-          <Input
-            type="email"
-            name="new_email"
-            id="new_email"
-            placeholder={copy.dashboard_email_new_placeholder}
-            required
-          />
-          <Button type="submit">{copy.dashboard_email_change}</Button>
-        </Form>
+        {showChangeEmail && (
+          <Form method="post" className="flex flex-col gap-2">
+            <input type="hidden" name="action" value="email_change" />
+            <label htmlFor="new_email" className="text-xs text-fg-muted">
+              {copy.dashboard_email_change}
+            </label>
+            <Input
+              type="email"
+              name="new_email"
+              id="new_email"
+              placeholder={copy.dashboard_email_new_placeholder}
+              required
+            />
+            <Button type="submit">{copy.dashboard_email_change}</Button>
+          </Form>
+        )}
 
         {!email.verified && (
           <Form method="post" className="flex flex-col gap-2">
             <input type="hidden" name="action" value="email_resend_verification" />
             <label htmlFor="new_email" className="text-xs text-fg-muted">
-              {verificationSent ? copy.dashboard_email_verification_sent : copy.dashboard_email_unverified_prompt}
+              {verificationSent ?
+                copy.dashboard_email_verification_sent
+              : copy.dashboard_email_unverified_prompt}
             </label>
             <Button disabled={verificationSent} type="submit">
               {copy.dashboard_email_resend_verification}
@@ -178,8 +177,6 @@ function EmailSection({
     </section>
   );
 }
-
-/* ─── Password ─── */
 
 function PasswordSection() {
   const copy = useCopy();
@@ -245,7 +242,9 @@ function TwoFactorSection({ state }: { state?: TotpState }) {
   const badge =
     state?.intermediateEnable !== undefined ?
       <Badge color={state.intermediateEnable ? "green" : "gray"}>
-        {state.intermediateEnable ? copy.dashboard_2fa_enabled_badge : copy.dashboard_2fa_disabled_badge}
+        {state.intermediateEnable ?
+          copy.dashboard_2fa_enabled_badge
+        : copy.dashboard_2fa_disabled_badge}
       </Badge>
     : undefined;
 
@@ -275,16 +274,12 @@ function TwoFactorSection({ state }: { state?: TotpState }) {
   return <TwoFactorDisabled />;
 }
 
-/* ─── 2FA: Disabled ─── */
-
 function TwoFactorDisabled() {
   const copy = useCopy();
   return (
     <section className="px-6 py-5">
       <SectionHeading>{copy.dashboard_2fa_heading}</SectionHeading>
-      <p className="text-sm text-fg-muted mb-4">
-        {copy.dashboard_2fa_description}
-      </p>
+      <p className="text-sm text-fg-muted mb-4">{copy.dashboard_2fa_description}</p>
       <Form method="post" className="flex flex-col gap-2 max-w-sm">
         <input type="hidden" name="action" value="2fa_enable" />
         <Input
@@ -300,8 +295,6 @@ function TwoFactorDisabled() {
     </section>
   );
 }
-
-/* ─── 2FA: Setup in progress ─── */
 
 function TwoFactorSetup({
   badge,
@@ -325,7 +318,12 @@ function TwoFactorSetup({
           <div className="inline-flex px-8 py-2 w-fit h-full bg-surface-raised mb-4">
             <QRCode className="w-64 h-80" data={totpURI} />
           </div>
-          <VerifyTotpForm errors={errors} />
+          <VerifyTotpForm
+            errors={errors}
+            totpURI={totpURI}
+            backupCodes={backupCodes}
+            intermediateEnable
+          />
         </div>
       )}
 
@@ -333,8 +331,6 @@ function TwoFactorSetup({
     </section>
   );
 }
-
-/* ─── 2FA: Enabled ─── */
 
 const summaryClass =
   "cursor-pointer list-none text-sm font-medium py-2 px-3 border border-border text-fg [&::-webkit-details-marker]:hidden";
@@ -366,8 +362,7 @@ function TwoFactorEnabled({
             </div>
             {verified ?
               <p className="text-sm text-success">{copy.dashboard_2fa_success}</p>
-            : <VerifyTotpForm errors={errors} optionalCopy={true} />
-            }
+            : <VerifyTotpForm errors={errors} optionalCopy={true} totpURI={totpURI} />}
           </div>
         : <details name="2fa-action">
             <summary className={summaryClass}>{copy.dashboard_2fa_show_qr}</summary>
@@ -428,25 +423,31 @@ function TwoFactorEnabled({
 function VerifyTotpForm({
   errors,
   optionalCopy,
+  totpURI,
+  backupCodes,
+  intermediateEnable,
 }: {
   errors?: AuthError[];
   optionalCopy?: boolean;
+  totpURI?: string;
+  backupCodes?: string[];
+  intermediateEnable?: boolean;
 }) {
   const copy = useCopy();
   return (
     <Form method="post" className="flex flex-col gap-2 max-w-sm">
       <input type="hidden" name="action" value="2fa_totp_verify" />
+      {totpURI && <input type="hidden" name="totp_uri" value={totpURI} />}
+      {backupCodes && (
+        <input type="hidden" name="backup_codes" value={JSON.stringify(backupCodes)} />
+      )}
+      {intermediateEnable && <input type="hidden" name="intermediate_enable" value="true" />}
 
       <label htmlFor="totp_code" className="text-xs text-fg-muted">
-        {optionalCopy ?
-          copy.dashboard_2fa_optional_verify
-        : copy.dashboard_2fa_verify_prompt}
+        {optionalCopy ? copy.dashboard_2fa_optional_verify : copy.dashboard_2fa_verify_prompt}
       </label>
       {errors?.map((error) => (
-        <FormAlert
-          key={error.type}
-          message={error.type ? copy.error[error.type] : undefined}
-        />
+        <FormAlert key={error.type} message={error.type ? copy.error[error.type] : undefined} />
       ))}
       <Input
         type="text"
@@ -466,7 +467,6 @@ function VerifyTotpForm({
 function BackupCodesDisplay({ codes }: { codes: string[] }) {
   const copy = useCopy();
   const [copied, setCopied] = useState(false);
-  const [open, setOpen] = useState(false);
 
   return (
     <div className="bg-surface-raised p-4 mb-4">
@@ -487,23 +487,16 @@ function BackupCodesDisplay({ codes }: { codes: string[] }) {
         </Button>
       </div>
       <p className="text-xs text-fg-muted mb-3">{copy.dashboard_backup_codes_save}</p>
-      <Button variant="ghost" className="w-full mb-2" onClick={() => setOpen(!open)}>
-        {open ? copy.dashboard_backup_codes_hide : copy.dashboard_backup_codes_show}
-      </Button>
-      {open && (
-        <div className="font-mono text-xs grid grid-cols-2 gap-1">
-          {codes.map((code, idx) => (
-            <span key={idx} className="p-2 bg-surface text-fg text-center">
-              {code}
-            </span>
-          ))}
-        </div>
-      )}
+      <div className="font-mono text-xs grid grid-cols-2 gap-1">
+        {codes.map((code, idx) => (
+          <span key={idx} className="p-2 bg-surface text-fg text-center">
+            {code}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
-
-/* ─── Sessions ─── */
 
 type Session = {
   id: string;
@@ -528,7 +521,9 @@ function SessionsSection({ sessions, current }: { sessions: Session[]; current: 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm truncate">{session.ipAddress}</p>
-                    {session.id === current.id && <Badge color="blue">{copy.dashboard_session_current}</Badge>}
+                    {session.id === current.id && (
+                      <Badge color="blue">{copy.dashboard_session_current}</Badge>
+                    )}
                   </div>
                   <p className="text-xs text-fg-muted mt-0.5">
                     {new Date(session.lastLoggedIn).toLocaleString()}

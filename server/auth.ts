@@ -1,18 +1,19 @@
+import { EmailOtp, Email2fa, EmailVerification } from "@/components/email";
+import { Resend } from "resend";
+import { Telemetry } from "./telemetry";
 import { betterAuth } from "better-auth/minimal";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./drizzle/db";
-import { username, twoFactor, emailOTP } from "better-auth/plugins";
+import { dotenv } from ".";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { passkey } from "@better-auth/passkey";
+import { username, twoFactor, emailOTP } from "better-auth/plugins";
 
-const url = process.env.PRODUCTION_URL;
-if (!url) {
-  throw Error("process.env.PRODUCTION_URL was undefined");
-}
+const resend = new Resend(dotenv.RESEND_ACCESS_TOKEN);
+const fromEmail = "Nat/e <accounts@support.reluekiss.com>";
 
-const secret = process.env.BETTER_AUTH_SECRET;
-if (!secret) {
-  throw Error("process.env.BETTER_AUTH_SECRET was undefined");
-}
+const tel = new Telemetry("auth.hooks");
+const url = dotenv.PRODUCTION_URL;
+const secret = dotenv.BETTER_AUTH_SECRET;
 
 export const BA_COOKIE_PREFIX = "asdf";
 
@@ -27,93 +28,134 @@ export const auth = betterAuth({
   secret: secret,
   plugins: [
     passkey({ rpID: url, rpName: url }),
+
     username({
       usernameValidator: validateUsername,
       displayUsernameValidator: validateUsername,
     }),
+
     twoFactor({
       otpOptions: {
         storeOTP: "plain",
-        sendOTP: async (data, request) => {
-          console.log("plugins.twofactor.otpoptions.sendotp:");
-          console.log(new Date());
-          console.table({
-            email: data.user.email,
-            token: data.otp,
+        sendOTP: async (data, _request) => {
+          tel.info("SEND_OTP", {
+            "user.email": data.user.email,
+            "user.id": data.user.id,
+            channel: "totp",
           });
-          console.log("otp:");
-          console.log(data.otp);
+          const response = await resend.emails.send({
+            from: fromEmail,
+            to: data.user.email,
+            subject: "One time passcode",
+            react: Email2fa({ email: data.user.email, url: dotenv.PRODUCTION_URL, otp: data.otp }),
+          });
+          if (response.error) {
+            tel.error("RESEND_ERROR", { error: response.error, headers: response.headers });
+          } else {
+            tel.info("RESEND_SUCCESS", { id: response.data.id, headers: response.headers });
+          }
         },
       },
     }),
+
     // This is JUST for signing in without a password
     // Email OTP is also used in twofactor for the 2FA
     // version of an email being sent to the user
     emailOTP({
       expiresIn: 60 * 15,
       overrideDefaultEmailVerification: true,
-      sendVerificationOTP: async (data, request) => {
-        console.log("plugins.emailotp.sendverificationotp");
-        console.table({
-          email: data.email,
-          type: data.type,
-          token: data.otp,
+      sendVerificationOTP: async (data, _request) => {
+        tel.info("SEND_OTP", { "user.email": data.email, type: data.type, channel: "email" });
+        const response = await resend.emails.send({
+          from: fromEmail,
+          to: data.email,
+          subject: "One time passcode",
+          react: EmailOtp({ email: data.email, url: dotenv.PRODUCTION_URL, otp: data.otp }),
         });
-        console.log("otp:");
-        console.log(data.otp);
+        if (response.error) {
+          tel.error("RESEND_ERROR", { error: response.error, headers: response.headers });
+        } else {
+          tel.info("RESEND_SUCCESS", { id: response.data.id, headers: response.headers });
+        }
       },
     }),
   ],
-  databaseHooks: {
-    user: {
-      create: {
-        after: async (user) => {},
-      },
+
+  rateLimit: {
+    window: 60,
+    max: 100,
+    storage: "database",
+    customRules: {
+      "/send-verification-email": { window: 300, max: 1 },
+      "/email-otp/send-verification-otp": { window: 300, max: 1 },
+      "/sign-in/email-otp": { window: 300, max: 1 },
+      "/two-factor/*": { window: 300, max: 1 },
     },
   },
+
   database: drizzleAdapter(db, {
     provider: "sqlite",
   }),
+
   advanced: {
     cookiePrefix: BA_COOKIE_PREFIX,
   },
+
   onAPIError: {
-    onError: (error, ctx) => {
-      console.log("[onAPIError]: API got error:");
-      console.log(error);
+    onError: (error, _ctx) => {
+      tel.error("API_ERROR", { error: error instanceof Error ? error.message : String(error) });
     },
   },
+
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
     requireEmailVerification: false,
     revokeSessionsOnPasswordReset: true,
   },
+
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     expiresIn: 60 * 60 * 24,
-    sendVerificationEmail: async (data, request) => {
-      console.log("emailverification.sendverificationemail");
-      console.table(data);
-      console.log("url:");
-      console.log(data.url);
+    sendVerificationEmail: async (data, _request) => {
+      tel.info("SEND_VERIFICATION_EMAIL", {
+        "user.email": data.user.email,
+        "user.id": data.user.id,
+      });
+      const response = await resend.emails.send({
+        from: fromEmail,
+        to: data.user.email,
+        subject: "Email verification",
+        react: EmailVerification({
+          email: data.user.email,
+          url: dotenv.PRODUCTION_URL,
+          verificationLink: data.url,
+        }),
+      });
+      if (response.error) {
+        tel.error("RESEND_ERROR", { error: response.error, headers: response.headers });
+      } else {
+        tel.info("RESEND_SUCCESS", { id: response.data.id, headers: response.headers });
+      }
     },
   },
+
   trustedOrigins: [url, "https://localhost:5173", "http://localhost:5173"],
+
   account: {
     accountLinking: {
       enabled: true,
-      allowUnlinkingAll: true,
       allowDifferentEmails: true,
-      updateUserInfoOnLink: true,
     },
     updateAccountOnSignIn: true,
     encryptOAuthTokens: true,
   },
+
   cors: {
     origin: [url],
     credentials: true,
   },
+
   telemetry: { enabled: false },
 });

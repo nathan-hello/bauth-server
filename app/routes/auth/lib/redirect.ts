@@ -1,5 +1,8 @@
 import { auth } from "@server/auth";
 import { redirect } from "react-router";
+import { Telemetry } from "@server/telemetry";
+
+const tel = new Telemetry("auth.redirect");
 
 export async function throwRedirectIfSessionExists({
   request,
@@ -17,7 +20,7 @@ export async function throwRedirectIfSessionExists({
     }
   } catch (error) {
     if (error instanceof Response) {
-      console.log(`[${caller}]: Redirecting from ${request.url} to ${error.url}`);
+      tel.info("REDIRECT", { reason: "session_exists", caller, "req.url": request.url, "redirect.url": error.url });
       throw error;
     }
     return;

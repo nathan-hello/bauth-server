@@ -62,7 +62,7 @@ export function QRCode({ data, ...props }: QRCodeProps) {
         <div className="flex flex-col gap-2 select-text break-all">
           <div><strong>{copy.totp_manual_secret}</strong> <br/> <span className="font-mono">{manual.secret}</span></div>
           <div><strong>{copy.totp_manual_alg}</strong>    <br/> <span className="font-mono">{manual.algorithm}</span></div>
-          <div><strong>{copy.totp_manual_period}</strong> <br/> <span className="font-mono">{manual.period}{copy.totp_manual_period_seconds}</span></div>
+          <div><strong>{copy.totp_manual_period}</strong> <br/> <span className="font-mono">{manual.period}{" "}{copy.totp_manual_period_seconds}</span></div>
           <div><strong>{copy.totp_manual_digits}</strong> <br/> <span className="font-mono">{manual.digits}</span></div>
         </div>
       )}

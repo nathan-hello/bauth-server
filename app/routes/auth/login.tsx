@@ -6,6 +6,9 @@ import { AppError, getAuthError } from "./errors/auth-error";
 import { useCopy } from "./lib/copy";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { Card } from "./components/ui";
+import { Telemetry, safeRequestAttrs } from "@server/telemetry";
+
+const tel = new Telemetry("route.login");
 
 export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
@@ -21,6 +24,7 @@ export default function ({ actionData }: Route.ComponentProps) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  tel.info("GOT_LOADER", safeRequestAttrs(request));
   await throwRedirectIfSessionExists({
     request,
     caller: "/auth/login",
@@ -29,6 +33,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action({ request }: Route.ActionArgs): Promise<AuthState> {
   const form = await request.formData();
+  tel.info("GOT_ACTION", safeRequestAttrs(request, form));
 
   const email = form.get("email")?.toString();
   const password = form.get("password")?.toString();

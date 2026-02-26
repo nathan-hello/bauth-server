@@ -6,6 +6,9 @@ import { AppError, getAuthError, type AuthError } from "./errors/auth-error";
 import { APIError } from "better-auth";
 import { PasswordSignOut } from "./components/password";
 import { Card } from "./components/ui";
+import { Telemetry, safeRequestAttrs } from "@server/telemetry";
+
+const tel = new Telemetry("route.logout");
 
 export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
@@ -24,6 +27,7 @@ export default function ({ actionData }: Route.ComponentProps) {
 }
 
 export async function loader({ request }: Route.LoaderArgs): Promise<AuthError[] | undefined> {
+  tel.info("GOT_LOADER", safeRequestAttrs(request));
   try {
     const { headers, response } = await auth.api.signOut({
       headers: request.headers,

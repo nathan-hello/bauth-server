@@ -2,14 +2,31 @@ import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { reactRouterHonoServer } from "react-router-hono-server/dev";
 import path from "path";
 
 export default defineConfig({
-  plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+  build: {
+    target: "esnext",
+  },
+  plugins: [
+    reactRouterHonoServer({
+      runtime: "bun",
+      serverEntryPoint: path.resolve(__dirname, "./server/index.ts"),
+    }),
+    tailwindcss(),
+    reactRouter(),
+    tsconfigPaths(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./app"),
       "@server": path.resolve(__dirname, "./server"),
+    },
+  },
+  server: {
+    watch: {
+      ignored: ["**/logs/**"],
     },
   },
 });

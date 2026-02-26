@@ -14,5 +14,6 @@ export default [
     ]),
   ]),
 
+  ...(process.env.NODE_ENV === "development" ? [route("debug/email", "./routes/debug/email.tsx")] : []),
   route("api/auth/*", "../server/api/auth.ts"),
 ] satisfies RouteConfig;

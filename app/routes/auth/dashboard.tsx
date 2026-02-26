@@ -3,6 +3,9 @@ import type { Route } from "./+types/dashboard";
 import { Dashboard } from "./components/dashboard";
 import { data, redirect } from "react-router";
 import { AppError, getAuthError } from "./errors/auth-error";
+import { Telemetry, safeRequestAttrs } from "@server/telemetry";
+
+const tel = new Telemetry("route.dashboard");
 
 export default function ({ loaderData, actionData }: Route.ComponentProps) {
   return <Dashboard actionData={actionData} loaderData={loaderData} />;
@@ -13,11 +16,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     headers: request.headers,
   });
   if (!session) {
-    console.log("[/dashboard loader]: Redirecting to /auth/login (null session)");
-    console.log("[/dashboard loader]: headers:");
-    console.table(request.headers);
+    tel.info("REDIRECT", { reason: "null_session", ...safeRequestAttrs(request) });
     throw redirect("/auth/login");
   }
+
+  tel.info("GOT_LOADER", { "user.id": session.user.id, ...safeRequestAttrs(request) });
 
   const allSessions = await auth.api.listSessions({
     headers: request.headers,
@@ -31,7 +34,6 @@ export async function loader({ request }: Route.LoaderArgs) {
       lastLoggedIn: s.updatedAt,
     }));
 
-  console.log("twoFactorEnabled: ", session.user.twoFactorEnabled);
   return {
     email: {
       email: session.user.email,
@@ -57,8 +59,11 @@ export async function action({ request }: Route.ActionArgs) {
   const action = form.get("action")?.toString();
 
   if (!action) {
+    tel.warn("MISSING_FIELD", { field: "action", ...safeRequestAttrs(request) });
     return;
   }
+
+  tel.info("GOT_ACTION", { action, ...safeRequestAttrs(request, form) });
 
   try {
     if (action === "change_password") {
@@ -135,6 +140,10 @@ async function totpVerify(form: FormData, request: Request) {
     return;
   }
 
+  const totpURI = form.get("totp_uri")?.toString();
+  const backupCodesRaw = form.get("backup_codes")?.toString();
+  const intermediateEnable = form.get("intermediate_enable") === "true";
+
   try {
     const result = await auth.api.verifyTOTP({
       body: { code: code },
@@ -144,8 +153,8 @@ async function totpVerify(form: FormData, request: Request) {
     return data(
       {
         totp: {
-          enable: true,
           verified: true,
+          ...(totpURI && { totpURI }),
         },
       },
       { headers: result.headers },
@@ -156,10 +165,13 @@ async function totpVerify(form: FormData, request: Request) {
     }
 
     const aerr = getAuthError(error);
+    const backupCodes = backupCodesRaw ? JSON.parse(backupCodesRaw) : undefined;
 
     return data({
       totp: {
-        enable: true,
+        ...(intermediateEnable && { intermediateEnable: true }),
+        ...(totpURI && { totpURI }),
+        ...(backupCodes && { backupCodes }),
         errors: aerr,
       },
     });
@@ -202,7 +214,7 @@ async function twoFactorEnable(form: FormData, request: Request) {
   return data(
     {
       totp: {
-        enable: true,
+        intermediateEnable: true,
         totpURI: result.response.totpURI,
         backupCodes: result.response.backupCodes,
       },
@@ -244,13 +256,13 @@ async function totpGetUri(form: FormData, request: Request) {
     headers: request.headers,
   });
   if (!session || !session.user.twoFactorEnabled) {
-    console.log("dashboard: totpGetUri: session or twofactorenabled is false", JSON.stringify(session));
+    tel.warn("MISSING_FIELD", { field: "session_or_2fa", action: "get_totp_uri" });
     return;
   }
 
   const password = form.get("password")?.toString();
   if (!password) {
-    console.log("dashboard: password was falsey: length: ", password?.length);
+    tel.warn("MISSING_FIELD", { field: "password", action: "get_totp_uri" });
     return;
   }
 
@@ -259,8 +271,6 @@ async function totpGetUri(form: FormData, request: Request) {
     headers: request.headers,
     returnHeaders: true,
   });
-
-  console.log("dashbaord: totpGetUri: got result: ", JSON.stringify(result));
 
   return data(
     {

@@ -7,6 +7,9 @@ import { APIError } from "better-auth";
 import { throwRedirectIfSessionExists } from "./lib/redirect";
 import { useCopy } from "./lib/copy";
 import { Card } from "./components/ui";
+import { Telemetry, safeRequestAttrs } from "@server/telemetry";
+
+const tel = new Telemetry("route.forgot");
 
 export default function ({ actionData }: Route.ComponentProps) {
   const copy = useCopy();
@@ -19,6 +22,7 @@ export default function ({ actionData }: Route.ComponentProps) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  tel.info("GOT_LOADER", safeRequestAttrs(request));
   await throwRedirectIfSessionExists({
     request,
     caller: "/auth/forgot",
@@ -29,6 +33,7 @@ export async function action({
   request,
 }: Route.ActionArgs): Promise<ForgotPasswordFormProps | undefined> {
   const form = await request.formData();
+  tel.info("GOT_ACTION", safeRequestAttrs(request, form));
   const step = form.get("step")?.toString();
   const email = form.get("email")?.toString();
   const code = form.get("code")?.toString();
@@ -120,9 +125,9 @@ async function stepStart({
       headers: request.headers,
     });
   } catch (e) {
-    console.log("/auth/forgot: auth.api.forgetPasswordEmailOTP exception manually caught", {
-      email,
-      exception: e,
+    tel.warn("FORGET_PASSWORD_OTP_FAILED", {
+      email: email,
+      error: e instanceof Error ? e.message : String(e),
     });
   }
 
