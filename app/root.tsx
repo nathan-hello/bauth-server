@@ -1,4 +1,12 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import {
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  isRouteErrorResponse,
+  useRouteError,
+} from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -29,6 +37,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  return null;
+export function ErrorBoundary() {
+  const error = useRouteError();
+  let status = 500;
+  let message = "An unexpected error occurred.";
+
+  if (isRouteErrorResponse(error)) {
+    status = error.status;
+    message = error.statusText || message;
+  } else if (error instanceof Error) {
+    message = error.message;
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold">{status}</h1>
+        <p className="mt-4 text-lg text-gray-600">{message}</p>
+        <a href="/" className="mt-6 inline-block text-blue-600 hover:underline">
+          Go home
+        </a>
+      </div>
+    </div>
+  );
 }
