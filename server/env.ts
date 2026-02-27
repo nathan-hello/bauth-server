@@ -7,16 +7,13 @@ function loadEnv<const K extends string>(...keys: K[]): Record<K, string> {
 }
 
 export const dotenv = loadEnv(
-  "NODE_ENV",
-  "DB_FILE_NAME",
-  "PRODUCTION_URL",
   "BETTER_AUTH_SECRET",
-  "RESEND_ACCESS_TOKEN",
-  "POLAR_ACCESS_TOKEN",
-  "POLAR_SUCCESS_URL",
   "COOKIE_PREFIX",
+  "DB_FILE_NAME",
   "FROM_EMAIL",
+  "LOG_FILE_PATH",
   "OTEL_LOGS_URL",
   "OTEL_TRACES_URL",
-  "LOG_FILE_PATH",
+  "PRODUCTION_URL",
+  "RESEND_ACCESS_TOKEN",
 );
