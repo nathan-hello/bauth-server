@@ -5,7 +5,7 @@
   "scripts": {
     "build": "bunx --bun react-router build",
     "dev": "bunx --bun vite",
-    "start": "bun --env-file=.env ./build/server/index.js",
+    "start": "PORT=30001 bun --env-file=.env ./build/server/index.js",
     "typegen:rr": "bunx --bun react-router typegen && tsc",
     "typegen:ba": "bunx --bun @better-auth/cli generate --config ./app/.server/auth.ts --output ./app/.server/drizzle/schema.auth.ts -y",
     "typegen:db": "bunx --bun drizzle-kit generate --config ./app/.server/drizzle/config.ts",
