@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [
     reactRouterHonoServer({
       runtime: "bun",
-      serverEntryPoint: path.resolve(__dirname, "./server/index.ts"),
+      serverEntryPoint: path.resolve(__dirname, "./app/.server/index.ts"),
     }),
     tailwindcss(),
     reactRouter(),
@@ -21,7 +21,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./app"),
-      "@server": path.resolve(__dirname, "./server"),
+      "@server": path.resolve(__dirname, "./app/.server"),
     },
   },
   define: {

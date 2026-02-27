@@ -1,4 +1,4 @@
-import { Button, ButtonLink } from "@/routes/auth/components/ui";
+import { ButtonLink } from "@/routes/auth/components/ui";
 import { useCopy } from "@/lib/copy";
 import QR from "qrcode";
 import { useEffect, useMemo, useState, type HTMLAttributes } from "react";

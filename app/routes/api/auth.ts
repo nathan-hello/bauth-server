@@ -1,6 +1,6 @@
-import { auth } from "server/auth";
+import { auth } from "@server/auth";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { safeRequestAttrs, Telemetry } from "@server/telemetry";
+import { Telemetry } from "@server/telemetry";
 
 const tel = new Telemetry("api.auth");
 
