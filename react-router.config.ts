@@ -5,13 +5,6 @@ export default {
   // Server-side render by default, to enable SPA mode set this to `false`
   ssr: true,
   prerender(args) {
-    return [
-      ...args.getStaticPaths(),
-      "/auth/login",
-      "/auth/register",
-      "/auth/logout",
-      "/auth/forgot",
-      "/auth/2fa",
-    ];
+    return [...args.getStaticPaths()];
   },
 } satisfies Config;
