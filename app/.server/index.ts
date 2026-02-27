@@ -1,4 +1,4 @@
-import { createHonoServer } from "react-router-hono-server/node";
+import { createHonoServer } from "react-router-hono-server/bun";
 import { dotenv } from "./env";
 import { StartLogging } from "./telemetry/sdk";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
@@ -12,6 +12,4 @@ StartLogging({
   ]),
 });
 
-const server = await createHonoServer();
-
-export default server;
+await createHonoServer();
