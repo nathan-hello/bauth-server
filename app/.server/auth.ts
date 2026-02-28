@@ -105,7 +105,8 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: dotenv.COOKIE_PREFIX,
     // Secure cookies do not work in dev because localhost is over http, not https
-    useSecureCookies: process.env.NODE_ENV === "production",
+    // Doesn't really work in prod either so we're removing it for now.
+    // useSecureCookies: process.env.NODE_ENV === "production",
   },
 
   onAPIError: {
