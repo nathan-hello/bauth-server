@@ -79,18 +79,27 @@ export class CustomExporter implements LogRecordExporter {
 export class PinoLogExporter implements LogRecordExporter {
   private pinoLogger: ReturnType<typeof pino>;
   constructor(file: string) {
-    this.pinoLogger = pino({
-      level: "trace",
-    },pino.destination({ dest: file, sync: true }));
+    const level = process.env.NODE_ENV === "development" ? "trace" : "warn";
+    this.pinoLogger = pino(
+      {
+        enabled: true,
+        level,
+      },
+      pino.destination({ dest: file, sync: true }),
+    );
   }
 
   export(logRecords: ReadableLogRecord[], resultCallback: (result: ExportResult) => void) {
     for (const record of logRecords) {
       const level = this.mapSeverity(record.severityNumber);
       const spanContext = record.spanContext;
+
+      const attrs = this.sanitize(record.attributes, ["scope", "trace_id", "span_id"]);
+
       this.pinoLogger[level](
         {
-          ...record.attributes,
+          scope: record.instrumentationScope.name,
+          ...attrs,
           ...(spanContext && {
             trace_id: spanContext.traceId,
             span_id: spanContext.spanId,
@@ -109,6 +118,18 @@ export class PinoLogExporter implements LogRecordExporter {
     if (severity <= 16) return "warn";
     return "error";
   }
+
+  private sanitize<T extends Record<string,any>>(attrs: T, keys: string[]): T {
+    keys.forEach(k => {
+      if (k in attrs) {
+        console.error(`[ERROR]: ${k} is not allowed in otel logs: ${JSON.stringify(attrs)}`)
+        delete attrs[k]
+      }
+    })
+
+    return attrs
+  }
+
 
   shutdown() {
     return Promise.resolve();

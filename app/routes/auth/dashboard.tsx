@@ -271,7 +271,7 @@ async function totpGetUri(form: FormData, request: Request) {
 
   const password = form.get("password")?.toString();
   if (!password) {
-    tel.warn("MISSING_FIELD", { field: "password", action: "get_totp_uri" });
+    tel.info("MISSING_FIELD", { field: "password", action: "get_totp_uri" });
     return;
   }
 
