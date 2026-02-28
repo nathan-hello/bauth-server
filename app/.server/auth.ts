@@ -6,6 +6,7 @@ import { betterAuth } from "better-auth/minimal";
 import { db } from "./drizzle/db";
 import { dotenv } from "./env";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import * as schema from "./drizzle/schema";
 import { passkey } from "@better-auth/passkey";
 import { username, twoFactor, emailOTP } from "better-auth/plugins";
 
@@ -98,6 +99,7 @@ export const auth = betterAuth({
 
   database: drizzleAdapter(db, {
     provider: "sqlite",
+    schema,
   }),
 
   advanced: {
