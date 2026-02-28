@@ -62,7 +62,7 @@ export function ErrorBoundary() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
+      <div className="text-center bg-black p-16">
         <h1 className="text-4xl font-bold">{status}</h1>
         <p className="mt-4 text-lg text-gray-600">{message}</p>
         <a href="/" className="mt-6 inline-block text-blue-600 hover:underline">

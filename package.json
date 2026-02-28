@@ -5,7 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "vite",
-    "start": "react-router-serve ./build/server/index.js",
+    "start": "PORT=3005 react-router-serve ./build/server/index.js",
     "typegen:rr": "react-router typegen && tsc",
     "typegen:ba": "@better-auth/cli generate --config ./app/.server/auth.ts --output ./app/.server/drizzle/schema.auth.ts -y",
     "typegen:db": "drizzle-kit generate --config ./app/.server/drizzle/config.ts",

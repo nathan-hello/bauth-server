@@ -18,7 +18,6 @@ type LoggingConfig = {
 };
 
 export function StartLogging(config: LoggingConfig) {
-  console.log("startlogging")
   loggerProvider = new LoggerProvider({
     processors: [new SimpleLogRecordProcessor(config.exporters)],
   });
