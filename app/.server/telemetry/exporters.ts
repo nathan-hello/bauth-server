@@ -1,6 +1,6 @@
 import { ExportResultCode, type ExportResult } from "@opentelemetry/core";
 import type { LogRecordExporter, ReadableLogRecord } from "@opentelemetry/sdk-logs";
-import pino from "pino";
+import { openSync, writeSync, closeSync } from "node:fs";
 import type { AnyValue } from "@opentelemetry/api-logs";
 
 export class MultiLogExporter implements LogRecordExporter {
@@ -76,31 +76,41 @@ export class CustomExporter implements LogRecordExporter {
   async shutdown() {}
 }
 
-export class PinoLogExporter implements LogRecordExporter {
-  private pinoLogger: ReturnType<typeof pino>;
+export class FileLogExporter implements LogRecordExporter {
+  private fd: number;
   constructor(file: string) {
-    this.pinoLogger = pino(pino.destination({ dest: file, sync: true }));
+    console.log("opening file");
+    this.fd = openSync(file, "a");
+    console.log("opened file", this.fd);
   }
 
   export(logRecords: ReadableLogRecord[], resultCallback: (result: ExportResult) => void) {
+    console.log("got record", logRecords.length, JSON.stringify(logRecords));
     for (const record of logRecords) {
-      const level = this.mapSeverity(record.severityNumber);
       const spanContext = record.spanContext;
-      this.pinoLogger[level](
-        {
-          ...record.attributes,
-          ...(spanContext && {
-            trace_id: spanContext.traceId,
-            span_id: spanContext.spanId,
-          }),
-        },
-        typeof record.body === "string" ? record.body : JSON.stringify(record.body),
-      );
+      const entry = JSON.stringify({
+        level: this.mapSeverity(record.severityNumber),
+        time:
+          record.hrTime ?
+            new Date(Number(record.hrTime[0]) * 1000).toISOString()
+          : new Date().toISOString(),
+        name: "bauth-server",
+        msg: typeof record.body === "string" ? record.body : JSON.stringify(record.body),
+        ...record.attributes,
+        ...(spanContext && {
+          trace_id: spanContext.traceId,
+          span_id: spanContext.spanId,
+        }),
+      });
+      console.log("writing log record");
+      writeSync(this.fd, entry + "\n");
     }
+
+    console.log("calling back");
     resultCallback({ code: ExportResultCode.SUCCESS });
   }
 
-  private mapSeverity(severity?: number): pino.Level {
+  private mapSeverity(severity?: number): string {
     if (!severity) return "info";
     if (severity <= 8) return "debug";
     if (severity <= 12) return "info";
@@ -109,6 +119,7 @@ export class PinoLogExporter implements LogRecordExporter {
   }
 
   shutdown() {
+    closeSync(this.fd);
     return Promise.resolve();
   }
 }

@@ -48,6 +48,7 @@ export class Telemetry<T extends TelemetryLogSchema = TelemetryLogSchema> {
   private namespace: string;
 
   constructor(namespace: string) {
+    console.log("new telemetry ", namespace);
     this.namespace = namespace;
     this.tracer = trace.getTracer(namespace);
   }
@@ -126,18 +127,22 @@ export class Telemetry<T extends TelemetryLogSchema = TelemetryLogSchema> {
   }
 
   debug(body: T["debug"][0], attributes?: Attrs<T["debug"][1]>) {
+    console.log("debug");
     this.log(body, SeverityNumber.DEBUG, "DEBUG", attributes);
   }
 
   warn(body: T["warn"][0], attributes?: Attrs<T["warn"][1]>) {
+    console.log("warn");
     this.log(body, SeverityNumber.WARN, "WARN", attributes);
   }
 
   info(body: T["info"][0], attributes?: Attrs<T["info"][1]>) {
+    console.log("info");
     this.log(body, SeverityNumber.INFO, "INFO", attributes);
   }
 
   error(body: T["error"][0], attributes?: Attrs<T["error"][1]>) {
+    console.log("error");
     this.log(body, SeverityNumber.ERROR, "ERROR", attributes);
   }
 
@@ -153,9 +158,11 @@ export class Telemetry<T extends TelemetryLogSchema = TelemetryLogSchema> {
         result.then((resolved) => this.emit(body, severityNumber, severityText, resolved));
         return;
       }
+      console.log(body, severityText, severityNumber, result);
       this.emit(body, severityNumber, severityText, result);
       return;
     }
+    console.log(body, severityText, severityNumber, attributes);
     this.emit(body, severityNumber, severityText, attributes);
   }
 
@@ -165,6 +172,7 @@ export class Telemetry<T extends TelemetryLogSchema = TelemetryLogSchema> {
     severityText: string,
     attributes?: any,
   ) {
+    console.log("emitting");
     this.logger.emit({
       body,
       severityNumber,

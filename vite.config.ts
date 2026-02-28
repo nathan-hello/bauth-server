@@ -2,7 +2,6 @@ import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { reactRouterHonoServer } from "react-router-hono-server/dev";
 import path from "path";
 
 export default defineConfig({
@@ -10,10 +9,6 @@ export default defineConfig({
     target: "esnext",
   },
   plugins: [
-    reactRouterHonoServer({
-      runtime: "bun",
-      serverEntryPoint: path.resolve(__dirname, "./app/.server/index.ts"),
-    }),
     tailwindcss(),
     reactRouter(),
     tsconfigPaths(),

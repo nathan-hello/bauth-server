@@ -1,6 +1,5 @@
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
-import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { LoggerProvider, SimpleLogRecordProcessor } from "@opentelemetry/sdk-logs";
 import type { MultiLogExporter } from "./exporters";
 
@@ -19,12 +18,12 @@ type LoggingConfig = {
 };
 
 export function StartLogging(config: LoggingConfig) {
+  console.log("startlogging")
   loggerProvider = new LoggerProvider({
     processors: [new SimpleLogRecordProcessor(config.exporters)],
   });
 
   new NodeSDK({
     traceExporter: new OTLPTraceExporter({ url: config.tracesUrl }),
-    instrumentations: [new PinoInstrumentation()],
   }).start();
 }
