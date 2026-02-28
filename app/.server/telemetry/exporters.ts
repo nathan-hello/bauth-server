@@ -79,7 +79,7 @@ export class CustomExporter implements LogRecordExporter {
 export class PinoLogExporter implements LogRecordExporter {
   private pinoLogger: ReturnType<typeof pino>;
   constructor(file: string) {
-    const level = process.env.NODE_ENV === "development" ? "trace" : "warn";
+    const level = process.env.NODE_ENV === "development" ? "trace" : "info";
     this.pinoLogger = pino(
       {
         enabled: true,
